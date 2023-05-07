@@ -44,6 +44,19 @@ cd ..
 echo "Creating DLL assets folder ... OK"
 
 
+######## MRTK2 PROFILES FOLDER ########
+echo "Creating MRTK2 'profiles' folder ... "
+cd MRTK
+
+mkdir profiles
+cd profiles
+touch .gitkeep
+cd ..
+
+cd ..
+echo "Creating DLL assets folder ... OK"
+
+
 ######## RESOURCES FOLDER ########
 echo "Creating Resources folder ... "
 mkdir Resources
@@ -71,3 +84,27 @@ cd ..
 
 cd ..
 echo "Creating Resources folder ... OK"
+
+
+######## ENTRY POINT SCENE ########
+echo "Creating scene 'EntryPoint' ... "
+cd Scenes
+cp ./SampleScene.unity ./EntryPoint.unity
+mkdir _SceneTemplates
+mv ./SampleScene.unity ./_SceneTemplates/_template.unity
+cd ..
+echo "Creating scene 'EntryPoint' ... OK"
+
+
+######## MAIN STUB SCENE ########
+echo "Creating scene 'Main' ... "
+cd Scenes
+mkdir ./01-Main
+cp ./_SceneTemplates/_template.unity ./01-Main/SceneMain.unity
+mkdir ./01-Main/Scripts
+touch ./01-Main/Scripts/.gitkeep
+cd ..
+echo "Creating scene 'Main' ... OK"
+
+
+cd ..
