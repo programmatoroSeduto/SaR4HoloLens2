@@ -67,7 +67,7 @@ namespace Packages.VisualItems.LogScreen.Components
 
         public override void EVENT_LogTitle(string txt)
         {
-            Debug.Log($"EVENT_LogTitle(txt: {txt})");
+            // Debug.Log($"EVENT_LogTitle(txt: {txt})");
             if (txt.Length > TitleMaxChars)
                 txt = txt.Substring(0, TitleMaxChars - 3) + "...";
             transform.Find("LogScreenBody/LogScreenTitle").GetComponent<TextMeshPro>().text = txt;

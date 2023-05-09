@@ -119,7 +119,7 @@ namespace Packages.Geolocation.ModuleTesting
 
             //UWP
             Geoposition gpos = geolocalizationTask.Result;
-            gpos.Coordinate.Point.AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid;
+            //gpos.Coordinate.Point.AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid;
             Debug.Log($"Lat: {gpos.Coordinate.Point.Position.Latitude} -- Lon: {gpos.Coordinate.Point.Position.Longitude} -- Alt: {gpos.Coordinate.Point.Position.Altitude}");
             //UWP
 

@@ -11,12 +11,4 @@ namespace Packages.VisualItems.Types
 
         }
     }
-
-    public class LogWindowTitleContentType : LogWindowBaseType
-    {
-        public virtual void EVENT_LogTitle(string txt)
-        {
-
-        }
-    }
 }
