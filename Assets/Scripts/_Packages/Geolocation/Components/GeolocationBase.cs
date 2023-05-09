@@ -11,6 +11,8 @@ using UnityEngine;
 using Packages.StorageUtilities.Types;
 using Packages.StorageUtilities.Components;
 using Packages.DoublePrecisionGeometry.Utils;
+using Packages.Geolocation.Utils;
+using Packages.Geolocation.Types;
 
 #if WINDOWS_UWP
 using Windows;
@@ -31,6 +33,12 @@ namespace Packages.Geolocation.Components
         [Tooltip("Use a strict check on the data: check if the received data from the module are equals to the previously obtained one, and in case, don't return them")]
         public bool CheckEqualityWithPreviousMeasurements = false;
 
+        [Tooltip("A list of objects capable of reading geolocation informations")]
+        public List<GeolocationPointReaderType> SendToObjects = new List<GeolocationPointReaderType>();
+
+        [Tooltip("Time between one measurement and the next one")]
+        public float MinimumTimeToNextMeasurement = 5.0f;
+
         [Tooltip("CSV raw file name")]
         public string CsvFileName = "geolocation_raw_obj";
 
@@ -43,13 +51,14 @@ namespace Packages.Geolocation.Components
         private bool runningGeolocalization = false;
         private DVector3 currentUnityPos = null;
         private DateTime tstamp;
+        private GeolocationPoint gpStruct;
         private CSVFileWriter loggerRaw = null;
         private CSVFileWriter loggerData = null;
         private Coroutine COR_Geolocalization = null;
 
 #if WINDOWS_UWP
-    private Geoposition gpPrev = null;
-    private Geoposition gp;
+        private Geoposition gpPrev = null;
+        private Geoposition gp;
 #endif
 
 
@@ -89,7 +98,7 @@ namespace Packages.Geolocation.Components
             }
 
             Debug.Log("Starting geolocation...");
-            //COR_Geolocalization = StartCoroutine(ORCOR_Geolocalization());
+            COR_Geolocalization = StartCoroutine(ORCOR_Geolocalization());
         }
 
         // Update is called once per frame
@@ -111,37 +120,52 @@ namespace Packages.Geolocation.Components
         {
             yield return null;
 #if WINDOWS_UWP
-        runningGeolocalization = true;
+            runningGeolocalization = true;
 
-        Geolocator geolocator = new Geolocator
-        {
-            DesiredAccuracy = (HighAccuracy ? PositionAccuracy.High : PositionAccuracy.Default)
-        };
-        PositionStatus currentStatus = PositionStatus.Ready;
-        geolocator.StatusChanged += (Geolocator g, StatusChangedEventArgs e) => {
-            currentStatus = e.Status;
-        };
+            Geolocator geolocator = new Geolocator
+            {
+                DesiredAccuracy = (HighAccuracy ? PositionAccuracy.High : PositionAccuracy.Default)
+            };
+            PositionStatus currentStatus = PositionStatus.Ready;
+            geolocator.StatusChanged += (Geolocator g, StatusChangedEventArgs e) => {
+                currentStatus = e.Status;
+            };
 
-        Task<Geoposition> geolocalizationTask = geolocator.GetGeopositionAsync().AsTask();
-        while (!geolocalizationTask.IsCompleted)
-            yield return new WaitForEndOfFrame();
-        tstamp = DateTime.Now;
-        currentUnityPos = DVector3.FromUnity(Camera.main.transform.position);
-        gp = geolocalizationTask.Result;
+            Task<Geoposition> geolocalizationTask = geolocator.GetGeopositionAsync().AsTask();
+            while (!geolocalizationTask.IsCompleted)
+                yield return new WaitForEndOfFrame();
+            tstamp = DateTime.Now;
+            currentUnityPos = DVector3.FromUnity(Camera.main.transform.position);
+            gp = geolocalizationTask.Result;
 
-        if (!UWP_ValidatePosition())
-        {
-            Debug.LogWarning("WARNING: unvalid position from module");
+            if (!UWP_ValidatePosition())
+            {
+                // Debug.LogWarning("WARNING: unvalid position from module");
+                runningGeolocalization = false;
+                yield break;
+            }
+            else
+                Debug.LogWarning("Found valid position from module");
+
+            gpStruct = new GeolocationPoint();
+            gpStruct.GeoRealCoordinates = new DVector3(
+                gp.Coordinate.Point.Position.Latitude,
+                gp.Coordinate.Point.Position.Longitude,
+                GeolocationPoint.EarthRadius
+                );
+            gpStruct.WorldRealPoint = GeolocationPoint.PolarToCartesian(gpStruct.GeoRealCoordinates);
+            gpStruct.UnityRealPoint = DVector3.FromUnity(Camera.main.transform.position);
+
+            if (SendToObjects.Count > 0)
+                foreach (GeolocationPointReaderType o in SendToObjects)
+                    o.EVENT_ReadGeopoint(gpStruct);
+
+            if (UseCsvDataExport)
+                yield return BSCOR_UpdateLoggers();
+
+            yield return new WaitForSecondsRealtime(MinimumTimeToNextMeasurement);
+
             runningGeolocalization = false;
-            yield break;
-        }
-        else
-            Debug.LogWarning("Found valid position from module");
-
-        if (UseCsvDataExport)
-            yield return BSCOR_UpdateLoggers();
-
-        runningGeolocalization = false;
 #endif
         }
 
