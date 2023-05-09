@@ -490,8 +490,9 @@ GameObject:
   - component: {fileID: 1774458830}
   - component: {fileID: 1774458829}
   - component: {fileID: 1774458831}
+  - component: {fileID: 1774458834}
+  - component: {fileID: 1774458835}
   - component: {fileID: 1774458832}
-  - component: {fileID: 1774458833}
   m_Layer: 0
   m_Name: BuildingGeolocationServices
   m_TagString: Untagged
@@ -536,12 +537,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1774458828}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 28528cd35b97e5a41afa3a50f55e7402, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   HighAccuracy: 0
+  logger: {fileID: 1774458834}
 --- !u!114 &1774458832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -549,33 +551,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1774458828}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30c50a72c7cd51c4f9753ad292d61bcd, type: 3}
+  m_Script: {fileID: 11500000, guid: 54cf1130b9663ad46a50d26142829479, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DelaySeconds: 3
-  FileName: randomwritings
+  FileName: log_info_warn_err
   FileFormat: txt
-  ApplyTimestamp: 1
-  WriteThis: 'ygsabfduygsaufdcgbuyasbgcudas
-
-    afbcaisciudsac
-
-    afdbcgjysbacjbdsagcfj
-
-    abcfdyabcuybdgaycf
-
-    acfngdiucbiuzdbcgifzbgciuzbugifdsczs
-
-    cnsziudbfcgziubsfcgis
-
-
-    xsdfs
-    !!!
-
-'
---- !u!114 &1774458833
+  TestMode: 0
+--- !u!114 &1774458834
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -587,17 +571,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3e2087f2e6bd04e89f6f8794455817, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FileName: testing_csv
+  FileName: geolocation
   CSVFields:
   - LATITUDE
   - LONGITUDE
-  - UX
-  - UY
-  - UZ
+  - ALTITUDE
+  - ALTITUDE_REF_SYSTEM
+  - UNITY_X
+  - UNITY_Y
+  - UNITY_Z
   ApplyTimestampColumn: 1
   ApplyDurationColumn: 1
   ApplyCounter: 1
-  TestMode: 1
+  TestMode: 0
+--- !u!114 &1774458835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d67b9e7f39f792c43a972771cf6f588c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SendInfos: 1
+  SendWarnings: 1
+  SendErrors: 1
+  StorageChannel: {fileID: 1774458832}
 --- !u!1001 &1831337365
 PrefabInstance:
   m_ObjectHideFlags: 0

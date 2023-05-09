@@ -1,3 +1,5 @@
+//define WINDOWS_UWP
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,7 +8,7 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
-//#define WINDOWS_UWP
+using Packages.StorageUtilities.Types;
 
 
 
@@ -24,6 +26,7 @@ namespace Packages.Geolocation.ModuleTesting
     public class GeolocalizationFeatureTesting : MonoBehaviour
     {
         public bool HighAccuracy = false;
+        public CSVLineReaderType logger = null;
 
         private bool authorized = false;
         private bool runningGeolocalization = false;
@@ -31,9 +34,16 @@ namespace Packages.Geolocation.ModuleTesting
         private Coroutine COR_AccessFeature = null;
         private Coroutine COR_Geolocalization = null;
 
+
+
         // Start is called before the first frame update
         void Start()
         {
+            if(logger == null)
+            {
+                Debug.LogWarning("WARNING: no logger provided");
+            }
+
             COR_AccessFeature = StartCoroutine(ORCOR_GeolocationAccess());
         }
 
@@ -59,15 +69,12 @@ namespace Packages.Geolocation.ModuleTesting
 #if WINDOWS_UWP
             Debug.Log("Requesting access to Geolocator...");
 
-            //UWP
             Task<GeolocationAccessStatus> accessRequestTask = Geolocator.RequestAccessAsync().AsTask();
             while (!accessRequestTask.IsCompleted)
                 yield return new WaitForEndOfFrame();
-            //UWP
 
             Debug.Log("Getting request status...");
 
-            //UWP
             GeolocationAccessStatus status = accessRequestTask.Result;
             if(status != GeolocationAccessStatus.Allowed)
             {
@@ -78,7 +85,6 @@ namespace Packages.Geolocation.ModuleTesting
             {
                 Debug.Log("Success! Authorized");
             }
-            //UWP
 
             yield return new WaitForSecondsRealtime(1.0f);
             authorized = true;
@@ -93,7 +99,6 @@ namespace Packages.Geolocation.ModuleTesting
 
             Debug.Log("Asking for new geolocation...");
 
-            //UWP
             Geolocator geolocator = new Geolocator
             {
                 DesiredAccuracy = ( HighAccuracy ? PositionAccuracy.High : PositionAccuracy.Default )
@@ -102,26 +107,34 @@ namespace Packages.Geolocation.ModuleTesting
             geolocator.StatusChanged += (Geolocator g, StatusChangedEventArgs e) => {
                 currentStatus = e.Status;
             };
-            //UWP
 
             Debug.Log("Sending request...");
 
-            //UWP
             Task<Geoposition> geolocalizationTask = geolocator.GetGeopositionAsync().AsTask();
             while (!geolocalizationTask.IsCompleted)
             {
                 yield return new WaitForSecondsRealtime(1.0f);
                 Debug.Log($"Status: {currentStatus.ToString()}");
             }
-            //UWP
 
             Debug.Log("Received new position");
 
-            //UWP
             Geoposition gpos = geolocalizationTask.Result;
-            //gpos.Coordinate.Point.AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid;
+            // gpos.Coordinate.Point.AltitudeReferenceSystem.ToString
             Debug.Log($"Lat: {gpos.Coordinate.Point.Position.Latitude} -- Lon: {gpos.Coordinate.Point.Position.Longitude} -- Alt: {gpos.Coordinate.Point.Position.Altitude}");
-            //UWP
+
+            if(logger != null)
+            {
+                logger.EVENT_ReadCSVRow(new List<string> {
+                    gpos.Coordinate.Point.Position.Latitude.ToString(),
+                    gpos.Coordinate.Point.Position.Longitude.ToString(),
+                    gpos.Coordinate.Point.Position.Altitude.ToString(),
+                    gpos.Coordinate.Point.AltitudeReferenceSystem.ToString(),
+                    Camera.main.transform.position.x.ToString(),
+                    Camera.main.transform.position.y.ToString(),
+                    Camera.main.transform.position.z.ToString()
+                });
+            }
 
             runningGeolocalization = false;
 #endif

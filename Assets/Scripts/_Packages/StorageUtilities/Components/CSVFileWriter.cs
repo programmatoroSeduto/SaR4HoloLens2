@@ -167,28 +167,6 @@ namespace Packages.StorageUtilities.Components
 #if WINDOWS_UWP
             fileWriting = true;
 
-            /*
-            Task<IRandomAccessStream> streamTask = fil.OpenAsync(FileAccessMode.ReadWrite).AsTask();
-            while (!streamTask.IsCompleted)
-                yield return new WaitForEndOfFrame();
-            IRandomAccessStream stream = streamTask.Result;
-            IOutputStream outputStream = stream.GetOutputStreamAt(0);
-            DataWriter wr = new DataWriter(outputStream);
-
-            Debug.Log($"WRITE: {line}");
-
-            wr.WriteString( line );
-            var jobStore = wr.StoreAsync().AsTask();
-            while (!jobStore.IsCompleted)
-                yield return new WaitForEndOfFrame();
-            var jobFlush = outputStream.FlushAsync().AsTask();
-            while (!jobFlush.IsCompleted)
-                yield return new WaitForEndOfFrame();
-
-            outputStream.Dispose();
-            stream.Dispose();
-            */
-
             Debug.Log($"WRITE: {line}");
             Task job = FileIO.AppendTextAsync(fil, line).AsTask();
             while (!job.IsCompleted)
