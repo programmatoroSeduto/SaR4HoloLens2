@@ -5,21 +5,30 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
-namespace SaR4HoloLens2.Scripts.Components
+namespace SaR4Hololens2.Scripts.Components
 {
     public class EntryPoint : MonoBehaviour
     {
+
         public string SceneName = "";
+
+        public bool UseDelay = false;
+
+        public int DelaySeconds = 3;
+        
         private bool isLoadingScene = false;
         private Coroutine COR_SwichScene;
+
         // Start is called before the first frame update
         void Start()
         {
             // SceneManager.LoadScene($"Scene{SceneName}", LoadSceneMode.Additive);
             COR_SwichScene = StartCoroutine(ORCOR_SwitchSceneAdditive("", this.SceneName));
         }
+
         public void EVENT_ChangeScene(string sceneName)
         {
+            Debug.Log($"EVENT_ChangeScene(sceneName = {sceneName})");
             if (SceneName == "")
             {
                 Debug.LogError($"Not given a scene to load!");
@@ -33,10 +42,15 @@ namespace SaR4HoloLens2.Scripts.Components
             if (!isLoadingScene)
                 COR_SwichScene = StartCoroutine(ORCOR_SwitchSceneAdditive(this.SceneName, sceneName));
         }
+
         private IEnumerator ORCOR_SwitchSceneAdditive(string fromScene, string toScene)
         {
             isLoadingScene = true;
             yield return null;
+
+            if (UseDelay)
+                yield return new WaitForSecondsRealtime((float)DelaySeconds);
+
             if (fromScene != "")
             {
                 fromScene = (fromScene.StartsWith("Scene") ? fromScene : $"Scene{fromScene}");
