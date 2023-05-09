@@ -22,6 +22,9 @@ namespace Packages.StorageUtilities.Components
         [Tooltip("Name of the CSV file to write on")]
         public string FileName = "newfile";
 
+        [Tooltip("Create file on start")]
+        public bool CreateFileOnStart = false;
+
         [Tooltip("A list of fiels making the header of the CSV to read")]
         public List<string> CSVFields = new List<string>();
 
@@ -58,20 +61,7 @@ namespace Packages.StorageUtilities.Components
 
         private void Start()
         {
-            if(CSVFields.Count == 0)
-            {
-                Debug.LogWarning("ERROR: no field provided as header of the CSV file! Closing...");
-                return;
-            }
-
-            // Debug.Log(GetHeader(CSVFields, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn));
-            // Debug.Log(ToCSV(new List<string> { "phi", "lambda", "x", "y", "z" }, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn));
-
-            // check access to folder
-            authorized = UWP_CheckAuthorization();
-            if (!authorized) return;
-
-            COR_fileCreation = StartCoroutine(ORCOR_StorageSetup());
+            if (CreateFileOnStart) EVENT_CreateFile();
         }
 
         public override bool EVENT_ReadCSVRow(List<string> ls)
@@ -101,6 +91,24 @@ namespace Packages.StorageUtilities.Components
         public bool EVENT_IsEnabled()
         {
             return authorized && fileCreated;
+        }
+
+        public void EVENT_CreateFile()
+        {
+            if (!fileCreated)
+            {
+                // check access to folder
+                authorized = UWP_CheckAuthorization();
+                if (!authorized) return;
+                else Debug.Log("CSV File Writer Authorized");
+
+                if (CSVFields.Count == 0)
+                {
+                    Debug.LogWarning("ERROR: no field provided as header of the CSV file! Closing...");
+                    return;
+                }
+                COR_fileCreation = StartCoroutine(ORCOR_StorageSetup());
+            }
         }
 
 

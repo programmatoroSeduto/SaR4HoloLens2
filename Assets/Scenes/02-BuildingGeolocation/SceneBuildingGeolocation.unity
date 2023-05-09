@@ -489,10 +489,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1774458830}
   - component: {fileID: 1774458829}
-  - component: {fileID: 1774458831}
   - component: {fileID: 1774458834}
   - component: {fileID: 1774458835}
   - component: {fileID: 1774458832}
+  - component: {fileID: 1774458833}
   m_Layer: 0
   m_Name: BuildingGeolocationServices
   m_TagString: Untagged
@@ -530,20 +530,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1774458831
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1774458828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28528cd35b97e5a41afa3a50f55e7402, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  HighAccuracy: 0
-  logger: {fileID: 1774458834}
 --- !u!114 &1774458832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -558,8 +544,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FileName: log_info_warn_err
   FileFormat: txt
+  CreateFileOnStart: 1
   TestMode: 0
---- !u!114 &1774458834
+--- !u!114 &1774458833
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -568,10 +555,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 1774458828}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed8b201ab25081e49a469b3176d4769d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HighAccuracy: 0
+  UseCsvDataExport: 1
+  CheckEqualityWithPreviousMeasurements: 1
+  CsvFileName: geolocation_raw_obj
+  CsvDataFileName: geolocation_raw_data
+--- !u!114 &1774458834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb3e2087f2e6bd04e89f6f8794455817, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   FileName: geolocation
+  CreateFileOnStart: 1
   CSVFields:
   - LATITUDE
   - LONGITUDE

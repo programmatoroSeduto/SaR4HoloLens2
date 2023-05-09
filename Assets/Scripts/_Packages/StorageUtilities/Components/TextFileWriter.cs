@@ -25,6 +25,9 @@ namespace Packages.StorageUtilities.Components
         [Tooltip("Format of the text file")]
         public string FileFormat = "log";
 
+        [Tooltip("Create file on start")]
+        public bool CreateFileOnStart = false;
+
         [Tooltip("Test Mode: a new line is written every 2 seconds, re-using the header")]
         public bool TestMode = false;
 
@@ -56,7 +59,8 @@ namespace Packages.StorageUtilities.Components
             authorized = UWP_CheckAuthorization();
             if (!authorized) return;
 
-            COR_fileCreation = StartCoroutine(ORCOR_StorageSetup());
+            if (CreateFileOnStart)
+                COR_fileCreation = StartCoroutine(ORCOR_StorageSetup());
         }
 
         public override bool EVENT_ReadText(string txt)
@@ -79,6 +83,12 @@ namespace Packages.StorageUtilities.Components
         public bool EVENT_IsEnabled()
         {
             return authorized && fileCreated;
+        }
+
+        public void EVENT_CreateFile()
+        {
+            if (authorized && !fileCreated)
+                COR_fileCreation = StartCoroutine(ORCOR_StorageSetup());
         }
 
 
