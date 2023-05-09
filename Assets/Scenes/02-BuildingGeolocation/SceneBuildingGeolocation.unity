@@ -489,10 +489,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1774458830}
   - component: {fileID: 1774458829}
-  - component: {fileID: 1774458834}
   - component: {fileID: 1774458835}
   - component: {fileID: 1774458832}
   - component: {fileID: 1774458833}
+  - component: {fileID: 1774458831}
   m_Layer: 0
   m_Name: BuildingGeolocationServices
   m_TagString: Untagged
@@ -530,7 +530,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1774458832
+--- !u!114 &1774458831
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -538,6 +538,18 @@ MonoBehaviour:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1774458828}
   m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ffb7e73955c9a74eb2a825e60528400, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1774458832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 54cf1130b9663ad46a50d26142829479, type: 3}
   m_Name: 
@@ -553,7 +565,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1774458828}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed8b201ab25081e49a469b3176d4769d, type: 3}
   m_Name: 
@@ -563,32 +575,6 @@ MonoBehaviour:
   CheckEqualityWithPreviousMeasurements: 1
   CsvFileName: geolocation_raw_obj
   CsvDataFileName: geolocation_raw_data
---- !u!114 &1774458834
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1774458828}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb3e2087f2e6bd04e89f6f8794455817, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FileName: geolocation
-  CreateFileOnStart: 1
-  CSVFields:
-  - LATITUDE
-  - LONGITUDE
-  - ALTITUDE
-  - ALTITUDE_REF_SYSTEM
-  - UNITY_X
-  - UNITY_Y
-  - UNITY_Z
-  ApplyTimestampColumn: 1
-  ApplyDurationColumn: 1
-  ApplyCounter: 1
-  TestMode: 0
 --- !u!114 &1774458835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -596,7 +582,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1774458828}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d67b9e7f39f792c43a972771cf6f588c, type: 3}
   m_Name: 

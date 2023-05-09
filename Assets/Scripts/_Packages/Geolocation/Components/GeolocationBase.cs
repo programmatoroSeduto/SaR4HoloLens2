@@ -18,32 +18,34 @@ using Windows.Devices;
 using Windows.Devices.Geolocation;
 #endif
 
-public class GeolocationBase : MonoBehaviour
+namespace Packages.Geolocation.Components
 {
-    [Tooltip("If to use or not High Accuracy in Geolocation module")]
-    public bool HighAccuracy = false;
+    public class GeolocationBase : MonoBehaviour
+    {
+        [Tooltip("If to use or not High Accuracy in Geolocation module")]
+        public bool HighAccuracy = false;
 
-    [Tooltip("Export data into CSV file; the component is automatically created by the module")]
-    public bool UseCsvDataExport = false;
+        [Tooltip("Export data into CSV file; the component is automatically created by the module")]
+        public bool UseCsvDataExport = false;
 
-    [Tooltip("Use a strict check on the data: check if the received data from the module are equals to the previously obtained one, and in case, don't return them")]
-    public bool CheckEqualityWithPreviousMeasurements = false;
+        [Tooltip("Use a strict check on the data: check if the received data from the module are equals to the previously obtained one, and in case, don't return them")]
+        public bool CheckEqualityWithPreviousMeasurements = false;
 
-    [Tooltip("CSV raw file name")]
-    public string CsvFileName = "geolocation_raw_obj";
+        [Tooltip("CSV raw file name")]
+        public string CsvFileName = "geolocation_raw_obj";
 
-    [Tooltip("CSV data file name")]
-    public string CsvDataFileName = "geolocation_data";
+        [Tooltip("CSV data file name")]
+        public string CsvDataFileName = "geolocation_data";
 
 
 
-    private bool authorized = false;
-    private bool runningGeolocalization = false;
-    private DVector3 currentUnityPos = null;
-    private DateTime tstamp;
-    private CSVFileWriter loggerRaw = null;
-    private CSVFileWriter loggerData = null;
-    private Coroutine COR_Geolocalization = null;
+        private bool authorized = false;
+        private bool runningGeolocalization = false;
+        private DVector3 currentUnityPos = null;
+        private DateTime tstamp;
+        private CSVFileWriter loggerRaw = null;
+        private CSVFileWriter loggerData = null;
+        private Coroutine COR_Geolocalization = null;
 
 #if WINDOWS_UWP
     private Geoposition gpPrev = null;
@@ -53,23 +55,23 @@ public class GeolocationBase : MonoBehaviour
 
 
 
-    private void Start()
-    {
-        // check authorization for the capability
-        authorized = UWP_CheckAuthorization();
-        if (!authorized)
+        private void Start()
         {
-            Debug.LogWarning("[GeolocationBase] ERROR: Unauthorized");
-            return;
-        }
-
-        // create the log file
-        if (UseCsvDataExport)
-        {
-            loggerRaw = CreateLogger(CsvFileName, new List<string>
+            // check authorization for the capability
+            authorized = UWP_CheckAuthorization();
+            if (!authorized)
             {
-                "gp.Coordinate.Accuracy", 
-                "gp.Coordinate.Heading", 
+                Debug.LogWarning("[GeolocationBase] ERROR: Unauthorized");
+                return;
+            }
+
+            // create the log file
+            if (UseCsvDataExport)
+            {
+                loggerRaw = CreateLogger(CsvFileName, new List<string>
+            {
+                "gp.Coordinate.Accuracy",
+                "gp.Coordinate.Heading",
                 "gp.Coordinate.PositionSource",
                 "gp.Coordinate.PositionSourceTimestamp",
                 "gp.Coordinate.Speed",
@@ -79,25 +81,25 @@ public class GeolocationBase : MonoBehaviour
                 "gp.Coordinate.Point.Position.Altitude"
             });
 
-            loggerData = CreateLogger(CsvDataFileName, new List<string>
+                loggerData = CreateLogger(CsvDataFileName, new List<string>
             {
                 "LATITUDE", "LONGITUDE", "ALTITUDE",
                 "UNITY_X", "UNITY_Y", "UNITY_Z"
             });
+            }
+
+            Debug.Log("Starting geolocation...");
+            //COR_Geolocalization = StartCoroutine(ORCOR_Geolocalization());
         }
 
-        Debug.Log("Starting geolocation...");
-        //COR_Geolocalization = StartCoroutine(ORCOR_Geolocalization());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (authorized && !runningGeolocalization)
+        // Update is called once per frame
+        void Update()
         {
-            COR_Geolocalization = StartCoroutine(ORCOR_Geolocalization());
+            if (authorized && !runningGeolocalization)
+            {
+                COR_Geolocalization = StartCoroutine(ORCOR_Geolocalization());
+            }
         }
-    }
 
 
 
@@ -105,9 +107,9 @@ public class GeolocationBase : MonoBehaviour
 
 
 
-    private IEnumerator ORCOR_Geolocalization()
-    {
-        yield return null;
+        private IEnumerator ORCOR_Geolocalization()
+        {
+            yield return null;
 #if WINDOWS_UWP
         runningGeolocalization = true;
 
@@ -141,24 +143,24 @@ public class GeolocationBase : MonoBehaviour
 
         runningGeolocalization = false;
 #endif
-    }
+        }
 
-    private bool UWP_CheckAuthorization()
-    {
+        private bool UWP_CheckAuthorization()
+        {
 #if WINDOWS_UWP
         GeolocationAccessStatus access = Geolocator.RequestAccessAsync().AsTask().GetAwaiter().GetResult();
         return (access == GeolocationAccessStatus.Allowed);
 #else
-        return false;
+            return false;
 #endif
-    }
+        }
 
 
 
-    private bool UWP_ValidatePosition()
-    {
-        if (!CheckEqualityWithPreviousMeasurements)
-            return true;
+        private bool UWP_ValidatePosition()
+        {
+            if (!CheckEqualityWithPreviousMeasurements)
+                return true;
 
 #if WINDOWS_UWP
         if(gpPrev == null)
@@ -177,14 +179,14 @@ public class GeolocationBase : MonoBehaviour
             return true;
         }
 #else
-        return true;
+            return true;
 #endif
-    }
+        }
 
 
-    private IEnumerator BSCOR_UpdateLoggers()
-    {
-        yield return null;
+        private IEnumerator BSCOR_UpdateLoggers()
+        {
+            yield return null;
 #if WINDOWS_UWP
         Debug.Log("Updating logs...");
 
@@ -220,22 +222,24 @@ public class GeolocationBase : MonoBehaviour
         while (!loggerData.EVENT_IsReadyForOutput())
             yield return new WaitForEndOfFrame();
 #endif
+        }
+
+        private CSVFileWriter CreateLogger(string fileName, List<string> fields)
+        {
+            Debug.Log($"Creating logger to file '{fileName}' ... ");
+            CSVFileWriter logger = gameObject.AddComponent<CSVFileWriter>();
+
+            logger.FileName = fileName;
+            logger.CSVFields = fields;
+            logger.ApplyTimestampColumn = true;
+            logger.ApplyDurationColumn = true;
+            logger.ApplyCounter = true;
+
+            logger.EVENT_CreateFile();
+
+            Debug.Log($"Creating logger to file '{fileName}' ... OK");
+            return logger;
+        }
     }
 
-    private CSVFileWriter CreateLogger(string fileName, List<string> fields)
-    {
-        Debug.Log($"Creating logger to file '{fileName}' ... ");
-        CSVFileWriter logger = gameObject.AddComponent<CSVFileWriter>();
-
-        logger.FileName = fileName;
-        logger.CSVFields = fields;
-        logger.ApplyTimestampColumn = true;
-        logger.ApplyDurationColumn = true;
-        logger.ApplyCounter = true;
-
-        logger.EVENT_CreateFile();
-
-        Debug.Log($"Creating logger to file '{fileName}' ... OK");
-        return logger;
-    }
 }
