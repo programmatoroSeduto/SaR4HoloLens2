@@ -11,34 +11,39 @@ namespace Packages.Geolocation.Utils
     public class GeolocationTransform
     {
         //first geo measurement (measured)
-        public DVector3 g1deg; 
+        public DVector3 g1deg = null; 
 
         // first world coordinates (obtained)
-        public DVector3 wP1; 
+        public DVector3 wP1 = null;
 
         // first Unity coordinates (measured)
-        public DVector3 uP1;
+        public DVector3 uP1 = null;
 
         // second geo measurement (measured)
-        public DVector3 g2deg;
+        public DVector3 g2deg = null;
 
         // second world coordinates (obtained)
-        public DVector3 wP2;
+        public DVector3 wP2 = null;
 
         // second Unity coordinates (measured)
-        public DVector3 uP2;
+        public DVector3 uP2 = null;
 
         // Geolocation world origin (obtained)
-        public DVector3 wOu;
+        public DVector3 wOu = null;
 
         // Geolocation direct transform (obtained)
-        public RotationMatrix wRu;
+        public RotationMatrix wRu = null;
 
         // Geolocation inverse transform (obtained)
-        public RotationMatrix uRw;
+        public RotationMatrix uRw = null;
 
         public void CalibrationStep()
         {
+            if (g1deg == null || g2deg == null ||
+                wP1 == null || wP2 == null ||
+                uP1 == null || uP2 == null)
+                return;
+
             // get wP1 from g1rad from g1deg (UP)
             wP1 = GeolocationPoint.PolarToCartesian(g1deg, fromDeg: true);
 
@@ -59,13 +64,28 @@ namespace Packages.Geolocation.Utils
             wOu = wP1;
         }
 
+        public bool CheckCalibrationAbsDistanceError(double tollerance = 0.5)
+        {
+            if (g1deg == null || g2deg == null ||
+                wP1 == null || wP2 == null ||
+                uP1 == null || uP2 == null)
+                return false;
+
+            return 
+                System.Math.Abs(DVector3.Diff(wP1, wP2).modulus() - DVector3.Diff(uP1, uP2).modulus()) <= tollerance;
+        }
+
         public DVector3 WorldToUnity(DVector3 wP)
         {
+            if (uRw == null || uP1 == null || wP1 == null) return null;
+
             return DVector3.Sum(uP1, uRw.rotate(DVector3.Diff(wP1, wP)));
         }
 
         public DVector3 UnityToWorld(DVector3 uP)
         {
+            if (wRu == null || uP1 == null || wP1 == null) return null;
+
             return DVector3.Sum(wP1, wRu.rotate(DVector3.Diff(uP1, uP)));
         }
 
@@ -87,16 +107,21 @@ namespace Packages.Geolocation.Utils
         {
             string s = "";
 
-            s += $"g1deg = {g1deg}" + "\n";
-            s += $"g2deg = {g2deg}" + "\n";
-            s += $"wP1 = {wP1}" + "\n";
-            s += $"wP2 = {wP2}" + "\n";
-            s += $"uP1 = {uP1}" + "\n";
-            s += $"uP2 = {uP2}" + "\n";
-            s += $"uRw = {uRw}" + "\n";
-            s += $"wRu = {wRu}";
+            s += $"g1deg = {IsNull(g1deg, "NULL")}" + "\n";
+            s += $"g2deg = {IsNull(g2deg, "NULL")}" + "\n";
+            s += $"wP1 = {IsNull(wP1, "NULL")}" + "\n";
+            s += $"wP2 = {IsNull(wP2, "NULL")}" + "\n";
+            s += $"uP1 = {IsNull(uP1, "NULL")}" + "\n";
+            s += $"uP2 = {IsNull(uP2, "NULL")}" + "\n";
+            s += $"uRw = {IsNull(uRw, "NULL")}" + "\n";
+            s += $"wRu = {IsNull(wRu, "NULL")}";
 
             return s;
+        }
+
+        private string IsNull<T>(T s, string replaceWith = "")
+        {
+            return (s != null ? s.ToString() : replaceWith);
         }
     }
 }

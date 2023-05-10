@@ -19,22 +19,22 @@ namespace Packages.Geolocation.Utils
         public int MasurementCounter = -1;
 
         // Geo (from measurements)
-        public DVector3 GeoRealCoordinates = DVector3.zero;
+        public DVector3 GeoRealCoordinates = null;
 
         // Geo (predicted)
-        public DVector3 GeoCoordinates = DVector3.zero;
+        public DVector3 GeoCoordinates = null;
 
         // World (from measurement)
-        public DVector3 WorldRealPoint = DVector3.zero;
+        public DVector3 WorldRealPoint = null;
 
         // World (predicted)
-        public DVector3 WorldPoint = DVector3.zero;
+        public DVector3 WorldPoint = null;
 
         // Unity (from measurement)
-        public DVector3 UnityRealPoint = DVector3.zero;
+        public DVector3 UnityRealPoint = null;
 
         // Unity (predicted)
-        public DVector3 UnityPoint = DVector3.zero;
+        public DVector3 UnityPoint = null;
 
         // timestamp
         public DateTime timestamp = DateTime.Now;
@@ -46,7 +46,9 @@ namespace Packages.Geolocation.Utils
             res.GeoRealCoordinates = g;
             res.UnityRealPoint = uP;
             if (dt != null)
-                res.timestamp = (DateTime) dt;
+                res.timestamp = (DateTime)dt;
+            else
+                res.timestamp = DateTime.Now;
 
             return res;
         }
@@ -95,11 +97,11 @@ namespace Packages.Geolocation.Utils
             if (UnityRealPoint != null)
                 s += $"UnityRealPoint={UnityRealPoint}\n";
             if (GeoCoordinates != null)
-                s += $"GeoCoordinates={GeoRealCoordinates}\n";
+                s += $"GeoCoordinates={GeoCoordinates}\n";
             if (WorldPoint != null)
-                s += $"WorldPoint={WorldRealPoint}\n";
+                s += $"WorldPoint={WorldPoint}\n";
             if (UnityPoint != null)
-                s += $"UnityPoint={UnityRealPoint}\n";
+                s += $"UnityPoint={UnityPoint}\n";
 
             return s;
         }

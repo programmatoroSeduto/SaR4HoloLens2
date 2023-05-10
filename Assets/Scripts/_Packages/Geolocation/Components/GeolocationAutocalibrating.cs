@@ -1,4 +1,4 @@
-//define WINDOWS_UWP
+#define WINDOWS_UWP
 
 using System;
 using System.Threading.Tasks;
@@ -38,6 +38,18 @@ namespace Packages.Geolocation.Components
 
         [Tooltip("Minimum time interval between one geolocation and another one")]
         public float MinimumTimeToNextMeasurement = 5.0f;
+
+
+
+
+        [Header("Calibration Settings")]
+
+        [Tooltip("Recompute Calibration if abs distance error is too much between Unity path and World path")]
+        public bool UseRecomputeCalibration = false;
+
+        [Tooltip("Maximum error, in absolute value, on the difference between the lenght of the reference path in the world frame and the one in the Unity frame")]
+        public double CalibrationTollerance = 0.5f;
+
 
 
 
@@ -237,12 +249,13 @@ namespace Packages.Geolocation.Components
         }
 
         private IEnumerator BSCOR_UpdateGeopositionReaders()
-        {
-            foreach (GeolocationPointReaderType reader in SendToObjects)
-            {
-                reader.EVENT_ReadGeopoint(lastMeasurement);
-                yield return new WaitForEndOfFrame();
-            }
+        { 
+            if(SendToObjects.Count > 0)
+                foreach (GeolocationPointReaderType reader in SendToObjects)
+                {
+                    reader.EVENT_ReadGeopoint(lastMeasurement);
+                    yield return new WaitForEndOfFrame();
+                }
         }
 
 
@@ -291,7 +304,7 @@ namespace Packages.Geolocation.Components
                 calibrationRunning = true;
 
                 calibrationResult = new GeolocationTransform();
-                calibrationResult.g1deg = lastMeasurement.GeoCoordinates;
+                calibrationResult.g1deg = lastMeasurement.GeoRealCoordinates;
                 calibrationResult.wP1 = GeolocationPoint.PolarToCartesian(calibrationResult.g1deg);
                 calibrationResult.uP1 = lastMeasurement.UnityRealPoint;
 
@@ -299,15 +312,21 @@ namespace Packages.Geolocation.Components
             }
             else if(calibrationRunning && calibrationResult != null)
             {
-                // STEP 2 & FINAL STEP
-                calibrationResult.g2deg = lastMeasurement.GeoCoordinates;
+                calibrationResult.g2deg = lastMeasurement.GeoRealCoordinates;
                 calibrationResult.wP2 = GeolocationPoint.PolarToCartesian(calibrationResult.g2deg);
                 calibrationResult.uP2 = lastMeasurement.UnityRealPoint;
 
                 Debug.Log($"STEP 2 : {calibrationResult}");
                 calibrationResult.CalibrationStep();
                 
-                Debug.Log($"Calibration process STEP 2 started at {DateTime.Now}\nCalibration data:\n{calibrationResult}");
+                Debug.Log($"Calibration process STEP 2 started at {DateTime.Now}\n{calibrationResult}");
+
+                if(UseRecomputeCalibration && !calibrationResult.CheckCalibrationAbsDistanceError(CalibrationTollerance))
+                {
+                    Debug.LogWarning("WARNING: Calibration distance check failed; repeating calibration...");
+                    EVENT_CalibrationRedo();
+                    return;
+                }
 
                 calibrationRunning = false;
             }
