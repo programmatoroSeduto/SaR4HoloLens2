@@ -60,14 +60,15 @@ namespace Packages.DoublePrecisionGeometry.Utils
             RotationMatrix rm = new RotationMatrix();
             
             rm.R[0, 0] = R[0, 0];
+            rm.R[1, 1] = R[1, 1];
+            rm.R[2, 2] = R[2, 2];
+            
             rm.R[0, 1] = R[1, 0];
             rm.R[0, 2] = R[2, 0];
             rm.R[1, 0] = R[0, 1];
-            rm.R[1, 1] = R[1, 1];
             rm.R[1, 2] = R[2, 1];
             rm.R[2, 0] = R[0, 2];
             rm.R[2, 1] = R[2, 1];
-            rm.R[2, 2] = R[2, 2];
 
             return rm;
         }
@@ -83,12 +84,13 @@ namespace Packages.DoublePrecisionGeometry.Utils
 
         public override string ToString()
         {
-            string ss = "R vals: ";
+            string ss = "";
 
-            foreach( var row in R )
-            {
-                ss = ss + row + ",";
-            }
+            ss += "[\n";
+            ss += $"\t{R[0, 0]:0.000}\t{R[0, 1]:0.000}\t{R[0, 2]:0.000}\n";
+            ss += $"\t{R[1, 0]:0.000}\t{R[1, 1]:0.000}\t{R[1, 2]:0.000}\n";
+            ss += $"\t{R[2, 0]:0.000}\t{R[2, 1]:0.000}\t{R[2, 2]:0.000}\n";
+            ss += "]";
 
             return ss;
         }

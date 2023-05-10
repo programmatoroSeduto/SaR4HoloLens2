@@ -45,6 +45,20 @@ namespace Packages.DoublePrecisionGeometry.Utils
             return new DVector3(uv.x, uv.y, uv.z);
         }
 
+        public static DVector3 Diff(DVector3 a , DVector3 b)
+        {
+            return b.distanceVector(a);
+        }
+
+        public static DVector3 Sum(DVector3 a, DVector3 b)
+        {
+            return new DVector3(
+                a.x + b.x,
+                a.y + b.y,
+                a.z + b.z
+                );
+        }
+
         // dot product
         public double dot(DVector3 v)
         {
