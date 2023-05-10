@@ -16,25 +16,25 @@ namespace Packages.Geolocation.Utils
         public static readonly double Deg2Rad = System.Math.PI / 180.0;
 
         // Geolocation index 
-        public Nullable<int> MasurementCounter = null;
+        public int MasurementCounter = -1;
 
         // Geo (from measurements)
-        public DVector3 GeoRealCoordinates = null;
+        public DVector3 GeoRealCoordinates = DVector3.zero;
 
         // Geo (predicted)
-        public DVector3 GeoCoordinates = null;
+        public DVector3 GeoCoordinates = DVector3.zero;
 
         // World (from measurement)
-        public DVector3 WorldRealPoint = null;
+        public DVector3 WorldRealPoint = DVector3.zero;
 
         // World (predicted)
-        public DVector3 WorldPoint = null;
+        public DVector3 WorldPoint = DVector3.zero;
 
         // Unity (from measurement)
-        public DVector3 UnityRealPoint = null;
+        public DVector3 UnityRealPoint = DVector3.zero;
 
         // Unity (predicted)
-        public DVector3 UnityPoint = null;
+        public DVector3 UnityPoint = DVector3.zero;
 
         // timestamp
         public DateTime timestamp = DateTime.Now;

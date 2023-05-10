@@ -199,7 +199,7 @@ namespace Packages.Geolocation.Components
 #if WINDOWS_UWP
             runningGeolocalization = true;
 
-            while(!UWP_ValidatePosition())
+            do
             {
                 Geolocator geolocator = new Geolocator
                 {
@@ -216,6 +216,8 @@ namespace Packages.Geolocation.Components
                 currPosition = geolocalizationTask.Result;
                 yield return new WaitForEndOfFrame();
             }
+            while(!UWP_ValidatePosition());
+            Debug.Log($"Acquired position no. {measurementCounter}");
 
             lastMeasurement = GeolocationPoint.FromAbsoluteGeolocation(
                 new DVector3(
@@ -225,14 +227,14 @@ namespace Packages.Geolocation.Components
                     ),
                 DVector3.FromUnity(Camera.main.transform.position)
                 );
-            lastMeasurement.MasurementCounter = (int) measurementCounter;
+            lastMeasurement.MasurementCounter = measurementCounter;
             measurementCounter++;
 
             CalibrationStep();
 
             runningGeolocalization = false;
 #endif
-    }
+        }
 
         private IEnumerator BSCOR_UpdateGeopositionReaders()
         {
@@ -250,7 +252,7 @@ namespace Packages.Geolocation.Components
 
 
         private bool UWP_ValidatePosition()
-        {             
+        {
 #if WINDOWS_UWP
             if (prevPosition == null)
             {
@@ -287,22 +289,25 @@ namespace Packages.Geolocation.Components
             if(!calibrationRunning && calibrationResult == null)
             {
                 calibrationRunning = true;
-                Debug.Log($"Calibration process started at {DateTime.Now}");
 
                 calibrationResult = new GeolocationTransform();
                 calibrationResult.g1deg = lastMeasurement.GeoCoordinates;
                 calibrationResult.wP1 = GeolocationPoint.PolarToCartesian(calibrationResult.g1deg);
+                calibrationResult.uP1 = lastMeasurement.UnityRealPoint;
+
+                Debug.Log($"Calibration process STEP 1 started at {DateTime.Now}\n{calibrationResult}");
             }
             else if(calibrationRunning && calibrationResult != null)
             {
                 // STEP 2 & FINAL STEP
                 calibrationResult.g2deg = lastMeasurement.GeoCoordinates;
                 calibrationResult.wP2 = GeolocationPoint.PolarToCartesian(calibrationResult.g2deg);
+                calibrationResult.uP2 = lastMeasurement.UnityRealPoint;
 
-                calibrationResult.CalibrationStep();Debug.Log($"Continuous Geolocation Stop at {DateTime.Now}");
+                Debug.Log($"STEP 2 : {calibrationResult}");
+                calibrationResult.CalibrationStep();
                 
-                Debug.Log($"Calibration process stop at {DateTime.Now}");
-                Debug.Log($"Calibration data:\n{calibrationResult}");
+                Debug.Log($"Calibration process STEP 2 started at {DateTime.Now}\nCalibration data:\n{calibrationResult}");
 
                 calibrationRunning = false;
             }

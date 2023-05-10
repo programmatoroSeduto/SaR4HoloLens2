@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ namespace Packages.Geolocation.ModuleTesting
     public class TestingAutocalibration : GeolocationPointReaderType
     {
         [Tooltip("The module to test")]
-        public GeolocationAutocalibrating ModuleReference;
+        public GeolocationAutocalibrating ModuleReference = null;
 
         [Tooltip("Name of the output file")]
         public string CsvFileName = "";
@@ -33,6 +34,12 @@ namespace Packages.Geolocation.ModuleTesting
 
         private void Start()
         {
+            if(ModuleReference == null)
+            {
+                Debug.LogWarning("[test] no geolocation module provided!");
+                return;
+            }
+
             loggerComponent = CreateLogger(CsvFileName, new List<string>
             {
                 "FROM_RELATIVE_FL",
@@ -47,7 +54,9 @@ namespace Packages.Geolocation.ModuleTesting
 
         public override void EVENT_ReadGeopoint(GeolocationPoint gp)
         {
+            Debug.Log("[test] (from 'EVENT_ReadGeopoint') received new measurement");
             absoluteMeasurement = gp;
+            Debug.Log($"{gp}");
         }
 
 
@@ -65,7 +74,8 @@ namespace Packages.Geolocation.ModuleTesting
             {
                 yield return new WaitForSecondsRealtime(1.0f);
                 if (absoluteMeasurement == null) continue;
-                
+
+                Debug.Log($"[test] check at {DateTime.Now}");
                 if (absoluteMeasurement.MasurementCounter != lastIndex)
                 {
                     Debug.Log("[test] New absolute measurement!");
@@ -85,7 +95,7 @@ namespace Packages.Geolocation.ModuleTesting
                     csv.Add($"{absoluteMeasurement.UnityRealPoint.z}"); // ux
 
                     yield return BSCOR_UpdateLogger(loggerComponent, csv);
-                    lastIndex = (int) absoluteMeasurement.MasurementCounter;
+                    lastIndex = absoluteMeasurement.MasurementCounter;
                 }
                 else if(ModuleReference.EVENT_IsCalibrationStructReady())
                 {
@@ -99,15 +109,15 @@ namespace Packages.Geolocation.ModuleTesting
 
                     List<string> csv = new List<string>();
                     csv.Add("X"); // not relative
-                    csv.Add($"{absoluteMeasurement.GeoCoordinates.x}"); // lat
-                    csv.Add($"{absoluteMeasurement.GeoCoordinates.y}"); // lon
-                    csv.Add($"{absoluteMeasurement.GeoCoordinates.z}"); // alt
-                    csv.Add($"{absoluteMeasurement.WorldPoint.x}"); // wx
-                    csv.Add($"{absoluteMeasurement.WorldPoint.y}"); // wy
-                    csv.Add($"{absoluteMeasurement.WorldPoint.z}"); // wx
-                    csv.Add($"{absoluteMeasurement.UnityRealPoint.x}"); // ux
-                    csv.Add($"{absoluteMeasurement.UnityRealPoint.y}"); // uy
-                    csv.Add($"{absoluteMeasurement.UnityRealPoint.z}"); // ux
+                    csv.Add($"{rgp.GeoCoordinates.x}"); // lat
+                    csv.Add($"{rgp.GeoCoordinates.y}"); // lon
+                    csv.Add($"{rgp.GeoCoordinates.z}"); // alt
+                    csv.Add($"{rgp.WorldPoint.x}"); // wx
+                    csv.Add($"{rgp.WorldPoint.y}"); // wy
+                    csv.Add($"{rgp.WorldPoint.z}"); // wx
+                    csv.Add($"{rgp.UnityRealPoint.x}"); // ux
+                    csv.Add($"{rgp.UnityRealPoint.y}"); // uy
+                    csv.Add($"{rgp.UnityRealPoint.z}"); // ux
 
                     yield return BSCOR_UpdateLogger(loggerComponent, csv);
                 }
