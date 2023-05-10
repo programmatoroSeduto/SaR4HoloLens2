@@ -538,11 +538,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1774458828}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ffb7e73955c9a74eb2a825e60528400, type: 3}
+  m_Script: {fileID: 11500000, guid: 01ae036a294d93849b306f8299787b68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  HighAccuracy: 0
+  UseContinuousGeolocation: 1
+  MinimumTimeToNextMeasurement: 5
+  SendToObjects:
+  - {fileID: 1774458834}
 --- !u!114 &1774458832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -587,9 +592,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1774458828}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e8b03744be79b1478fa011e8b994b66, type: 3}
+  m_Script: {fileID: 11500000, guid: 7def7cbd1dd874844b41cb3b7e3d5a7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ModuleReference: {fileID: 1774458831}
+  CsvFileName: geolocation_abs_rel
 --- !u!114 &1774458835
 MonoBehaviour:
   m_ObjectHideFlags: 0

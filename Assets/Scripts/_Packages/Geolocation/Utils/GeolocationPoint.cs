@@ -15,6 +15,9 @@ namespace Packages.Geolocation.Utils
         public static readonly double Rad2Deg = 180.0 / System.Math.PI;
         public static readonly double Deg2Rad = System.Math.PI / 180.0;
 
+        // Geolocation index 
+        public Nullable<int> MasurementCounter = null;
+
         // Geo (from measurements)
         public DVector3 GeoRealCoordinates = null;
 
@@ -35,6 +38,18 @@ namespace Packages.Geolocation.Utils
 
         // timestamp
         public DateTime timestamp = DateTime.Now;
+
+        public static GeolocationPoint FromAbsoluteGeolocation(DVector3 g, DVector3 uP, Nullable<DateTime> dt = null)
+        {
+            GeolocationPoint res = new GeolocationPoint();
+
+            res.GeoRealCoordinates = g;
+            res.UnityRealPoint = uP;
+            if (dt != null)
+                res.timestamp = (DateTime) dt;
+
+            return res;
+        }
 
         // coordinates from polar to cartesian (angles in degrees)
         public static DVector3 PolarToCartesian(DVector3 PolarCoord, bool fromDeg = true)
