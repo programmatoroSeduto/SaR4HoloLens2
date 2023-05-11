@@ -30,11 +30,11 @@ Here's a example of procedure for spawning the object:
 private ARMarkerBaseBuilder armb = gameObject.AddComponent<ARMarkerBaseBuilder>();
 
 // STEP 1 : set parameters
-InitMarkerName = ... "string: name of the marker" ... ;
-InitText = ... "a init text if you want" ... ;
-MarkerPosition = ... a Vector3 position ... ;
-YawOrientation = ... a angle in degrees... ;
-SpawnUnderObject = ... another gameObject reference ... ;
+armb.InitMarkerName = ... "string: name of the marker" ... ;
+armb.InitText = ... "a init text if you want" ... ;
+armb.MarkerPosition = ... a Vector3 position ... ;
+armb.YawOrientation = ... a angle in degrees... ;
+armb.SpawnUnderObject = ... another gameObject reference ... ;
 
 // STEP 2 : build the object
 private ARMarkerBaseHandle armh = armb.Build();

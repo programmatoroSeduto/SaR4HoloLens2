@@ -154,6 +154,36 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &384857385
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 384857386}
+  m_Layer: 0
+  m_Name: Markers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &384857386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 384857385}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.8227596, y: 2.5500765, z: -0.66174126}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &495584283
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,9 +520,13 @@ GameObject:
   - component: {fileID: 1774458830}
   - component: {fileID: 1774458832}
   - component: {fileID: 1774458835}
+  - component: {fileID: 1774458838}
+  - component: {fileID: 1774458837}
+  - component: {fileID: 1774458836}
+  - component: {fileID: 1774458834}
   - component: {fileID: 1774458829}
   - component: {fileID: 1774458831}
-  - component: {fileID: 1774458834}
+  - component: {fileID: 1774458833}
   m_Layer: 0
   m_Name: BuildingGeolocationServices
   m_TagString: Untagged
@@ -545,8 +579,10 @@ MonoBehaviour:
   HighAccuracy: 0
   UseContinuousGeolocation: 1
   MinimumTimeToNextMeasurement: 5
+  UseRecomputeCalibration: 0
+  CalibrationTollerance: 0.5
   SendToObjects:
-  - {fileID: 1774458834}
+  - {fileID: 1774458833}
 --- !u!114 &1774458832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -559,10 +595,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54cf1130b9663ad46a50d26142829479, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FileName: log_info_warn_err
+  FileName: log_info
   FileFormat: txt
   CreateFileOnStart: 1
   TestMode: 0
+--- !u!114 &1774458833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac3fe8b972aa4f438c52d8196055dae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ModuleReference: {fileID: 1774458831}
+  TestPeriod: 2
+  CsvFileName: geolocation_abs_rel
+  MinMarkerDistance: 2
+  SpawnUnderObject: {fileID: 384857385}
 --- !u!114 &1774458834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -572,11 +625,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1774458828}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7def7cbd1dd874844b41cb3b7e3d5a7c, type: 3}
+  m_Script: {fileID: 11500000, guid: d67b9e7f39f792c43a972771cf6f588c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ModuleReference: {fileID: 1774458831}
-  CsvFileName: geolocation_abs_rel
+  SendInfos: 0
+  SendWarnings: 0
+  SendErrors: 1
+  StorageChannel: {fileID: 1774458836}
 --- !u!114 &1774458835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -590,9 +645,57 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SendInfos: 1
-  SendWarnings: 1
-  SendErrors: 1
+  SendWarnings: 0
+  SendErrors: 0
   StorageChannel: {fileID: 1774458832}
+--- !u!114 &1774458836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54cf1130b9663ad46a50d26142829479, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FileName: log_err
+  FileFormat: txt
+  CreateFileOnStart: 1
+  TestMode: 0
+--- !u!114 &1774458837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d67b9e7f39f792c43a972771cf6f588c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SendInfos: 0
+  SendWarnings: 1
+  SendErrors: 0
+  StorageChannel: {fileID: 1774458838}
+--- !u!114 &1774458838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774458828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54cf1130b9663ad46a50d26142829479, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FileName: log_warn
+  FileFormat: txt
+  CreateFileOnStart: 1
+  TestMode: 0
 --- !u!1001 &1831337365
 PrefabInstance:
   m_ObjectHideFlags: 0

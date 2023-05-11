@@ -308,7 +308,7 @@ namespace Packages.Geolocation.Components
                 calibrationResult.wP1 = GeolocationPoint.PolarToCartesian(calibrationResult.g1deg);
                 calibrationResult.uP1 = lastMeasurement.UnityRealPoint;
 
-                Debug.Log($"Calibration process STEP 1 started at {DateTime.Now}\n{calibrationResult}");
+                // Debug.Log($"Calibration process STEP 1 started at {DateTime.Now}\n{calibrationResult}");
             }
             else if(calibrationRunning && calibrationResult != null)
             {
@@ -316,7 +316,7 @@ namespace Packages.Geolocation.Components
                 calibrationResult.wP2 = GeolocationPoint.PolarToCartesian(calibrationResult.g2deg);
                 calibrationResult.uP2 = lastMeasurement.UnityRealPoint;
 
-                Debug.Log($"STEP 2 : {calibrationResult}");
+                // Debug.Log($"STEP 2 : {calibrationResult}");
                 calibrationResult.CalibrationStep();
                 
                 Debug.Log($"Calibration process STEP 2 started at {DateTime.Now}\n{calibrationResult}");

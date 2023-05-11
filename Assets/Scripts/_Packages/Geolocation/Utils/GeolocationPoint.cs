@@ -39,6 +39,11 @@ namespace Packages.Geolocation.Utils
         // timestamp
         public DateTime timestamp = DateTime.Now;
 
+        public GeolocationPoint()
+        {
+            timestamp = DateTime.Now;
+        }
+
         public static GeolocationPoint FromAbsoluteGeolocation(DVector3 g, DVector3 uP, Nullable<DateTime> dt = null)
         {
             GeolocationPoint res = new GeolocationPoint();
