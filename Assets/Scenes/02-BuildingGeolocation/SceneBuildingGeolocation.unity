@@ -576,7 +576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01ae036a294d93849b306f8299787b68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HighAccuracy: 0
+  HighAccuracy: 1
   UseContinuousGeolocation: 1
   MinimumTimeToNextMeasurement: 5
   UseRecomputeCalibration: 0
