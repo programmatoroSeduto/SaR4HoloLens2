@@ -1,4 +1,4 @@
-#define WINDOWS_UWP
+//define WINDOWS_UWP
 
 using System;
 using System.Threading.Tasks;

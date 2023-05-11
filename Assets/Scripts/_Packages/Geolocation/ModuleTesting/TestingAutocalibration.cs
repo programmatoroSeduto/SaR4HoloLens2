@@ -17,6 +17,9 @@ namespace Packages.Geolocation.ModuleTesting
         [Tooltip("The module to test")]
         public GeolocationAutocalibrating ModuleReference = null;
 
+        [Tooltip("Test Period")]
+        public float TestPeriod = 2.0f;
+
         [Tooltip("Name of the output file")]
         public string CsvFileName = "";
 
@@ -72,7 +75,7 @@ namespace Packages.Geolocation.ModuleTesting
 
             while(true)
             {
-                yield return new WaitForSecondsRealtime(1.0f);
+                yield return new WaitForSecondsRealtime(TestPeriod);
                 if (absoluteMeasurement == null) continue;
 
                 Debug.Log($"[test] check at {DateTime.Now}");
@@ -80,16 +83,16 @@ namespace Packages.Geolocation.ModuleTesting
                 {
                     Debug.Log("[test] New absolute measurement!");
 
-                    absoluteMeasurement.WorldPoint = GeolocationPoint.PolarToCartesian(absoluteMeasurement.GeoRealCoordinates);
+                    absoluteMeasurement.WorldRealPoint = GeolocationPoint.PolarToCartesian(absoluteMeasurement.GeoRealCoordinates);
 
                     List<string> csv = new List<string>();
                     csv.Add(" "); // not relative
                     csv.Add($"{absoluteMeasurement.GeoRealCoordinates.x}"); // lat
                     csv.Add($"{absoluteMeasurement.GeoRealCoordinates.y}"); // lon
                     csv.Add($"{absoluteMeasurement.GeoRealCoordinates.z}"); // alt
-                    csv.Add($"{absoluteMeasurement.WorldPoint.x}"); // wx
-                    csv.Add($"{absoluteMeasurement.WorldPoint.y}"); // wy
-                    csv.Add($"{absoluteMeasurement.WorldPoint.z}"); // wx
+                    csv.Add($"{absoluteMeasurement.WorldRealPoint.x}"); // wx
+                    csv.Add($"{absoluteMeasurement.WorldRealPoint.y}"); // wy
+                    csv.Add($"{absoluteMeasurement.WorldRealPoint.z}"); // wx
                     csv.Add($"{absoluteMeasurement.UnityRealPoint.x}"); // ux
                     csv.Add($"{absoluteMeasurement.UnityRealPoint.y}"); // uy
                     csv.Add($"{absoluteMeasurement.UnityRealPoint.z}"); // ux
@@ -108,7 +111,7 @@ namespace Packages.Geolocation.ModuleTesting
                     rgp.GeoCoordinates = cal.UnityToPolar(rgp.UnityRealPoint);
 
                     List<string> csv = new List<string>();
-                    csv.Add("X"); // not relative
+                    csv.Add("X"); //  is relative
                     csv.Add($"{rgp.GeoCoordinates.x}"); // lat
                     csv.Add($"{rgp.GeoCoordinates.y}"); // lon
                     csv.Add($"{rgp.GeoCoordinates.z}"); // alt
@@ -122,9 +125,6 @@ namespace Packages.Geolocation.ModuleTesting
                     yield return BSCOR_UpdateLogger(loggerComponent, csv);
                 }
             }
-
-
-
         }
 
         private CSVFileWriter CreateLogger(string fileName, List<string> fields)
