@@ -17,14 +17,8 @@ using Windows.Storage.Streams;
 
 namespace Packages.StorageUtilities.Components
 {
-    public class CSVFileWriter : CSVLineReaderType
+    public class CSVFileWriter : StorageWriterBase
     {
-        [Tooltip("Name of the CSV file to write on")]
-        public string FileName = "newfile";
-
-        [Tooltip("Create file on start")]
-        public bool CreateFileOnStart = false;
-
         [Tooltip("A list of fiels making the header of the CSV to read")]
         public List<string> CSVFields = new List<string>();
 
@@ -42,166 +36,51 @@ namespace Packages.StorageUtilities.Components
 
 
 
-        private bool authorized = false;
-        private bool fileCreated = false;
-        private bool fileWriting = false;
-        private string fname = "";
-        private Coroutine COR_fileCreation = null;
-        private Coroutine COR_fileOutput = null;
-        private Coroutine COR_testModule = null;
-
         private int csvLineCounter = 0;
         private DateTime csvFirstRecordDate;
 
-#if WINDOWS_UWP
-        private StorageFolder sf;
-        private StorageFile fil;
-#endif
-
-
-        private void Start()
+        protected override void Start()
         {
-            if (CreateFileOnStart) EVENT_CreateFile();
+            format = "csv";
+            qlines.Enqueue(GetHeader(CSVFields, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn));
+
+            if (CSVFields.Count == 0)
+            {
+                Debug.LogWarning("[CSVFileWriter] ERROR: no field provided as header of the CSV file! Closing...");
+                return;
+            }
+
+            if (!EVENT_CheckAuthorization())
+            {
+                Debug.LogWarning("[CSVFileWriter] ERROR: unauthorized!");
+                return;
+            }
+
+            if (CreateFileOnStart)
+                COR_StorageSetup = StartCoroutine(ORCOR_StorageSetup());
         }
 
-        public override bool EVENT_ReadCSVRow(List<string> ls)
+        public bool EVENT_WriteCsv(List<string> ls, bool print= false)
         {
             if(ls.Count != CSVFields.Count)
             {
-                Debug.LogWarning($"ERROR: line must have the same number of arguments of the header! Header len: {CSVFields.Count} , line len: {ls.Count}");
+                Debug.LogWarning($"[CSVFileWriter] ERROR: line must have the same number of arguments of the header! Header len: {CSVFields.Count} , line len: {ls.Count}");
                 return false;
             }
-
-            if (!(fileCreated && !fileWriting))
-            {
-                Debug.LogWarning("ERROR: CSV writer is not ready to write the line");
-                return false;
-            }
-
             string csvln = ToCSV(ls, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn);
-            COR_fileOutput = StartCoroutine(BSCOR_WriteCSV(csvln));
-            return true;
-        }
+            if (print) Debug.Log(csvln);
 
-        public bool EVENT_IsReadyForOutput()
-        {
-            return fileCreated && !fileWriting;
-        }
-
-        public bool EVENT_IsEnabled()
-        {
-            return authorized && fileCreated;
-        }
-
-        public void EVENT_CreateFile()
-        {
             if (!fileCreated)
             {
-                // check access to folder
-                authorized = UWP_CheckAuthorization();
-                if (!authorized) return;
-                else Debug.Log("CSV File Writer Authorized");
-
-                if (CSVFields.Count == 0)
-                {
-                    Debug.LogWarning("ERROR: no field provided as header of the CSV file! Closing...");
-                    return;
-                }
-                COR_fileCreation = StartCoroutine(ORCOR_StorageSetup());
-            }
-        }
-
-
-
-
-
-
-        private IEnumerator ORCOR_StorageSetup()
-        {
-
-            yield return BSCOR_NewFile();
-            if (!fileCreated) yield break;
-
-            yield return BSCOR_WriteCSV(GetHeader(CSVFields, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn));
-
-            if (TestMode)
-                COR_testModule = StartCoroutine(BSCOR_Test());
-        }
-
-
-
-
-        private IEnumerator BSCOR_Test()
-        {
-            while(true)
-            {
-                yield return new WaitForSecondsRealtime(2.0f);
-                bool res = EVENT_ReadCSVRow(CSVFields);
-                if(!res)
-                {
-                    Debug.LogWarning("ERROR: CSV writing failed!");
-                    Debug.LogWarning($"with IsEnabled: {EVENT_IsEnabled()}");
-                    Debug.LogWarning($"with IsReadyForOutput: {EVENT_IsReadyForOutput()}");
-                    break;
-                }
-                while (!EVENT_IsReadyForOutput())
-                    yield return new WaitForEndOfFrame();
-            }
-        }
-
-
-
-        private IEnumerator BSCOR_NewFile()
-        {
-            yield return null;
-#if WINDOWS_UWP
-            DateTime ts = DateTime.Now;
-            fname = $"{FileName.Replace(" ", "-")}_{ts.Year:0000}{ts.Month:00}{ts.Day:00}_{ts.Hour:00}{ts.Minute:00}{ts.Second:00}.csv";
-            
-            Task<StorageFile> newFileTask = sf.CreateFileAsync(fname, CreationCollisionOption.ReplaceExisting).AsTask();
-            while (!newFileTask.IsCompleted)
-                yield return new WaitForEndOfFrame();
-            fil = newFileTask.Result;
-
-            Debug.Log($"new CSV file : '{fname}'");
-            
-            fileCreated = true;
-#endif
-        }
-
-        private IEnumerator BSCOR_WriteCSV( string line )
-        {
-            yield return null;
-#if WINDOWS_UWP
-            fileWriting = true;
-
-            Debug.Log($"WRITE: {line}");
-            Task job = FileIO.AppendTextAsync(fil, line).AsTask();
-            while (!job.IsCompleted)
-                yield return new WaitForEndOfFrame();
-
-            fileWriting = false;
-#endif
-        }
-
-        private bool UWP_CheckAuthorization()
-        {
-#if WINDOWS_UWP
-            try
-            {
-                sf = ApplicationData.Current.LocalFolder;
-            }
-            catch (System.UnauthorizedAccessException)
-            {
-                Debug.LogWarning($"ERROR: Unauthorized to access folder '{sf.ToString()}'");
+                Debug.LogWarning("[CSVFileWriter] ERROR: CSV writer is not ready to write the line");
                 return false;
             }
 
-            return true;
-#else
-            return false;
-#endif
+            return EVENT_Write(csvln, false);
         }
+
+
+
 
         private string ToCSV(List<string> listline, bool withCount = false, bool withTimestamp = false, bool withDuration = false)
         {

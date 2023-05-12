@@ -180,6 +180,7 @@ namespace Packages.Geolocation.ModuleTesting
 
             logger.FileName = fileName;
             logger.CSVFields = fields;
+            logger.UseTimestamp = true;
             logger.ApplyTimestampColumn = true;
             logger.ApplyDurationColumn = true;
             logger.ApplyCounter = true;
@@ -195,11 +196,7 @@ namespace Packages.Geolocation.ModuleTesting
             yield return null;
 
             if (logger.EVENT_IsEnabled())
-            {
-                while (!logger.EVENT_IsReadyForOutput())
-                    yield return new WaitForEndOfFrame();
-                logger.EVENT_ReadCSVRow(fields);
-            }
+                logger.EVENT_WriteCsv(fields);
         }
 
         private void UpdateMarker(DVector3 g, DVector3 wP, DVector3 uP, DateTime tstamp, int counter, bool IsRelative)

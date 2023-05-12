@@ -596,9 +596,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FileName: log_info
-  FileFormat: txt
+  UseTimestamp: 1
   CreateFileOnStart: 1
-  TestMode: 0
 --- !u!114 &1774458833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -661,9 +660,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FileName: log_err
-  FileFormat: txt
+  UseTimestamp: 1
   CreateFileOnStart: 1
-  TestMode: 0
 --- !u!114 &1774458837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -693,9 +691,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FileName: log_warn
-  FileFormat: txt
+  UseTimestamp: 1
   CreateFileOnStart: 1
-  TestMode: 0
 --- !u!1001 &1831337365
 PrefabInstance:
   m_ObjectHideFlags: 0

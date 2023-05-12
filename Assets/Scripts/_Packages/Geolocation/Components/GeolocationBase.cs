@@ -212,39 +212,30 @@ namespace Packages.Geolocation.Components
         {
             yield return null;
 #if WINDOWS_UWP
-        Debug.Log("Updating logs...");
-
-        while (!loggerRaw.EVENT_IsReadyForOutput())
-            yield return new WaitForEndOfFrame();
-        loggerRaw.EVENT_ReadCSVRow(new List<string>
-        {
-            gp.Coordinate.Accuracy.ToString(),
-            ( gp.Coordinate.Heading != null ? gp.Coordinate.Heading.ToString() : "" ),
-            gp.Coordinate.PositionSource.ToString(),
-            ( gp.Coordinate.PositionSourceTimestamp != null ? gp.Coordinate.PositionSourceTimestamp.ToString() : ""),
-            ( gp.Coordinate.Speed != null ? gp.Coordinate.Speed.ToString() : ""),
-            gp.Coordinate.Point.AltitudeReferenceSystem.ToString(),
-            gp.Coordinate.Point.Position.Latitude.ToString(),
-            gp.Coordinate.Point.Position.Longitude.ToString(),
-            gp.Coordinate.Point.Position.Altitude.ToString()
-        });
-        while (!loggerRaw.EVENT_IsReadyForOutput())
-            yield return new WaitForEndOfFrame();
-
-
-        while(!loggerData.EVENT_IsReadyForOutput())
-            yield return new WaitForEndOfFrame();
-        loggerData.EVENT_ReadCSVRow(new List<string>
-        {
-            gp.Coordinate.Point.Position.Latitude.ToString(),
-            gp.Coordinate.Point.Position.Longitude.ToString(),
-            gp.Coordinate.Point.Position.Altitude.ToString(),
-            currentUnityPos.x.ToString(),
-            currentUnityPos.y.ToString(),
-            currentUnityPos.z.ToString()
-        });
-        while (!loggerData.EVENT_IsReadyForOutput())
-            yield return new WaitForEndOfFrame();
+            Debug.Log("Updating logs...");
+        
+            loggerRaw.EVENT_WriteCsv(new List<string>
+            {
+                gp.Coordinate.Accuracy.ToString(),
+                ( gp.Coordinate.Heading != null ? gp.Coordinate.Heading.ToString() : "" ),
+                gp.Coordinate.PositionSource.ToString(),
+                ( gp.Coordinate.PositionSourceTimestamp != null ? gp.Coordinate.PositionSourceTimestamp.ToString() : ""),
+                ( gp.Coordinate.Speed != null ? gp.Coordinate.Speed.ToString() : ""),
+                gp.Coordinate.Point.AltitudeReferenceSystem.ToString(),
+                gp.Coordinate.Point.Position.Latitude.ToString(),
+                gp.Coordinate.Point.Position.Longitude.ToString(),
+                gp.Coordinate.Point.Position.Altitude.ToString()
+            });
+        
+            loggerData.EVENT_WriteCsv(new List<string>
+            {
+                gp.Coordinate.Point.Position.Latitude.ToString(),
+                gp.Coordinate.Point.Position.Longitude.ToString(),
+                gp.Coordinate.Point.Position.Altitude.ToString(),
+                currentUnityPos.x.ToString(),
+                currentUnityPos.y.ToString(),
+                currentUnityPos.z.ToString()
+            });
 #endif
         }
 

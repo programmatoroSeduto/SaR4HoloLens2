@@ -20,7 +20,7 @@ namespace Packages.StorageUtilities.Components
         public bool SendErrors = true;
 
         [Tooltip("The component to call when a new message arrives")]
-        public TextReaderType StorageChannel = null;
+        public TextFileWriter StorageChannel = null;
 
 
 
@@ -59,7 +59,7 @@ namespace Packages.StorageUtilities.Components
                 || (type == LogType.Log && SendInfos)
              )
             {
-                StorageChannel.EVENT_ReadText(message + "\n");
+                StorageChannel.EVENT_Write(message + "\n");
             }
         }
     }
