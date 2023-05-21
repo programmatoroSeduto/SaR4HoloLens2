@@ -31,5 +31,20 @@ namespace Packages.ExplorationServices.Utils
         {
             return Vector3.Distance(uP, currentPos);
         }
+
+        public List<PositionItem> GetNearPositions()
+        {
+            List<PositionItem> res = new List<PositionItem>();
+
+            foreach (PositionLink edge in Links)
+            {
+                if (edge.Item1 == this)
+                    res.Add(edge.Item2);
+                else
+                    res.Add(edge.Item1);
+            }
+
+            return res;
+        }
     }
 }

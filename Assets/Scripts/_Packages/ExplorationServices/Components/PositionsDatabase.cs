@@ -21,6 +21,8 @@ namespace Packages.ExplorationServices.Components
         [Min(2)]
         public int NumItemsPerIndex = 100;
 
+        public bool DebugMode = false;
+
         private List<PositionItem> db = new List<PositionItem>(); // ordinato (dinamicamente e parzialmente sulla base della distanza dall'attuale posizione)
         private List<PositionLink> links = new List<PositionLink>(); // non ordinato (ordinabile in base alla distanza)
         private List<PositionItem> records = new List<PositionItem>(); // ordinato cronologicamente (dal più vecchio al più recente)
@@ -57,6 +59,13 @@ namespace Packages.ExplorationServices.Components
         {
             AddPositionItem(PositionItemType.Checkpoint);
         }
+
+        public PositionItem GetCurrentZone()
+        {
+            return currentZone;
+        }
+
+
 
 
 
@@ -151,7 +160,7 @@ namespace Packages.ExplorationServices.Components
                 ++posIdx;
 
                 currentZone = db[0];
-                PrintClassStatus();
+                if(DebugMode) PrintClassStatus();
             }
         }
 
@@ -177,7 +186,7 @@ namespace Packages.ExplorationServices.Components
         {
             string s = "";
             if (currentZone != null)
-                s += $"currentZone: {currentZone.uP}";
+                s += $"currentZone: {currentZone.uP} (zone number {currentZone.ItemIndex})";
             for(int i=0; i<db.Count; ++i)
             {
                 s += $"\t[{i}] : {db[i].uP}";
