@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Packages.ExplorationServices.Utils;
+using Packages.CustomRenderers.Components;
 
 namespace Packages.ExplorationServices.Components
 {
@@ -13,13 +14,12 @@ namespace Packages.ExplorationServices.Components
         public VisualAllocationHandle VisualAllocator = null;
         public float UpdatePeriod = 1.0f;
         public bool LaunchOnStart = false;
-        // public int MappingDepth = 1;
+        public int MappingDepth = 1;
         public bool DebugMode = false;
 
         private bool active = false;
         private bool visualizing = false;
         private PositionItem currentZone = null;
-        private List<PositionItem> NearPositions = new List<PositionItem>();
         private Coroutine COR_UpdateVisualization;
 
         private void Start()
@@ -45,10 +45,10 @@ namespace Packages.ExplorationServices.Components
             {
                 if (IsNewZoneFromDb())
                 {
-                    ExploreZone();
                     UpdateVisualization();
 
-                    Debug.Log($"Using zone no.{currentZone.ItemIndex}");
+                    if(DebugMode)
+                        Debug.Log($"Using zone no.{currentZone.ItemIndex}");
                 }
 
                 yield return new WaitForSecondsRealtime(UpdatePeriod);
@@ -94,22 +94,43 @@ namespace Packages.ExplorationServices.Components
             return true;
         }
 
-        private void ExploreZone()
-        {
-            if (!active || !visualizing) return;
-
-            NearPositions.Clear();
-            NearPositions.Add(currentZone);
-            NearPositions.AddRange(currentZone.GetNearPositions());
-        }
-
         private void UpdateVisualization()
         {
             if (!active || !visualizing) return;
 
             VisualAllocator.DeallocateAll();
-            foreach (PositionItem pos in NearPositions)
-                VisualAllocator.Allocate(pos.ItemIndex, $"marker no{pos.ItemIndex}", pos.uP, Quaternion.identity);
+            BuildLocalMap(currentZone, MappingDepth);
+        }
+
+        private GameObject BuildLocalMap(PositionItem point, int depthCounter, bool firstCall = true, PositionItem startFrom = null)
+        {
+            GameObject go = VisualAllocator.Allocate(point.ItemIndex, $"marker no{point.ItemIndex}", point.uP, Quaternion.identity);
+            
+            if (depthCounter > 0)
+            {
+                FlexibleStarOfLinesRenderer star = go.GetComponent<FlexibleStarOfLinesRenderer>();
+                if (star == null)
+                {
+                    star = go.AddComponent<FlexibleStarOfLinesRenderer>();
+                    star.Center = go;
+                }
+                else
+                    star.Vertices.Clear();
+
+                foreach (PositionItem p in point.GetNearPositions())
+                {
+                    if (p == startFrom) continue;
+                    GameObject gop = BuildLocalMap(p, depthCounter - 1, false, point);
+                    star.Vertices.Add(gop);
+                }
+
+                if (firstCall) 
+                    star.LineColor = Color.red;
+                else 
+                    star.LineColor = Color.green;
+            }
+
+            return go;
         }
     }
 }

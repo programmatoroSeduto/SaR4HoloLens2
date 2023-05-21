@@ -8,7 +8,7 @@ namespace Packages.VisualItems.LittleMarker.Components
 {
     public class LittleMarkerBaseHandle : MonoBehaviour
     {
-        public string InitObjectName = "LittleMarker";
+        public string InitObjectName = "";
 
         // Tooltip settings
         private string MarkerTextObjectPath = "tooltip";
@@ -17,8 +17,8 @@ namespace Packages.VisualItems.LittleMarker.Components
 
         void Start()
         {
-            if (InitObjectName == "") InitObjectName = gameObject.name;
-            else gameObject.name = InitObjectName;
+            // if (InitObjectName == "") InitObjectName = gameObject.name;
+            // else gameObject.name = InitObjectName;
         }
 
         void Update()

@@ -29,7 +29,7 @@ namespace Packages.ExplorationServices.Components
             active = true;
         }
 
-        public void Allocate(int index, string label, Vector3 position, Quaternion orientation)
+        public GameObject Allocate(int index, string label, Vector3 position, Quaternion orientation)
         {
             GameObject go = AccessObject(index);
             if(go == null)
@@ -41,6 +41,8 @@ namespace Packages.ExplorationServices.Components
 
             go.SetActive(true);
             if(label != "") go.name = label;
+
+            return go;
         }
 
         public void DeallocateAll(bool destroy = false)
@@ -49,17 +51,21 @@ namespace Packages.ExplorationServices.Components
                 Deallocate(kp.Key, destroy);
         }
 
-        public void Deallocate(int index, bool destroy = false)
+        public GameObject Deallocate(int index, bool destroy = false)
         {
             GameObject go = AccessObject(index);
-            if (go == null) return;
+            if (go == null) return null;
 
             go.SetActive(false);
             if(destroy)
             {
                 Destroy(go);
                 Buffer.Remove(index);
+
+                return null;
             }
+
+            return go;
         }
 
         private GameObject AccessObject(int index)
