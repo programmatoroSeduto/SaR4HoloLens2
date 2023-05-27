@@ -79,7 +79,8 @@ namespace Packages.DoublePrecisionGeometry.Utils
                 return new DVector3(
                     xx: v.z * c.y - v.y * c.z,
                     yy: v.x * c.z - v.z * c.x,
-                    zz: v.x * c.y - v.y * c.x
+                    // zz: v.x * c.y - v.y * c.x
+                    zz: v.y * c.x - v.x * c.y
                     );
             else
                 return new DVector3(

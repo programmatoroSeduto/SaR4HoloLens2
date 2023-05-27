@@ -29,7 +29,7 @@ namespace Packages.DoublePrecisionGeometry.Utils
             // vedo up e look dal mio frame
             // e formulo una rotazione che proietta le coordinate del loro frame nel mio
             // e1 : il mio frame
-            // e2 : il frame definito da look e up
+            // e2 : il frame definito da look e up (rispetto a e1)
 
             DVector3 e2y = up.normalized();
             DVector3 e2z = look.normalized();
@@ -39,20 +39,17 @@ namespace Packages.DoublePrecisionGeometry.Utils
             DVector3 e1y = DVector3.oney;
             DVector3 e1z = DVector3.onez;
 
-            // e2x = (e2x*e1x)e1x + (e2x*e1y)e1y + (e2x*e1z)e1z
-            // e2y = (e2y*e1x)e1x + (e2y*e1y)e1y + (e2y*e1z)e1z
-            // e2z = (e2z*e1x)e1x + (e2z*e1y)e1y + (e2z*e1z)e1z
-            // (e2x*e1x) -> e1x.dot(e2x)
+            R[0, 0] = e2x.dot(e1x);
+            R[0, 1] = e2y.dot(e1x);
+            R[0, 2] = e2z.dot(e1x);
 
-            R[0, 0] = e1x.dot(e2x);
-            R[0, 1] = e1y.dot(e2x);
-            R[0, 2] = e1z.dot(e2x);
-            R[1, 0] = e1x.dot(e2y);
-            R[1, 1] = e1y.dot(e2y);
-            R[1, 2] = e1z.dot(e2y);
-            R[2, 0] = e1x.dot(e2z);
-            R[2, 1] = e1y.dot(e2z);
-            R[2, 2] = e1z.dot(e2z);
+            R[1, 0] = e2x.dot(e1y);
+            R[1, 1] = e2y.dot(e1y);
+            R[1, 2] = e2z.dot(e1y);
+
+            R[2, 0] = e2x.dot(e1z);
+            R[2, 1] = e2y.dot(e1z);
+            R[2, 2] = e2z.dot(e1z);
         }
 
         public RotationMatrix GetInverseRotation()
