@@ -56,6 +56,9 @@ public class MinimapTestingScript : MonoBehaviour
     void Start()
     {
         GoRoot = (ComponentRoot == null ? gameObject : ComponentRoot);
+
+        if (FunctionInstanciateRandom)
+            WrapperFunctionInstanciateRandom();
     }
 
     // Update is called once per frame
@@ -63,10 +66,7 @@ public class MinimapTestingScript : MonoBehaviour
     {
         if (done) return;
 
-        if (FunctionInstanciateRandom)
-            WrapperFunctionInstanciateRandom();
-
-        else if (FunctionCreateFrameMinimap)
+        if (FunctionCreateFrameMinimap)
             WrapperFunctionCreateFrameMinimap();
     }
 

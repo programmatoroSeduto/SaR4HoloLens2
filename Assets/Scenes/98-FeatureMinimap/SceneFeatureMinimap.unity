@@ -165,6 +165,7 @@ GameObject:
   - component: {fileID: 290561814}
   - component: {fileID: 290561813}
   - component: {fileID: 290561815}
+  - component: {fileID: 290561816}
   m_Layer: 0
   m_Name: Minimap
   m_TagString: Untagged
@@ -185,8 +186,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FunctionInstanciateRandom: 1
-  FunctionCreateMinimap: 0
+  FunctionCreateFrameMinimap: 0
   ComponentRoot: {fileID: 0}
+  MapStructure: {fileID: 0}
   NummOfObjects: 500
   MaxDistVector: {x: 1, y: 1, z: 1}
   Scale: 0.01
@@ -219,13 +221,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FunctionInstanciateRandom: 0
-  FunctionCreateMinimap: 1
+  FunctionCreateFrameMinimap: 1
   ComponentRoot: {fileID: 0}
+  MapStructure: {fileID: 0}
   NummOfObjects: 5
   MaxDistVector: {x: 0, y: 0, z: 0}
   Scale: 0.01
   SpawnedObjectName: cube
   BoxCenter: {x: 0.5, y: -0.5, z: 0.5}
+--- !u!114 &290561816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 290561812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8ac7c019d078344087038f6f3a1103d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  VisualizeOnInsert: 0
 --- !u!1 &380915016
 GameObject:
   m_ObjectHideFlags: 0
@@ -1399,6 +1415,7 @@ GameObject:
   - component: {fileID: 1874913239}
   - component: {fileID: 1874913238}
   - component: {fileID: 1874913242}
+  - component: {fileID: 1874913243}
   m_Layer: 0
   m_Name: MinimapSliderTool
   m_TagString: Untagged
@@ -1588,6 +1605,19 @@ MonoBehaviour:
   executionOrder: 0
   constraintOnMovement: 4
   useLocalSpaceForConstraint: 1
+--- !u!114 &1874913243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874913233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88ffdeab2fe2e4443b8a9cb513578fe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MinimapDriver: {fileID: 290561816}
 --- !u!1 &1946533418
 GameObject:
   m_ObjectHideFlags: 0
