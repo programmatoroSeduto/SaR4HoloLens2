@@ -7,7 +7,7 @@ public class MinimapStructure : MonoBehaviour
 {
     public bool VisualizeOnInsert = true;
 
-    private ArrayList TrackingList = new ArrayList();     // MinimapStructureEntry
+    private ArrayList TrackingList = new ArrayList();      // MinimapStructureEntry
     private ArrayList VisualizationList = new ArrayList(); // GameObject
 
     private float MinOrderCriterion = float.MaxValue;
@@ -149,24 +149,81 @@ public class MinimapStructure : MonoBehaviour
     }
 
     // hide or show items in a given interval for the order criterion
-    public void ShowItemsInRange( bool opt = true, float MinHG = float.NaN, float MaxHG = float.NaN, bool hideAllBeforeStarting = false )
+    public void ShowItemsInRange(bool opt = true, float MinHG = float.NaN, float MaxHG = float.NaN, bool hideAllBeforeStarting = false )
     {
         if (MinHG > MaxHG)
         {
             ShowItemsInRange(opt, MaxHG, MinHG, hideAllBeforeStarting);
             return;
         }
+        else if ((MinHG < MinOrderCriterion || MaxHG < MinOrderCriterion) || (MinHG > MaxOrderCriterion || MaxHG > MaxOrderCriterion))
+            return;
 
         MinHG = (float.IsNaN(MinHG) ? MinOrderCriterion : MinHG);
         MaxHG = (float.IsNaN(MaxHG) ? MinOrderCriterion : MaxHG);
         float delta = MaxOrderCriterion - MinOrderCriterion;
+        float reqDelta = MaxHG - MinHG;
 
-        int startIdx = Mathf.FloorToInt(((MinHG - MinOrderCriterion)/delta)*TrackingList.Count);
+        int startIdx = Mathf.FloorToInt(((MinHG - MinOrderCriterion)/ delta) *TrackingList.Count);
         int endIdx = Mathf.Max(new int[] { 
             Mathf.CeilToInt((1 - (MaxHG - MinOrderCriterion) / delta) * TrackingList.Count), 
             TrackingList.Count - 1 
         });
 
+        float startHG = ((MinimapStructureEntry)TrackingList[startIdx]).OrderCriterion;
+        float endHG = ((MinimapStructureEntry)TrackingList[endIdx]).OrderCriterion;
+        float tempDelta = endHG - startHG;
+
+        int startDir = (startHG > MinHG ? -1 : +1);
+        while(startHG != MinHG) // beginning index improvement
+        {
+            int newStartIdx = startIdx + startDir;
+            if (newStartIdx < 0 || newStartIdx >= endIdx) break; // can't improve further
+
+            float newStartHG = ((MinimapStructureEntry)TrackingList[newStartIdx]).OrderCriterion;
+            float newStartError = Mathf.Abs(reqDelta - (endHG - newStartHG));
+
+            if (newStartError < Mathf.Abs(reqDelta - tempDelta))
+            {
+                if (((newStartHG < MinHG) && (startDir > 0)) || ((newStartHG > MinHG) && (startDir < 0)))
+                {
+                    startIdx = newStartIdx;
+                    startHG = ((MinimapStructureEntry)TrackingList[startIdx]).OrderCriterion;
+                    tempDelta = endHG - startHG;
+                }
+                else
+                    break;
+            }
+            else break;
+        }
+
+        int endDir = (endHG > MaxHG ? -1 : +1);
+        while (endHG != MaxHG) // final index improvement
+        {
+            int newEndIdx = endIdx + endDir;
+            if (newEndIdx == TrackingList.Count || newEndIdx <= startIdx) break; // can't improve further
+
+            float newEndtHG = ((MinimapStructureEntry)TrackingList[newEndIdx]).OrderCriterion;
+            float newEndError = Mathf.Abs(reqDelta - (newEndtHG - startHG));
+
+            if (newEndError < Mathf.Abs(reqDelta - tempDelta))
+            {
+                if (((newEndtHG > MaxHG) && (startDir < 0)) || ((newEndtHG < MaxHG) && (startDir > 0)))
+                {
+                    endIdx = newEndIdx;
+                    endHG = ((MinimapStructureEntry)TrackingList[endIdx]).OrderCriterion;
+                    tempDelta = endHG - startHG;
+                }
+                else
+                    break;
+            }
+            else break;
+        }
+
+        bool quick = hideAllBeforeStarting;
         if (hideAllBeforeStarting) HideItemsInVisualizationList();
+
+        for (int i = startIdx; i <= endIdx; ++i)
+            ShowItem(((MinimapStructureEntry)TrackingList[endIdx]).Object, quick);
     }
 }
