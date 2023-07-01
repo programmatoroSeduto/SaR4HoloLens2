@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Utilities;
 using Microsoft.MixedReality.Toolkit.UI.BoundsControl;
 
 public class MinimapTestingScript : MonoBehaviour
@@ -14,6 +15,8 @@ public class MinimapTestingScript : MonoBehaviour
     public bool FunctionInstanciateRandom = false;
     [Tooltip("Create the minimap")]
     public bool FunctionCreateFrameMinimap = false;
+    [Tooltip("Instanciate the plane visual tool for the minimap")]
+    public bool FunctionCreatePlaneTool = false;
 
     [Header("General settings")]
     [Tooltip("The root of the minimap (by defaul, it is the owner of this component)")]
@@ -35,6 +38,12 @@ public class MinimapTestingScript : MonoBehaviour
     [Tooltip("Box Collider center")]
     public Vector3 BoxCenter = new Vector3(0.5f, -0.5f, 0.5f);
 
+    [Header("Function: create plane tool")]
+    [Tooltip("Root G.O. for the minimap asset")]
+    public GameObject AssetRoot = null;
+    [Tooltip("Material for the slider tool")]
+    public Material ToolMaterial = null;
+
 
 
     // === PRIVATE ===
@@ -47,6 +56,14 @@ public class MinimapTestingScript : MonoBehaviour
     private int NumOfObjectsDefault = 5;
     // default for Scale
     private float ScaleDefault = 0.05f;
+    // root of the minimap asset
+    private GameObject GoAssetRoot = null;
+    // minimap gameobject
+    private GameObject goMinimap = null;
+    // minimap structure component in the minimap
+    private MinimapStructure coMinimapStruct = null;
+    // tools root for the minimap
+    private GameObject goTools = null;
 
 
 
@@ -56,6 +73,7 @@ public class MinimapTestingScript : MonoBehaviour
     void Start()
     {
         GoRoot = (ComponentRoot == null ? gameObject : ComponentRoot);
+        GoAssetRoot = (FunctionCreatePlaneTool ? (AssetRoot == null ? GoRoot.transform.parent.gameObject : AssetRoot) : null);
 
         if (FunctionInstanciateRandom)
             WrapperFunctionInstanciateRandom();
@@ -68,6 +86,8 @@ public class MinimapTestingScript : MonoBehaviour
 
         if (FunctionCreateFrameMinimap)
             WrapperFunctionCreateFrameMinimap();
+        else if (FunctionCreatePlaneTool)
+            WrapperFunctionCreatePlaneTool();
     }
 
 
@@ -137,6 +157,78 @@ public class MinimapTestingScript : MonoBehaviour
         BoundsControl frame = GoRoot.AddComponent<BoundsControl>();
         frame.BoundsOverride = bc;
         ObjectManipulator manip = GoRoot.AddComponent<ObjectManipulator>();
+    }
+
+
+
+    // === FEATURE PLANE TOOL ===
+
+    private void WrapperFunctionCreatePlaneTool()
+    {
+        if (CheckMinimapAsset())
+            CreatePlaneTool();
+        done = true;
+    }
+
+    private bool CheckMinimapAsset()
+    {
+        // find minimap
+        Transform trMinimap = GoAssetRoot.transform.Find("Minimap");
+        if (trMinimap == null)
+        {
+            Debug.LogWarning("ERROR: cannot create tool (Minimap not found)");
+            return false;
+        }
+        goMinimap = trMinimap.gameObject;
+
+        // check minimap type
+        coMinimapStruct = goMinimap.GetComponent<MinimapStructure>();
+        if (coMinimapStruct == null)
+        {
+            Debug.LogWarning("ERROR: cannot create tool (Minimap is not a minimap)");
+            return false;
+        }
+
+        // check or create _tools gambe object
+        Transform trTools = GoAssetRoot.transform.Find("_tools");
+        if (trTools == null)
+        {
+            Debug.LogWarning("ERROR: cannot create tool (object _tools not found)");
+            return false;
+        }
+        goTools = trTools.gameObject;
+
+        // check material reference
+        if(ToolMaterial == null)
+        {
+            Debug.LogWarning("ERROR: tool material for the slider tool has not been set!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void CreatePlaneTool()
+    {
+        GameObject goPlaneTool = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        goPlaneTool.name = "MinimapSliderTool";
+        goPlaneTool.transform.SetParent(goTools.transform);
+        goPlaneTool.transform.localPosition = new Vector3(0.5f, 0.0f, 0.5f);
+        goPlaneTool.transform.localScale = new Vector3(1.2f, 0.1f, 1.2f);
+        goPlaneTool.GetComponent<Renderer>().material = ToolMaterial;
+
+        goPlaneTool.AddComponent<NearInteractionGrabbable>();
+        goPlaneTool.AddComponent<ObjectManipulator>();
+
+        ConstraintManager coConstraints = goPlaneTool.GetComponent<ConstraintManager>();
+
+        MoveAxisConstraint coConstraintX = goPlaneTool.AddComponent<MoveAxisConstraint>();
+        coConstraintX.ConstraintOnMovement = AxisFlags.XAxis;
+        coConstraintX.UseLocalSpaceForConstraint = true;
+
+        MoveAxisConstraint coConstraintZ = goPlaneTool.AddComponent<MoveAxisConstraint>();
+        coConstraintZ.ConstraintOnMovement = AxisFlags.ZAxis;
+        coConstraintZ.UseLocalSpaceForConstraint = true;
     }
 
 }

@@ -166,6 +166,7 @@ GameObject:
   - component: {fileID: 290561813}
   - component: {fileID: 290561815}
   - component: {fileID: 290561816}
+  - component: {fileID: 290561817}
   m_Layer: 0
   m_Name: Minimap
   m_TagString: Untagged
@@ -187,6 +188,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FunctionInstanciateRandom: 1
   FunctionCreateFrameMinimap: 0
+  FunctionCreatePlaneTool: 0
   ComponentRoot: {fileID: 0}
   MapStructure: {fileID: 0}
   NummOfObjects: 500
@@ -194,6 +196,8 @@ MonoBehaviour:
   Scale: 0.01
   SpawnedObjectName: cube
   BoxCenter: {x: 0.5, y: -0.5, z: 0.5}
+  AssetRoot: {fileID: 0}
+  ToolMaterial: {fileID: 0}
 --- !u!4 &290561814
 Transform:
   m_ObjectHideFlags: 0
@@ -222,6 +226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FunctionInstanciateRandom: 0
   FunctionCreateFrameMinimap: 1
+  FunctionCreatePlaneTool: 0
   ComponentRoot: {fileID: 0}
   MapStructure: {fileID: 0}
   NummOfObjects: 5
@@ -229,6 +234,8 @@ MonoBehaviour:
   Scale: 0.01
   SpawnedObjectName: cube
   BoxCenter: {x: 0.5, y: -0.5, z: 0.5}
+  AssetRoot: {fileID: 0}
+  ToolMaterial: {fileID: 0}
 --- !u!114 &290561816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,6 +249,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   VisualizeOnInsert: 0
+--- !u!114 &290561817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 290561812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13c6f97d3383509479ea524071d0dbab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FunctionInstanciateRandom: 0
+  FunctionCreateFrameMinimap: 0
+  FunctionCreatePlaneTool: 1
+  ComponentRoot: {fileID: 0}
+  MapStructure: {fileID: 0}
+  NummOfObjects: 5
+  MaxDistVector: {x: 0, y: 0, z: 0}
+  Scale: 0.01
+  SpawnedObjectName: cube
+  BoxCenter: {x: 0.5, y: -0.5, z: 0.5}
+  AssetRoot: {fileID: 722383243}
+  ToolMaterial: {fileID: 2100000, guid: 8cc68a1e2e6bd184e93a039854e36d91, type: 2}
 --- !u!1 &380915016
 GameObject:
   m_ObjectHideFlags: 0
@@ -1422,7 +1453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1874913234
 Transform:
   m_ObjectHideFlags: 0

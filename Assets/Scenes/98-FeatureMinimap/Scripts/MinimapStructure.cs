@@ -40,11 +40,27 @@ public class MinimapStructure : MonoBehaviour
         
     }
 
+    void OnDisable()
+    {
+        foreach (MinimapStructureEntry item in TrackingList)
+            item.Object.SetActive(true);
+    }
+
+    void OnEnable()
+    {
+        foreach (MinimapStructureEntry item in TrackingList)
+            if(!VisualizationList.Contains(item.Object))
+                item.Object.SetActive(false);
+            else
+                item.Object.SetActive(true);
+    }
+
 
     // ordered insert using a custom criterion
     public int TrackGameObject(GameObject newGo, float orderCriterion = float.NaN, Nullable<bool> visualize = null)
     {
         if (newGo == null) return -1;
+        if (!this.isActiveAndEnabled) return -1;
 
         float hg = (orderCriterion == float.NaN ? newGo.transform.localPosition.y : orderCriterion);
         MinimapStructureEntry toInsert = new MinimapStructureEntry(newGo, orderCriterion);
@@ -96,6 +112,8 @@ public class MinimapStructure : MonoBehaviour
     public void UntrackGameObject(GameObject go, float orderCriterion = float.NaN)
     {
         if (go == null) return;
+        if (!this.isActiveAndEnabled) return;
+
         if (!float.IsNaN(orderCriterion) && (orderCriterion < MinOrderCriterion || orderCriterion > MaxOrderCriterion))
             return;
 
@@ -111,6 +129,7 @@ public class MinimapStructure : MonoBehaviour
     // visualize one particular game object
     public void ShowItem(GameObject go, bool quick = false)
     {
+        if (!this.isActiveAndEnabled) return;
         if (!quick && VisualizationList.Contains(go)) return;
         
         VisualizationList.Add(go);
@@ -120,12 +139,14 @@ public class MinimapStructure : MonoBehaviour
     // visualize one particular game object
     public void HideItem(GameObject go)
     {
+        if (!this.isActiveAndEnabled) return;
         VisualizationList.Remove(go);
         go.SetActive(false);
     }
 
     public void ToggleVisualizationItem(GameObject go, bool opt = true)
     {
+        if (!this.isActiveAndEnabled) return;
         if (opt)
             ShowItem(go);
         else
@@ -135,6 +156,7 @@ public class MinimapStructure : MonoBehaviour
     // hide all or show all
     public void ToggleVisualizationAll(bool opt = true)
     {
+        if (!this.isActiveAndEnabled) return;
         if (opt)
             foreach (MinimapStructureEntry it in TrackingList)
                 ShowItem(it.Object);
@@ -145,12 +167,14 @@ public class MinimapStructure : MonoBehaviour
     // hide elements in visualization list
     public void HideItemsInVisualizationList()
     {
+        if (!this.isActiveAndEnabled) return;
         while (VisualizationList.Count > 0) HideItem(VisualizationList[0]);
     }
 
     // hide or show items in a given interval for the order criterion
     public void ShowItemsInRange(float MinHG, float deltaHG, bool hideAllBeforeStarting = false)
     {
+        if (!this.isActiveAndEnabled) return;
         MinHG = Mathf.Max(new float[] { MinHG, MinOrderCriterion });
 
         int startIdx = Mathf.FloorToInt(
