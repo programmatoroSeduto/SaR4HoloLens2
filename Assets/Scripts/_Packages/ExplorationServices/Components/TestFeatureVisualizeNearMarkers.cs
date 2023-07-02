@@ -8,10 +8,10 @@ using Packages.CustomRenderers.Components;
 
 namespace Packages.ExplorationServices.Components
 {
-    public class FeatureVisualizeNearMarkers : MonoBehaviour
+    public class TestFeatureVisualizeNearMarkers : MonoBehaviour
     {
-        public PositionsDatabase DatabaseReference = null;
-        public VisualAllocationHandle VisualAllocator = null;
+        public TestPositionsDatabase DatabaseReference = null;
+        public TestVisualAllocationHandle VisualAllocator = null;
         public float UpdatePeriod = 1.0f;
         public bool LaunchOnStart = false;
         public int MappingDepth = 1;

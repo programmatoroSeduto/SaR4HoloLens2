@@ -28,20 +28,6 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
             }
         }
 
-
-
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
         void OnDisable()
         {
             foreach (MinimapStructureEntry item in TrackingList)

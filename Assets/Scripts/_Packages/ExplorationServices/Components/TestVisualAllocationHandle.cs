@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Packages.ExplorationServices.Components
 {
-    public class VisualAllocationHandle : MonoBehaviour
+    public class TestVisualAllocationHandle : MonoBehaviour
     {
         public GameObject AllocationRootObject = null;
         public GameObject TemplateObject = null;

@@ -7,7 +7,7 @@ using Packages.ExplorationServices.Utils;
 
 namespace Packages.ExplorationServices.Components
 {
-    public class PositionsDatabase : MonoBehaviour
+    public class TestPositionsDatabase : MonoBehaviour
     {
         [Min(0.1f)]
         public float UpdatePeriod = 1.0f;
