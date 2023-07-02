@@ -2773,6 +2773,7 @@ GameObject:
   - component: {fileID: 1124494745}
   - component: {fileID: 1124494746}
   - component: {fileID: 1124494744}
+  - component: {fileID: 1124494747}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -2792,13 +2793,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0df982d7ede62a0409b4be4562c02c7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BaseDistance: 0.5
-  DistanceTolerance: 0.01
+  BaseDistance: 0.2
+  DistanceTolerance: 0.1
   ReferenceObject: {fileID: 0}
-  UseClusters: 0
-  ClusterSize: 4
-  UseMaxIndices: 0
-  MaxIndices: 2
+  UseClusters: 1
+  ClusterSize: 10
+  UseMaxIndices: 1
+  MaxIndices: 4
   CallOnZoneCreated:
   - m_PersistentCalls:
       m_Calls:
@@ -2831,6 +2832,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  debug_dbCount: 0
+  debug_currentZoneID: 0
+  debug_sortWorkingIdx: 0
+  debug_sortIdx: 
 --- !u!4 &1124494745
 Transform:
   m_ObjectHideFlags: 0
@@ -2852,14 +2857,27 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c034be523c6632e478e184bfc826d7e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   DatabaseReference: {fileID: 1124494744}
   ManageZoneCreated: 1
-  ManageZoneChanged: 0
+  ManageZoneChanged: 1
+--- !u!114 &1124494747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a8298d370bd11643bec596f22bea982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxPos: 3
 --- !u!1 &1130242957
 GameObject:
   m_ObjectHideFlags: 0

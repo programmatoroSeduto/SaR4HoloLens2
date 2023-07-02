@@ -48,16 +48,18 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
         {
             if (!init || !ManageZoneCreated) return;
 
+            int id = DatabaseReference.DataZoneCreated.PositionID;
             Vector3 p = DatabaseReference.DataZoneCreated.AreaCenter;
-            Debug.Log($"ZONE CREATED: (x:{p.x}, y:{p.y}, z:{p.z})");
+            Debug.Log($"ZONE CREATED: ID:{id} (x:{p.x}, y:{p.y}, z:{p.z})");
         }
 
         public void EVENT_OnZoneChanged()
         {
             if (!init || !ManageZoneChanged) return;
 
+            int id = DatabaseReference.CurrentZone.PositionID;
             Vector3 p = DatabaseReference.CurrentZone.AreaCenter;
-            Debug.Log($"ZONE CHANGED: (x:{p.x}, y:{p.y}, z:{p.z})");
+            Debug.Log($"ZONE CHANGED: ID:{id} (x:{p.x}, y:{p.y}, z:{p.z})");
         }
     }
 

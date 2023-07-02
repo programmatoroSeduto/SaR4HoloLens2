@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,11 +38,11 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         public List<UnityEvent> CallOnZoneChanged = new List<UnityEvent>();
 
         [Header("For in-editor Debugging mode")]
-        public Vector3 debug_currentZoneVector;
-        public bool debug_checkReferenceDistance = false;
-        public float debug_distance = 0.0f;
-        public bool debug_between = false;
-        public bool debug_currentZoneIsNull = false;
+        public int debug_dbCount = 0;
+        public int debug_currentZoneID;
+        // public Vector3 debug_currentZoneVector;
+        public int debug_sortWorkingIdx = 0;
+        public List<int> debug_sortIdx;
 
 
 
@@ -51,7 +52,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         // the current zone
         public PositionDatabaseWaypoint CurrentZone
         {
-            get => currentZone;
+            get => db.First;
         }
         public PositionDatabaseWaypoint DataZoneCreated
         {
@@ -64,8 +65,6 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         // init done?
         private bool init = false;
-        // reference object for te dynamic sort
-        private GameObject goDynamicSortReference = null;
         // Object reference distance for dynamic sort
         private Vector3 sortReferencePosition = Vector3.zero;
         // the current zone 
@@ -78,6 +77,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         private class DatabaseList
         {
             private List<PositionDatabaseWaypoint> db = new List<PositionDatabaseWaypoint>();
+            private int posId = 0;
 
             // I'm not sure the list is a true list... so, better to think it "in append" instead of in insert
             public PositionDatabaseWaypoint this[int i]
@@ -112,6 +112,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             public void Insert(PositionDatabaseWaypoint wp)
             {
+                wp.setPositionID(posId++);
                 db.Add(wp);
             }
 
@@ -129,6 +130,16 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
                 }
                 else
                     return false;
+            }
+
+            public override string ToString()
+            {
+                string ss = "";
+
+                for (int i = 0; i < db.Count; ++i)
+                    ss += $"[no.{i}]{this[i].AreaCenter}";
+
+                return ss;
             }
         }
         private DatabaseList db = new DatabaseList();
@@ -152,6 +163,15 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
                         ClusterLength = -1;
                 }
             }
+            public int WorkingClusters
+            {
+                get => idx.Count;
+            }
+
+            public IReadOnlyList<int> WorkingIndices
+            {
+                get => idx;
+            }
 
             public bool UseMaxIndices
             {
@@ -171,13 +191,15 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             private int N = 0; // elements in the array
             private int np; // used for updating cluster size
-            private List<int> idx = new List<int>() { 0 };
-            private int idxMin = 0;
+            private List<int> idx = new List<int>();
             private int idxMax = 0;
 
-            public bool DynamicSort(Vector3 sortReferencePosition)
+            public void DynamicSort(Vector3 sortReferencePosition)
             {
-                if (ClusterLength <= 3) return false;
+                if (db.Count < 2) return;
+                if (UseCuster && ClusterLength <= 3) return;
+
+                if (idx.Count == 0) idx.Add(0);
 
                 N = db.Count;
                 if(MaxIndices > 0)
@@ -186,8 +208,6 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
                 sortStep(sortReferencePosition);
                 if (UseCuster) checkNewCluster();
                 if (UseCuster && UseMaxIndices) checkMaxIdx();
-
-                return true;
             }
 
             private void sortStep(Vector3 Puser)
@@ -196,37 +216,42 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
                 for(int i=0; i<idx.Count; ++i)
                 {
                     j = idx[i];
-
                     if (dist(Puser, db[j].AreaCenter) > dist(Puser, db[j + 1].AreaCenter))
                         db.Swap(j, j + 1);
-                    
-                    idx[i] = (j + 1) % (db.Count - 1);
-                    if( idx[i] < j )
-                    {
-                        idxMin = i;
-                        idxMax = (i > 0 ? i - 1 : idx.Count - 1);
-                    }
+
+                    idx[i] = (j + 1) % (N - 1);
+                    if (idx.Count > 1 && idx[i] < j)
+                        redistributeIdx();
                 }
             }
 
             private void checkNewCluster()
             {
                 if (UseMaxIndices && idx.Count >= MaxIndices) return;
-
-                if (N > ClusterLength && N % ClusterLength == 3)
-                    idx.Add( ((N-3) + idx[idxMax]) % (N-1) );
+                
+                if (N == (idx.Count+1) * ClusterLength)
+                {   
+                    idx.Add(0);
+                    redistributeIdx();
+                }
             }
 
             private void checkMaxIdx()
             {
-                if( N - np == MaxIndices )
+                if (UseMaxIndices && idx.Count < MaxIndices) return;
+
+                if ( N - np == MaxIndices )
                 {
                     ++ClusterLength;
-                    np = N * ClusterLength;
-
-                    for (int i = 0; i < idx.Count; ++i)
-                        idx[i] = (idx[i] + 1) % (N - 1);
+                    np = ClusterLength * MaxIndices;
+                    redistributeIdx();
                 }
+            }
+
+            private void redistributeIdx()
+            {
+                for (int i = 0; i < idx.Count; ++i)
+                    idx[i] = i * ClusterLength;
             }
 
             private float dist(Vector3 pos1, Vector3 pos2)
@@ -242,9 +267,6 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         private void Start()
         {
-            goDynamicSortReference = (ReferenceObject == null ? Camera.main.gameObject : ReferenceObject);
-            ReferenceObject = goDynamicSortReference;
-
             dynSortData.db = db;
             dynSortData.UseCuster = UseClusters;
             if (UseClusters) dynSortData.ClusterLength = ClusterSize;
@@ -257,6 +279,16 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         private void Update()
         {
             if (!init) return;
+
+            // DEBUG ZONE
+            if(currentZone != null)
+            {
+                debug_currentZoneID = CurrentZone.PositionID;
+            }
+            debug_sortWorkingIdx = dynSortData.WorkingClusters;
+            debug_sortIdx = (List<int>)dynSortData.WorkingIndices;
+            debug_dbCount = db.Count;
+            // DEBUG ZONE
 
             updateReferenceObect();
             tryInsertPosition();
@@ -282,34 +314,27 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         private void updateReferenceObect()
         {
-            if(goDynamicSortReference != ReferenceObject)
-            {
-                goDynamicSortReference = (ReferenceObject == null ? Camera.main.gameObject : ReferenceObject);
-                ReferenceObject = goDynamicSortReference;
-            }
-            sortReferencePosition = goDynamicSortReference.transform.position;
+            if (ReferenceObject == null)
+                sortReferencePosition = Camera.main.transform.position;
+            else
+                sortReferencePosition = ReferenceObject.transform.position;
+
+            if (sortReferencePosition == null)
+                Debug.LogError("sortReferencePosition == null");
+
+            currentZone = db.First;
         }
 
         private void tryInsertPosition()
         {
             if (!init) return;
 
-            // DEBUG ZONE
-            debug_checkReferenceDistance = checkReferenceDistance();
-            // DEBUG ZONE
-
-            if (currentZone == null || checkReferenceDistance())
+            bool distCheck = checkReferenceDistance();
+            if (currentZone == null || distCheck)
+            {
                 insertPosition();
-            currentZone = db.First;
-
-            // DEBUG ZONE
-            debug_currentZoneVector = currentZone.AreaCenter;
-            debug_currentZoneIsNull = currentZone == null;
-            Debug.Break();
-            // DEBUG ZONE
-
-
-            onZoneCreated();
+                onZoneCreated();
+            }
         }
 
         private void insertPosition()
@@ -325,20 +350,13 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             
             if (currentZone != null)
                 wp.AddPath(currentZone);
+            
+            currentZone = wp;
         }
 
         private bool checkReferenceDistance()
         {
             if (!init || currentZone == null || db.Count == 0) return false;
-
-            // DEBUG ZONE
-            debug_distance = Vector3.Distance(currentZone.AreaCenter, sortReferencePosition);
-            debug_between = between(
-                Vector3.Distance(currentZone.AreaCenter, sortReferencePosition),
-                2.0f * BaseDistance - DistanceTolerance, 2.0f * BaseDistance + DistanceTolerance,
-                strict: false
-            );
-            // DEBUG ZONE
 
             return between(
                 Vector3.Distance(currentZone.AreaCenter, sortReferencePosition),
@@ -349,7 +367,8 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         private void dynamicSortStep()
         {
-            dynSortData.DynamicSort(sortReferencePosition);
+            if(sortReferencePosition != null)
+                dynSortData.DynamicSort(sortReferencePosition);
         }
 
         private void onZoneCreated()
@@ -373,9 +392,9 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         private bool between(float val, float a, float b, bool strict = false)
         {
             if (strict)
-                return (val > a || val < b);
+                return (val > a && val < b);
             else
-                return (val >= a || val <= b);
+                return (val >= a && val <= b);
         }
     }
 
