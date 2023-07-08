@@ -2793,18 +2793,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0df982d7ede62a0409b4be4562c02c7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BaseDistance: 0.2
+  BaseDistance: 0.5
   DistanceTolerance: 0.1
   ReferenceObject: {fileID: 0}
   UseClusters: 1
-  ClusterSize: 10
+  ClusterSize: 20
   UseMaxIndices: 1
-  MaxIndices: 4
+  MaxIndices: 3
   CallOnZoneCreated:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1124494746}
         m_TargetAssemblyTypeName: SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting.TestingPositionDB,
+          Assembly-CSharp
+        m_MethodName: EVENT_OnZoneCreated
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1124494747}
+        m_TargetAssemblyTypeName: SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components.MarkerSpawner,
           Assembly-CSharp
         m_MethodName: EVENT_OnZoneCreated
         m_Mode: 1
@@ -2832,10 +2847,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  debug_dbCount: 0
-  debug_currentZoneID: 0
-  debug_sortWorkingIdx: 0
-  debug_sortIdx: 
 --- !u!4 &1124494745
 Transform:
   m_ObjectHideFlags: 0
@@ -2865,6 +2876,9 @@ MonoBehaviour:
   DatabaseReference: {fileID: 1124494744}
   ManageZoneCreated: 1
   ManageZoneChanged: 1
+  debug_currentZoneID: -1
+  debug_hit: 0
+  debug_miss: 0
 --- !u!114 &1124494747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2872,12 +2886,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a8298d370bd11643bec596f22bea982, type: 3}
+  m_Script: {fileID: 11500000, guid: eb238b62e1718934b8e5f79fdd7e0f1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPos: 3
+  DatabaseReference: {fileID: 1124494744}
 --- !u!1 &1130242957
 GameObject:
   m_ObjectHideFlags: 0

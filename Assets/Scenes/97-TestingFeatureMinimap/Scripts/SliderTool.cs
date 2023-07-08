@@ -30,6 +30,8 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
         // slider data
         float ystart = float.MaxValue;
         float delta = 0.0f;
+        // used for counting the objects
+        private int counter = 0;
 
 
         // === UNITY CALLBACKS ===
@@ -60,7 +62,7 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
                 foreach (Transform child in minimapRoot.transform) // https://discussions.unity.com/t/get-all-children-gameobjects/89443/3
                 {
                     if (ItemsPrefix == "" || child.gameObject.name.StartsWith(ItemsPrefix))
-                        MinimapDriver.TrackGameObject(child.gameObject, child.gameObject.transform.localPosition.y, visualize: false);
+                        MinimapDriver.TrackGameObject(child.gameObject, "OBJ" + counter.ToString("0000"), orderCriterion: child.gameObject.transform.localPosition.y, visualize: false);
                 }
 
                 tracked = true;

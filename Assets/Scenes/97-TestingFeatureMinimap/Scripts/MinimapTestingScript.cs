@@ -136,7 +136,7 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
                 go.transform.localScale = Scale * Vector3.one;
 
                 if (MapStructure != null)
-                    MapStructure.TrackGameObject(go, orderCriterion: go.transform.localPosition.y);
+                    MapStructure.TrackGameObject(go, go.name, orderCriterion: go.transform.localPosition.y);
             }
         }
 

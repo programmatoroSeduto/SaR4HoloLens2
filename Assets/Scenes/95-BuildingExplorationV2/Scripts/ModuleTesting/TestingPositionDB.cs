@@ -18,12 +18,22 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
         [Tooltip("Manage position change")]
         public bool ManageZoneChanged = true;
 
+        [Header("DEBUG ZONE")]
+        [Tooltip("Current zone")]
+        public int debug_currentZoneID = -1;
+        [Tooltip("Hit counter (ZONE CHANGED)")]
+        public int debug_hit = 0;
+        [Tooltip("Miss counter (ZONE CREATED)")]
+        public int debug_miss = 0;
+
 
 
         // ===== PRIVATE ===== //
 
         // init script
         private bool init = false;
+        // the previously received id
+        private int prevID = -1;
 
 
 
@@ -40,6 +50,11 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
             init = true;
         }
 
+        private void Update()
+        {
+            debug_currentZoneID = prevID;
+        }
+
 
 
         // ===== EVENT METHODS ===== //
@@ -50,7 +65,10 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
 
             int id = DatabaseReference.DataZoneCreated.PositionID;
             Vector3 p = DatabaseReference.DataZoneCreated.AreaCenter;
-            Debug.Log($"ZONE CREATED: ID:{id} (x:{p.x}, y:{p.y}, z:{p.z})");
+            // Debug.Log($"ZONE CREATED: ID:{id} (x:{p.x}, y:{p.y}, z:{p.z})");
+
+            ++debug_miss;
+            prevID = id;
         }
 
         public void EVENT_OnZoneChanged()
@@ -59,7 +77,10 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
 
             int id = DatabaseReference.CurrentZone.PositionID;
             Vector3 p = DatabaseReference.CurrentZone.AreaCenter;
-            Debug.Log($"ZONE CHANGED: ID:{id} (x:{p.x}, y:{p.y}, z:{p.z})");
+            // Debug.Log($"ZONE CHANGED: ID:{id} (x:{p.x}, y:{p.y}, z:{p.z})");
+
+            if(id != prevID) ++debug_hit;
+            prevID = id;
         }
     }
 

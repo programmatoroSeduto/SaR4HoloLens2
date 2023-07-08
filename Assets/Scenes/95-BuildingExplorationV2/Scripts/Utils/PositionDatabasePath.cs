@@ -11,6 +11,13 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils
         public PositionDatabaseWaypoint wp1 = null;
         public PositionDatabaseWaypoint wp2 = null;
 
+        public bool HasRenderer
+        {
+            get => (Renderer != null);
+        }
+
+        public MonoBehaviour Renderer = null;
+
         public float Distance { 
             get {
                 Vector3 pos1 = wp1.AreaCenter;

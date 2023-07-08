@@ -37,12 +37,12 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         [Tooltip("Events called when the current zone changes")]
         public List<UnityEvent> CallOnZoneChanged = new List<UnityEvent>();
 
-        [Header("For in-editor Debugging mode")]
-        public int debug_dbCount = 0;
-        public int debug_currentZoneID;
+        // [Header("For in-editor Debugging mode")]
+        // public int debug_dbCount = 0;
+        // public int debug_currentZoneID;
         // public Vector3 debug_currentZoneVector;
-        public int debug_sortWorkingIdx = 0;
-        public List<int> debug_sortIdx;
+        // public int debug_sortWorkingIdx = 0;
+        // public List<int> debug_sortIdx;
 
 
 
@@ -52,7 +52,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         // the current zone
         public PositionDatabaseWaypoint CurrentZone
         {
-            get => db.First;
+            get => (db.Count == 0 ? null : db[0]);
         }
         public PositionDatabaseWaypoint DataZoneCreated
         {
@@ -74,79 +74,11 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         private PositionDatabaseWaypoint dataZoneCreated = null;
 
         // the database is a sem-ordered list of positions (the current zone "is" the first element of the list, best approximation)
-        private class DatabaseList
-        {
-            private List<PositionDatabaseWaypoint> db = new List<PositionDatabaseWaypoint>();
-            private int posId = 0;
-
-            // I'm not sure the list is a true list... so, better to think it "in append" instead of in insert
-            public PositionDatabaseWaypoint this[int i]
-            {
-                get 
-                {
-                    if (i < db.Count && i >= 0)
-                        return db[db.Count - 1 - i];
-                    else
-                        return null;
-                }
-            }
-
-            public int Count
-            {
-                get => db.Count;
-            }
-
-            public bool Set(int i, PositionDatabaseWaypoint wp)
-            {
-                
-                if (i < db.Count && i >= 0)
-                {
-                    db[db.Count - 1 - i] = wp;
-                    return true;
-                }
-                else
-                    return false;
-            }
-
-            public PositionDatabaseWaypoint First { get => db.Count == 0 ? null : this[0]; }
-
-            public void Insert(PositionDatabaseWaypoint wp)
-            {
-                wp.setPositionID(posId++);
-                db.Add(wp);
-            }
-
-            public bool Swap(int i, int j = -1)
-            {
-                if (j == -1) j = i+1;
-
-                if (i < db.Count && i >= 0 && j < db.Count && j >= 0 && i != j)
-                {
-                    PositionDatabaseWaypoint wptemp = this[i];
-                    Set(i, this[j]);
-                    Set(j, wptemp);
-
-                    return true;
-                }
-                else
-                    return false;
-            }
-
-            public override string ToString()
-            {
-                string ss = "";
-
-                for (int i = 0; i < db.Count; ++i)
-                    ss += $"[no.{i}]{this[i].AreaCenter}";
-
-                return ss;
-            }
-        }
-        private DatabaseList db = new DatabaseList();
+        private List<PositionDatabaseWaypoint> db = new List<PositionDatabaseWaypoint>();
 
         private class DynamicSortSupport
         {
-            public DatabaseList db = null; // reference to the database to sort
+            public List<PositionDatabaseWaypoint> db = null; // reference to the database to sort
 
             public int ClusterLength = -1; // -1 if not used
             public bool UseCuster
@@ -217,7 +149,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
                 {
                     j = idx[i];
                     if (dist(Puser, db[j].AreaCenter) > dist(Puser, db[j + 1].AreaCenter))
-                        db.Swap(j, j + 1);
+                        swap(j, j + 1);
 
                     idx[i] = (j + 1) % (N - 1);
                     if (idx.Count > 1 && idx[i] < j)
@@ -258,6 +190,13 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             {
                 return Vector3.Distance(pos1, pos2);
             }
+
+            private void swap(int i, int j)
+            {
+                PositionDatabaseWaypoint wpt = db[i];
+                db[i] = db[j];
+                db[j] = wpt;
+            }
         }
         private DynamicSortSupport dynSortData = new DynamicSortSupport();
 
@@ -278,20 +217,20 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         private void Update()
         {
-            if (!init) return;
-
             // DEBUG ZONE
-            if(currentZone != null)
+            /*
+            if (currentZone != null)
             {
                 debug_currentZoneID = CurrentZone.PositionID;
             }
             debug_sortWorkingIdx = dynSortData.WorkingClusters;
             debug_sortIdx = (List<int>)dynSortData.WorkingIndices;
             debug_dbCount = db.Count;
+            */
             // DEBUG ZONE
 
-            updateReferenceObect();
             tryInsertPosition();
+            updateReferenceObect();
             dynamicSortStep();
             onZoneChange();
         }
@@ -322,7 +261,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             if (sortReferencePosition == null)
                 Debug.LogError("sortReferencePosition == null");
 
-            currentZone = db.First;
+            currentZone = CurrentZone;
         }
 
         private void tryInsertPosition()
@@ -342,11 +281,12 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             if (!init) return;
 
             PositionDatabaseWaypoint wp = new PositionDatabaseWaypoint();
+            wp.setPositionID(db.Count);
             wp.AreaCenter = sortReferencePosition;
             wp.AreaRadius = BaseDistance;
             wp.DBReference = this;
 
-            db.Insert(wp);
+            db.Insert(0, wp);
             
             if (currentZone != null)
                 wp.AddPath(currentZone);
@@ -373,7 +313,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         private void onZoneCreated()
         {
-            dataZoneCreated = db.First;
+            dataZoneCreated = currentZone;
             foreach (UnityEvent ue in CallOnZoneCreated)
                 ue.Invoke();
         }

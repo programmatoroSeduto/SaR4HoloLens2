@@ -25,7 +25,9 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils
             get 
             {
                 if (ObjectCenterReference != null)
+                {
                     AreaCenterFirst = ObjectCenterReference.transform.position;
+                }
                 return AreaCenterFirst;
             }
             set
@@ -77,6 +79,32 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils
             ss += $"Created at: {Timestamp}";
 
             return ss;
+        }
+
+        public PositionDatabasePath GetPathTo(PositionDatabaseWaypoint wpDest)
+        {
+            foreach (PositionDatabasePath path in Paths)
+                if (path.wp1 == wpDest || path.wp2 == wpDest)
+                    return path;
+
+            return null;
+        }
+
+        public bool IsLinkedWith(PositionDatabaseWaypoint wpDest)
+        {
+            return (GetPathTo(wpDest) != null);
+        }
+
+        public void TurnOffVisualization()
+        {
+            foreach(PositionDatabasePath link in Paths)
+            {
+                if(link.Renderer != null)
+                {
+                    GameObject.Destroy(link.Renderer);
+                    link.Renderer = null;
+                }   
+            }
         }
 
 
