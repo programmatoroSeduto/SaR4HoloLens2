@@ -18,13 +18,14 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils
         // references
         public PositionsDatabase DBReference = null;
         public GameObject ObjectCenterReference = null;
+        public bool CanUpdate = false;
 
         // geometry infos
         public Vector3 AreaCenter
         {
             get 
             {
-                if (ObjectCenterReference != null)
+                if (CanUpdate && ObjectCenterReference != null)
                 {
                     AreaCenterFirst = ObjectCenterReference.transform.position;
                 }
@@ -33,6 +34,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils
             set
             {
                 AreaCenterFirst = value;
+                ObjectCenterReference = null;
             }
         } 
         public float AreaRadius = 1.0f;

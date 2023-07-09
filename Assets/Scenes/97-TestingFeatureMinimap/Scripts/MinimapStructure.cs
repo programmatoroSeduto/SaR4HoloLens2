@@ -165,6 +165,7 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
             }
 
             // visualization
+            visualize = (visualize == null ? VisualizeOnInsert : visualize);
             SetVisualizationItem(goTag, opt: (bool)visualize || VisualizeOnInsert);
 
             return true;

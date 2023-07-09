@@ -10,12 +10,26 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 {
     public class PositionDatabaseWaypointHandle : MonoBehaviour
     {
-        // ===== GUI/PUBLIC ===== //
+        // ===== GUI ===== //
         [Header("Main settings")]
         [Tooltip("Represented position")]
         public PositionDatabaseWaypoint DatabasePosition = null;
-        [Tooltip("If the position can be altered or not")]
-        public bool CanModifyDbPosition = false;
+
+
+
+        // ===== PUBLIC ===== //
+
+        public bool CanChangeDB
+        {
+            get => CanModifyDbPosition;
+        }
+
+
+
+        // ===== PRIVATE ===== //
+
+        // either the component is allowed to change the position of the row in the db, or not
+        private bool CanModifyDbPosition = false;
 
 
 
@@ -27,6 +41,23 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             DatabasePosition.TurnOffVisualization();
             DatabasePosition.ObjectCenterReference = null;
+        }
+
+
+
+        // ===== FEATURE SET CHANGABLE DB RECORD ===== //
+
+        // ritorna se la richiesta è andata a buon fine o no
+        public bool SetDbChangable(bool opt = false, bool handleReference = false)
+        {
+            if (DatabasePosition == null) return false;
+
+            DatabasePosition.CanUpdate = opt;
+            if (handleReference)
+                DatabasePosition.ObjectCenterReference = ( opt ? this.gameObject : null );
+
+            CanModifyDbPosition = opt;
+            return true;
         }
     }
 }

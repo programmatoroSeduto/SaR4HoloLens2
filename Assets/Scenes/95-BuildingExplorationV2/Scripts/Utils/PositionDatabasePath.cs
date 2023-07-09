@@ -26,6 +26,11 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils
             } 
         }
 
+        public string PathKey
+        {
+            get => wp1.PositionID.ToString("0000") + "_" + wp2.PositionID.ToString("0000");
+        }
+
 
 
         // ===== PUBLIC METHODS ===== //

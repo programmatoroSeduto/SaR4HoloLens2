@@ -30,6 +30,8 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
         private int id = 0;
         // IDs set
         private HashSet<string> tags = new HashSet<string>();
+        // IDs of the arch handled by the class
+        private HashSet<string> linkKeys = new HashSet<string>();
 
 
 
@@ -57,7 +59,34 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         // ===== CREATE MARKERS ===== //
 
-        public bool CreatePathSegment(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, bool cleanBefore = false)
+        public bool CreatePoint(PositionDatabaseWaypoint pos, bool cleanBefore = false, bool canModifyPos = false)
+        {
+            if (!init) return false;
+            if (RootObject == null) return false;
+            if (pos == null) return false;
+            if (pos.ObjectCenterReference != null && !tags.Contains(pos.ObjectCenterReference.name)) return false;
+
+            if (cleanBefore)
+                this.Clean();
+
+            _ = StartCoroutine(ORCOR_CreatePoint(pos, canModifyPos: canModifyPos));
+
+            return true;
+        }
+
+        private IEnumerator ORCOR_CreatePoint(PositionDatabaseWaypoint pos, bool canModifyPos = false)
+        {
+            if (pos.ObjectCenterReference == null)
+                yield return InstanciateMarker(pos, canModifyPos: canModifyPos);
+
+            if(canModifyPos)
+            {
+                PositionDatabaseWaypointHandle h = pos.ObjectCenterReference.GetComponent<PositionDatabaseWaypointHandle>();
+                h.SetDbChangable(true);
+            }
+        }
+
+        public bool CreatePathSegment(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, bool cleanBefore = false, bool canModifyPos = false)
         {
             if (!init) return false;
             if (RootObject == null) return false;
@@ -71,28 +100,54 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             if (cleanBefore)
                 this.Clean();
-            StartCoroutine(BSCOR_CreateMarker(startPos, endPos, link));
+
+            linkKeys.Add(link.PathKey);
+            _ = StartCoroutine(ORCOR_CreatePathSegment(startPos, endPos, link, canModifyPos: canModifyPos));
 
             return true;
         }
 
-        private IEnumerator BSCOR_CreateMarker(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, PositionDatabasePath link, bool canModifyPos = false)
+        private IEnumerator ORCOR_CreatePathSegment(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, PositionDatabasePath link, bool canModifyPos = false)
         {
+            bool startInstance = false;
             if (startPos.ObjectCenterReference == null)
+            {
                 yield return InstanciateMarker(startPos, canModifyPos: canModifyPos);
+                startInstance = true;
+            }
 
+            bool endInstance = false;
             if (endPos.ObjectCenterReference == null)
+            {
                 yield return InstanciateMarker(endPos, canModifyPos: canModifyPos);
+                endInstance = true;
+            }
 
             link.Renderer = startPos.ObjectCenterReference.AddComponent<FlexibleLineRenderer>();
             ((FlexibleLineRenderer)link.Renderer).Object1 = startPos.ObjectCenterReference;
             ((FlexibleLineRenderer)link.Renderer).Object2 = endPos.ObjectCenterReference;
+
+            if (canModifyPos)
+            {
+                if (startInstance)
+                {
+                    PositionDatabaseWaypointHandle hStart = startPos.ObjectCenterReference.GetComponent<PositionDatabaseWaypointHandle>();
+                    hStart.SetDbChangable(true);
+                }
+
+                if (endInstance)
+                {
+                    PositionDatabaseWaypointHandle hEnd = endPos.ObjectCenterReference.GetComponent<PositionDatabaseWaypointHandle>();
+                    hEnd.SetDbChangable(true);
+                }
+            }
         }
 
         private IEnumerator InstanciateMarker(PositionDatabaseWaypoint pos, bool canModifyPos = false)
         {
             string tag = "NODE_" + id.ToString("0000");
-            
+            ++id;
+
             yield return builder.BSCOR_Build(position: pos.AreaCenter);
             
             GameObject go = builder.GetLastSpawned().gameObject;
@@ -104,11 +159,10 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             MinimapReference.TrackGameObject(go, tag, ignoreOrderCriterion: true);
 
-            h.CanModifyDbPosition = canModifyPos;
+            h.SetDbChangable(canModifyPos, handleReference: false);
+            h.DatabasePosition.ObjectCenterReference = h.gameObject;
             if (canModifyPos)
                 h.DatabasePosition.ObjectCenterReference = go;
-
-            ++id;
         }
 
 
@@ -122,6 +176,21 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             StopAllCoroutines();
             MinimapReference.UntrackAll(destroy: true);
             tags.Clear();
+            linkKeys.Clear();
+        }
+
+
+
+        // ===== DATA CHECKS ===== //
+
+        public bool IsHandledByDrawerWaypoint(string tag)
+        {
+            return tags.Contains(tag);
+        }
+
+        public bool IsHandledByDrawerPath(string tag)
+        {
+            return linkKeys.Contains(tag);
         }
     }
 }
