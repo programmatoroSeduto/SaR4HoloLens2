@@ -35,7 +35,7 @@ namespace Packages.CustomRenderers.Components
         public bool UpdateOnStart = true;
         [Tooltip("(dyynamic) update rate in 1/seconds")]
         [Min(0.01f)]
-        public float UpdateRate = 10.0f;
+        public float UpdateRate = 60.0f;
         [Tooltip("(dyynamic) update line position at each frame")]
         public bool UpdateLinePos = true;
         [Tooltip("(dyynamic) update line material at each frame")]
