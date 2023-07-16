@@ -89,7 +89,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         // ===== FEATURE NEIGHBORHOOD EXPLORATION ===== //
 
-        private HashSet<string> drawNeighborhood(PositionDatabaseWaypoint wp, float remainingDistance = float.MaxValue, HashSet<string> instances = null, int iterID = 0)
+        private HashSet<string> drawNeighborhood(PositionDatabaseWaypoint wp, PositionDatabaseWaypoint userPos = null, float remainingDistance = float.MaxValue, HashSet<string> instances = null, int iterID = 0)
         {
             /*
              * se instances != null, allora il wp della chiamata della funzione è già stato istanziato
@@ -103,58 +103,59 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             // Debug.Log($"[{iterID}] ");
 
-            Debug.Log($"[{iterID}] START");
+            // Debug.Log($"[{iterID}] START");
             string ss = "";
 
             if (instances == null)
             {
-                Debug.Log($"[{iterID}] first cycle!");
+                // Debug.Log($"[{iterID}] first cycle!");
                 instances = new HashSet<string>();
+                userPos = wp;
 
                 string tag = DrawerReference.CreatePoint(wp, canModifyPos: CanChangeDB);
                 if(tag == null)
                 {
-                    Debug.LogError($"Cannot instanciate wp with tag '{tag}'!");
+                    // Debug.LogError($"Cannot instanciate wp with tag '{tag}'!");
                     return instances;
                 }
                 instances.Add(tag);
             }
 
-            Debug.Log($"[{iterID}] wp with ID:{wp.PositionID} remainingDistance:{remainingDistance}");
+            // Debug.Log($"[{iterID}] wp with ID:{wp.PositionID} remainingDistance:{remainingDistance}");
 
-            if (remainingDistance > 0.0f)
+            if (remainingDistance > 0.0f || Vector3.Distance(userPos.AreaCenter, wp.AreaCenter) <= DrawableRadius)
             {
-                Debug.Log($"[{iterID}] wp with ID:{wp.PositionID} found links:{wp.Paths.Count}");
+                // Debug.Log($"[{iterID}] wp with ID:{wp.PositionID} found links:{wp.Paths.Count}");
                 foreach (PositionDatabasePath link in wp.Paths)
                 {
                     PositionDatabaseWaypoint wpNext = link.Next(wp);
                     if (instances.Contains(DrawerReference.TagOf(wpNext)))
                     {
-                        Debug.Log($"[{iterID}] next with ID:{wpNext.PositionID} already instanced; skip");
+                        // Debug.Log($"[{iterID}] next with ID:{wpNext.PositionID} already instanced; skip");
                         continue;
                     }
                     
-                    Debug.Log($"[{iterID}] next with ID:{wpNext.PositionID} visualizing wp");
+                    // Debug.Log($"[{iterID}] next with ID:{wpNext.PositionID} visualizing wp");
                     string tag = DrawerReference.CreatePoint(wpNext, canModifyPos: CanChangeDB);
                     if (tag == null)
                     {
-                        Debug.LogError($"Cannot instanciate wp with tag '{tag}'!");
+                        // Debug.LogError($"Cannot instanciate wp with tag '{tag}'!");
                         return instances;
                     }
-                    Debug.Log($"[{iterID}] next with ID:{wpNext.PositionID} visualizing link");
+                    // Debug.Log($"[{iterID}] next with ID:{wpNext.PositionID} visualizing link");
                     DrawerReference.CreatePath(wp, wpNext);
                     instances.Add(tag);
 
                     ss = "";
                     foreach (var ttag in instances) ss += ttag + ",";
-                    Debug.Log($"[{iterID}] tags in instance: {ss}");
+                    // Debug.Log($"[{iterID}] tags in instance: {ss}");
 
-                    Debug.Log($"[{iterID}] iterating with iterID:{iterID+1}");
-                    instances = drawNeighborhood(wpNext, (remainingDistance - link.Distance), instances, iterID + 1);
+                    // Debug.Log($"[{iterID}] iterating with iterID:{iterID+1}");
+                    instances = drawNeighborhood(wpNext, userPos, (remainingDistance - link.Distance), instances, iterID + 1);
                 }
             }
 
-            Debug.Log($"[{iterID}] END");
+            // Debug.Log($"[{iterID}] END");
             return instances;
         }
 

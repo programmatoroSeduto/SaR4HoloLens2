@@ -46,7 +46,7 @@ namespace Packages.VisualItems.LittleMarker.Components
 			/*
             Debug.Log($"Build(position:{(position == null ? "NULL" : position.Value.ToString())}, rotation:{(rotation == null ? "NULL" : rotation.Value.ToString())}) -- ");
             */
-			Debug.Log($"Build(position:{(position == null ? "NULL" : position.Value.ToString())}, rotation:{(rotation == null ? "NULL" : rotation.Value.ToString())}) -- START");
+			// Debug.Log($"Build(position:{(position == null ? "NULL" : position.Value.ToString())}, rotation:{(rotation == null ? "NULL" : rotation.Value.ToString())}) -- START");
 
 			GameObject prefab = Resources.Load(LittleMarkerBasePrefabPath) as GameObject;
 			if (prefab == null)
@@ -65,9 +65,15 @@ namespace Packages.VisualItems.LittleMarker.Components
 			LastSpawnedItem = handle;
 
 			if (SpawnUnderObject != null)
+            {
 				go.transform.SetParent(SpawnUnderObject.transform);
+			}
+			go.transform.localPosition = InitPosition;
+			go.transform.localRotation = Quaternion.Euler(InitRotation);
+			go.transform.localScale = Vector3.one;
 
-			Debug.Log($"Build(position:{(position == null ? "NULL" : position.Value.ToString())}, rotation:{(rotation == null ? "NULL" : rotation.Value.ToString())}) -- createn new object with name:{go.name} parentName:{go.transform.parent.gameObject.name} position:{go.transform.position} rotation:{go.transform.rotation}");
+
+			// Debug.Log($"Build(position:{(position == null ? "NULL" : position.Value.ToString())}, rotation:{(rotation == null ? "NULL" : rotation.Value.ToString())}) -- createn new object with name:{go.name} parentName:{go.transform.parent.gameObject.name} position:{go.transform.position} rotation:{go.transform.rotation}");
 			return go;
 		}
 	}

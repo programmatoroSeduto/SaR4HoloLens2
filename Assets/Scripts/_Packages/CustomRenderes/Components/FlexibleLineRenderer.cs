@@ -42,6 +42,7 @@ namespace Packages.CustomRenderers.Components
         public bool UpdateMaterial = false;
         [Tooltip("(dyynamic) update line width at each frame")]
         public bool UpdateWidth = true;
+        public bool ScaleWithParent = true;
         [Tooltip("(dyynamic) update line colour at each frame")]
         public bool UpdateColor = false;
 
@@ -92,11 +93,11 @@ namespace Packages.CustomRenderers.Components
 
         private void OnDestroy()
         {
-            Debug.Log("FlexibleLineRenderer.OnDestroy() called");
+            // Debug.Log("FlexibleLineRenderer.OnDestroy() called");
             if (goLineRenderer != null)
             {
                 StopAllCoroutines();
-                Debug.Log($"FlexibleLineRenderer.OnDestroy() go with renderer go:{goLineRenderer.name}");
+                // Debug.Log($"FlexibleLineRenderer.OnDestroy() go with renderer go:{goLineRenderer.name}");
                 MonoBehaviour.DestroyImmediate(lineRenderer, true);
                 lineRenderer = null;
                 GameObject.DestroyImmediate(goLineRenderer, true);
@@ -228,9 +229,9 @@ namespace Packages.CustomRenderers.Components
         {
             if (!init || lw < 0.0f) return false;
 
-            LineWidth = lw * gameObject.transform.localScale.x;
-            lineRenderer.startWidth = LineWidth;
-            lineRenderer.endWidth = LineWidth;
+            float lWidth = lw * (ScaleWithParent ? gameObject.transform.parent.localScale.x : gameObject.transform.localScale.x) * 0.25f;
+            lineRenderer.startWidth = lWidth;
+            lineRenderer.endWidth = lWidth;
 
             return true;
         }

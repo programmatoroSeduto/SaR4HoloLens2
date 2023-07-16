@@ -83,11 +83,11 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             if (tags.Contains(tag))
             {
-                Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- point already instanced; returning tag {tag}");
+                // Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- point already instanced; returning tag {tag}");
                 return tag;
             }
 
-            Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- point not found: making new instance");
+            // Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- point not found: making new instance");
             InstanciateMarker(tag, pos, canModifyPos: canModifyPos);
 
             return tag;
@@ -124,8 +124,8 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- ");
             */
 
-            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- START");
-            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- (before instance) tags.Contains(tag:{tag}) ? {tags.Contains(tag)}");
+            // Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- START");
+            // Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- (before instance) tags.Contains(tag:{tag}) ? {tags.Contains(tag)}");
 
             builder.SpawnUnderObject = RootObject;
             builder.InitName = tag;
@@ -141,8 +141,8 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             h.DatabasePosition = pos;
             h.SetDbChangable(canModifyPos, handleReference: true);
 
-            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- (after instance) tags.Contains(tag:{tag}) ? {tags.Contains(tag)}");
-            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- END");
+            // Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- (after instance) tags.Contains(tag:{tag}) ? {tags.Contains(tag)}");
+            // Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- END");
         }
 
 
@@ -155,19 +155,21 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- ");
             */
 
-            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- START");
-            string ss = "";
+            // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- START");
+            // string ss = "";
 
             if (!init) return;
+            if (ExclusionListWps == null) ExclusionListWps = new HashSet<string>();
 
+            /*
             ss = "";
             foreach (var tag in tags) ss += tag + ",";
-            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags before cleanup: {ss}");
-
-            if (ExclusionListWps == null) ExclusionListWps = new HashSet<string>();
+            // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags before cleanup: {ss}");
+            
             ss = "";
             foreach (var tag in ExclusionListWps) ss += tag + ",";
-            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags in exclusion list: {ss}");
+            // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags in exclusion list: {ss}");
+            */
 
             StopAllCoroutines();
 
@@ -178,34 +180,35 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             }
             */
             
-            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- found tags to remove: {tags.Count}");
+            // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- found tags to remove: {tags.Count}");
             var enm = tags.GetEnumerator();
             int deleted = 0;
             int skip = 0;
             while (enm.MoveNext())
             {
                 string cur = enm.Current;
-                Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- cur:{cur}");
+                // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- cur:{cur}");
 
                 if (ExclusionListWps.Contains(cur))
                 {
-                    Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- object is in exclusion list; skip");
+                    // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- object is in exclusion list; skip");
                     skip++;
                     continue;
                 }
 
-                Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- removing marker with ID:{cur}");
+                // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- removing marker with ID:{cur}");
                 RemoveMarker(cur, removeWpRefFromHash: false);
                 tags.Remove(cur);
                 enm = tags.GetEnumerator();
                 deleted++;
             }
 
+            /*
             ss = "";
             foreach (var tag in tags) ss += tag + ",";
-            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags after cleanup: {ss}");
-
-            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- END with deleted:{deleted} skip:{skip}");
+            */
+            // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags after cleanup: {ss}");
+            // Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- END with deleted:{deleted} skip:{skip}");
         }
 
         public bool RemoveMarker(string tag, bool removeWpRefFromHash = true)
@@ -214,31 +217,31 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             Debug.Log($"RemoveMarker(tag:{tag}) -- ");
             */
 
-            Debug.Log($"RemoveMarker(tag:{tag}) -- START");
+            // Debug.Log($"RemoveMarker(tag:{tag}) -- START");
 
             if (!init) return false;
             if (!tags.Contains(tag)) return false;
 
             GameObject toDel = MinimapReference.TryGetItemGameObject(tag);
             PositionDatabaseWaypointHandle hDel = toDel.GetComponent<PositionDatabaseWaypointHandle>();
-            Debug.Log($"RemoveMarker(tag:{tag}) -- toDel with posID:{hDel.DatabasePosition.PositionID}");
+            // Debug.Log($"RemoveMarker(tag:{tag}) -- toDel with posID:{hDel.DatabasePosition.PositionID}");
 
             hDel.SetDbChangable(false, handleReference: true);
 
-            Debug.Log($"RemoveMarker(tag:{tag}) -- found links:{hDel.DatabasePosition.Paths.Count}");
+            // Debug.Log($"RemoveMarker(tag:{tag}) -- found links:{hDel.DatabasePosition.Paths.Count}");
             foreach (PositionDatabasePath link in hDel.DatabasePosition.Paths)
             {
                 string pathKey = link.PathKey;
                 if(!linkKeys.Contains(pathKey))
                 {
-                    Debug.Log($"RemoveMarker(tag:{tag}) -- link with key:{pathKey} not instanced; skip");
+                    // Debug.Log($"RemoveMarker(tag:{tag}) -- link with key:{pathKey} not instanced; skip");
                     continue;
                 }
 
-                Debug.Log($"RemoveMarker(tag:{tag}) -- removing link with key:{pathKey}");
+                // Debug.Log($"RemoveMarker(tag:{tag}) -- removing link with key:{pathKey}");
 
                 FlexibleLineRenderer line = (FlexibleLineRenderer) link.Renderer;
-                Debug.Log($"RemoveMarker(tag:{tag}) -- line to Detroy is owned by go:{line.gameObject.name}");
+                // Debug.Log($"RemoveMarker(tag:{tag}) -- line to Detroy is owned by go:{line.gameObject.name}");
                 MonoBehaviour.DestroyImmediate(line, true);
 
                 linkKeys.Remove(pathKey);
@@ -247,7 +250,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             MinimapReference.UntrackGameObject(tag, destroy: true);
             if(removeWpRefFromHash) tags.Remove(tag);
 
-            Debug.Log($"RemoveMarker(tag:{tag}) -- END returning true");
+            // Debug.Log($"RemoveMarker(tag:{tag}) -- END returning true");
             return true;
         }
 
