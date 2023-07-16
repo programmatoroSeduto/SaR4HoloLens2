@@ -5,6 +5,8 @@ using Packages.VisualItems.LittleMarker.Components;
 using SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Utils;
 using Packages.CustomRenderers.Components;
 using SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts;
+using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 {
@@ -30,10 +32,23 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         // either the component is allowed to change the position of the row in the db, or not
         private bool CanModifyDbPosition = false;
+        private ObjectManipulator objectManipulator = null;
+        private NearInteractionGrabbable nearInteraction = null;
 
 
 
         // ===== UNITY CALLBACKS ===== //
+
+        private void Start()
+        {
+            Init();
+        }
+
+        public void Init()
+        {
+            objectManipulator = gameObject.GetComponent<ObjectManipulator>();
+            nearInteraction = gameObject.GetComponent<NearInteractionGrabbable>();
+        }
 
         private void OnDestroy()
         {
@@ -57,6 +72,21 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
                 DatabasePosition.ObjectCenterReference = ( opt ? this.gameObject : null );
 
             CanModifyDbPosition = opt;
+            SetManipulation(opt);
+            return true;
+        }
+
+        public bool SetManipulation(bool opt = true)
+        {
+            if (objectManipulator == null || nearInteraction == null)
+            {
+                Debug.LogError("SetManipulation returned false");
+                return false;
+            }
+
+            objectManipulator.enabled = opt;
+            nearInteraction.enabled = opt;
+
             return true;
         }
     }

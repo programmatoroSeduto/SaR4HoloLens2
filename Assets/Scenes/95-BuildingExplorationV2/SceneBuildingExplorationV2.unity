@@ -2975,6 +2975,7 @@ GameObject:
   - component: {fileID: 1124494750}
   - component: {fileID: 1124494749}
   - component: {fileID: 1124494748}
+  - component: {fileID: 1124494751}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -3060,7 +3061,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8ac7c019d078344087038f6f3a1103d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VisualizeOnInsert: 1
+  VisualizeOnInsert: 0
 --- !u!114 &1124494749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3082,13 +3083,32 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a97ec1b607ef4e8bc899a18ee67bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   DatabaseReference: {fileID: 1124494744}
   DrawerReference: {fileID: 1124494749}
+  MinimapReference: {fileID: 1124494748}
+  RootObject: {fileID: 1990617025}
+  CanChangeDB: 1
+--- !u!114 &1124494751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fb450788375f4c4b8f71e799445973c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DatabaseReference: {fileID: 1124494744}
+  DrawerReference: {fileID: 1124494749}
+  DrawableRadius: 1
+  Period: 2.5
   MinimapReference: {fileID: 1124494748}
   RootObject: {fileID: 1990617025}
   CanChangeDB: 0

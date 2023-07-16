@@ -11,9 +11,17 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4742034182539016719, guid: 846a14e61e4717b4eabc62ae76b12a02, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4742034182539016719, guid: 846a14e61e4717b4eabc62ae76b12a02, type: 3}
+      propertyPath: pivotAxis
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6485618471597841947, guid: 846a14e61e4717b4eabc62ae76b12a02, type: 3}
       propertyPath: m_Name
-      value: LittleMarkerGrabbable Variant
+      value: LittleMarkerGrabbable
       objectReference: {fileID: 0}
     - target: {fileID: 6485618471597841948, guid: 846a14e61e4717b4eabc62ae76b12a02, type: 3}
       propertyPath: m_RootOrder
@@ -59,7 +67,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4822916590732531812, guid: 846a14e61e4717b4eabc62ae76b12a02, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 846a14e61e4717b4eabc62ae76b12a02, type: 3}
 --- !u!1 &1460772350551504860 stripped
 GameObject:

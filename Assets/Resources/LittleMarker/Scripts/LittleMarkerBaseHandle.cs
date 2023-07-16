@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 namespace Packages.VisualItems.LittleMarker.Components
 {
@@ -14,11 +15,16 @@ namespace Packages.VisualItems.LittleMarker.Components
         private string MarkerTextObjectPath = "tooltip";
         private GameObject MarkerTextObject = null;
         private ToolTip MarkerTextTooltipComponent = null;
+        private ObjectManipulator objectManipulator = null;
+        private NearInteractionGrabbable nearInteraction = null;
 
         void Start()
         {
             // if (InitObjectName == "") InitObjectName = gameObject.name;
             // else gameObject.name = InitObjectName;
+
+            objectManipulator = gameObject.GetComponent<ObjectManipulator>();
+            nearInteraction = gameObject.GetComponent<NearInteractionGrabbable>();
         }
 
         void Update()
@@ -31,6 +37,16 @@ namespace Packages.VisualItems.LittleMarker.Components
 
             InitObjectName = gameObject.name;
             MarkerTextTooltipComponent.ToolTipText = InitObjectName;
+        }
+
+        public bool SetManipulation(bool opt = true)
+        {
+            if (objectManipulator == null || nearInteraction == null) return false;
+
+            objectManipulator.enabled = opt;
+            nearInteraction.enabled = opt;
+
+            return true;
         }
     }
 }

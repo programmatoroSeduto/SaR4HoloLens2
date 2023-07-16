@@ -236,7 +236,7 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
 
                     HideItem(go, dontTurnOff: (visualize != null ? (bool)visualize : false));
 
-                    if (destroy) GameObject.Destroy(go);
+                    if (destroy) GameObject.DestroyImmediate(go);
 
                     return true;
                 }
@@ -248,8 +248,9 @@ namespace SaR4Hololens2.Scenes.TestingFeatureMinimap.Scripts
         {
             if (!this.isActiveAndEnabled) return false;
 
-            foreach (GameObject go in TrackingSetGo)
-                UntrackGameObject(go, visualize: visualize, destroy: destroy);
+            // foreach (GameObject go in TrackingSetGo)
+            while (TrackingList.Count > 0)
+                UntrackGameObject(TrackingList[0].Object, visualize: visualize, destroy: destroy);
 
             // useless, BUT, since the Untrack could return False...
             if (TrackingSetGo.Count == 0 && TrackingList.Count == 0 && TrackingListByTag.Count == 0)

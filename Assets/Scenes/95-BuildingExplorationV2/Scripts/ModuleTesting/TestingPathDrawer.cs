@@ -80,7 +80,8 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
 
             if(isFirst)
             {
-                DrawerReference.CreatePoint(pos, cleanBefore: true, canModifyPos: CanChangeDB);
+                DrawerReference.RemoveMarkerAll();
+                DrawerReference.CreatePoint(pos, canModifyPos: CanChangeDB);
                 isFirst = false;
             }
             else
@@ -88,8 +89,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.ModuleTesting
                 foreach(PositionDatabasePath link in pos.Paths)
                 {
                     PositionDatabaseWaypoint startPos = link.Next(pos);
-                    if (DrawerReference.IsHandledByDrawerWaypoint(startPos.ObjectCenterReference.name))
-                        DrawerReference.CreatePathSegment(startPos, pos, cleanBefore: false, canModifyPos: CanChangeDB);
+                    // ...
                 }
             }
         }

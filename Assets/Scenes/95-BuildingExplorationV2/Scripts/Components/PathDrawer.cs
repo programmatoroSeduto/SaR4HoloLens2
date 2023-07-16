@@ -59,124 +59,196 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         // ===== CREATE MARKERS ===== //
 
-        public bool CreatePoint(PositionDatabaseWaypoint pos, bool cleanBefore = false, bool canModifyPos = false)
+        public string TagOf(PositionDatabaseWaypoint wp)
         {
-            if (!init) return false;
-            if (RootObject == null) return false;
-            if (pos == null) return false;
-            if (pos.ObjectCenterReference != null && !tags.Contains(pos.ObjectCenterReference.name)) return false;
-
-            if (cleanBefore)
-                this.Clean();
-
-            _ = StartCoroutine(ORCOR_CreatePoint(pos, canModifyPos: canModifyPos));
-
-            return true;
+            return wp.PositionID.ToString("0000");
         }
 
-        private IEnumerator ORCOR_CreatePoint(PositionDatabaseWaypoint pos, bool canModifyPos = false)
+        public string TagOf(PositionDatabasePath link)
         {
-            if (pos.ObjectCenterReference == null)
-                yield return InstanciateMarker(pos, canModifyPos: canModifyPos);
+            return link.PathKey;
+        }
 
-            if(canModifyPos)
+        public string CreatePoint(PositionDatabaseWaypoint pos, bool canModifyPos = false, string tag = "")
+        {
+            /*
+            Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- ");
+            */
+
+            if (!init) return null;
+            if (RootObject == null) return null;
+            if (pos == null) return null;
+
+            if (tag == "") tag = TagOf(pos);
+
+            if (tags.Contains(tag))
             {
-                PositionDatabaseWaypointHandle h = pos.ObjectCenterReference.GetComponent<PositionDatabaseWaypointHandle>();
-                h.SetDbChangable(true);
+                Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- point already instanced; returning tag {tag}");
+                return tag;
             }
+
+            Debug.Log($"CreatePoint(posID:{pos.PositionID}, canModifyPos:{canModifyPos}, tag:{tag}) -- point not found: making new instance");
+            InstanciateMarker(tag, pos, canModifyPos: canModifyPos);
+
+            return tag;
         }
 
-        public bool CreatePathSegment(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, bool cleanBefore = false, bool canModifyPos = false)
+        public bool CreatePath(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, string tag1 = "", string tag2 = "", string tagLink = "")
         {
             if (!init) return false;
             if (RootObject == null) return false;
             if (startPos == null || endPos == null)
                 return false;
+
+            if (tag1 == "") tag1 = TagOf(startPos);
+            if (tag2 == "") tag2 = TagOf(endPos);
+            if (!tags.Contains(tag1) || !tags.Contains(tag2)) return false;
             PositionDatabasePath link = startPos.GetPathTo(endPos);
-            if (link == null)
-                return false;
-            if (startPos.ObjectCenterReference != null && !tags.Contains(startPos.ObjectCenterReference.name)) return false;
-            if (endPos.ObjectCenterReference != null && !tags.Contains(endPos.ObjectCenterReference.name)) return false;
+            if (link == null) return false;
+            if (linkKeys.Contains(TagOf(link))) return false;
 
-            if (cleanBefore)
-                this.Clean();
+            GameObject goStart = MinimapReference.TryGetItemGameObject(tag1);
+            GameObject goEnd = MinimapReference.TryGetItemGameObject(tag2);
 
-            linkKeys.Add(link.PathKey);
-            _ = StartCoroutine(ORCOR_CreatePathSegment(startPos, endPos, link, canModifyPos: canModifyPos));
+            link.Renderer = goStart.AddComponent<FlexibleLineRenderer>();
+            ((FlexibleLineRenderer)link.Renderer).Object1 = goStart;
+            ((FlexibleLineRenderer)link.Renderer).Object2 = goEnd;
 
+            linkKeys.Add((tagLink == "" ? TagOf(link) : tagLink));
             return true;
         }
 
-        private IEnumerator ORCOR_CreatePathSegment(PositionDatabaseWaypoint startPos, PositionDatabaseWaypoint endPos, PositionDatabasePath link, bool canModifyPos = false)
+        private void InstanciateMarker(string tag, PositionDatabaseWaypoint pos, bool canModifyPos = false)
         {
-            bool startInstance = false;
-            if (startPos.ObjectCenterReference == null)
-            {
-                yield return InstanciateMarker(startPos, canModifyPos: canModifyPos);
-                startInstance = true;
-            }
+            /*
+            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- ");
+            */
 
-            bool endInstance = false;
-            if (endPos.ObjectCenterReference == null)
-            {
-                yield return InstanciateMarker(endPos, canModifyPos: canModifyPos);
-                endInstance = true;
-            }
+            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- START");
+            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- (before instance) tags.Contains(tag:{tag}) ? {tags.Contains(tag)}");
 
-            link.Renderer = startPos.ObjectCenterReference.AddComponent<FlexibleLineRenderer>();
-            ((FlexibleLineRenderer)link.Renderer).Object1 = startPos.ObjectCenterReference;
-            ((FlexibleLineRenderer)link.Renderer).Object2 = endPos.ObjectCenterReference;
-
-            if (canModifyPos)
-            {
-                if (startInstance)
-                {
-                    PositionDatabaseWaypointHandle hStart = startPos.ObjectCenterReference.GetComponent<PositionDatabaseWaypointHandle>();
-                    hStart.SetDbChangable(true);
-                }
-
-                if (endInstance)
-                {
-                    PositionDatabaseWaypointHandle hEnd = endPos.ObjectCenterReference.GetComponent<PositionDatabaseWaypointHandle>();
-                    hEnd.SetDbChangable(true);
-                }
-            }
-        }
-
-        private IEnumerator InstanciateMarker(PositionDatabaseWaypoint pos, bool canModifyPos = false)
-        {
-            string tag = "NODE_" + id.ToString("0000");
-            ++id;
-
-            yield return builder.BSCOR_Build(position: pos.AreaCenter);
+            builder.SpawnUnderObject = RootObject;
+            builder.InitName = tag;
+            builder.Build(position: pos.AreaCenter);
             
             GameObject go = builder.GetLastSpawned().gameObject;
-            go.name = tag;
-            tags.Add(tag);
-            go.transform.SetParent(RootObject.transform);
-            PositionDatabaseWaypointHandle h = go.AddComponent<PositionDatabaseWaypointHandle>();
-            h.DatabasePosition = pos;
-
             MinimapReference.TrackGameObject(go, tag, ignoreOrderCriterion: true);
 
-            h.SetDbChangable(canModifyPos, handleReference: false);
-            h.DatabasePosition.ObjectCenterReference = h.gameObject;
-            if (canModifyPos)
-                h.DatabasePosition.ObjectCenterReference = go;
+            tags.Add(tag);
+
+            PositionDatabaseWaypointHandle h = go.AddComponent<PositionDatabaseWaypointHandle>();
+            h.Init();
+            h.DatabasePosition = pos;
+            h.SetDbChangable(canModifyPos, handleReference: true);
+
+            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- (after instance) tags.Contains(tag:{tag}) ? {tags.Contains(tag)}");
+            Debug.Log($"InstanciateMarker(tag:{tag}, pos:{pos.PositionID}, canModifyPos:{canModifyPos}) -- END");
         }
 
 
 
         // ===== DELETE MARKERS ===== //
 
-        public void Clean()
+        public void RemoveMarkerAll(HashSet<string> ExclusionListWps = null)
         {
+            /*
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- ");
+            */
+
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- START");
+            string ss = "";
+
             if (!init) return;
 
+            ss = "";
+            foreach (var tag in tags) ss += tag + ",";
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags before cleanup: {ss}");
+
+            if (ExclusionListWps == null) ExclusionListWps = new HashSet<string>();
+            ss = "";
+            foreach (var tag in ExclusionListWps) ss += tag + ",";
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags in exclusion list: {ss}");
+
             StopAllCoroutines();
-            MinimapReference.UntrackAll(destroy: true);
-            tags.Clear();
-            linkKeys.Clear();
+
+            /*
+            foreach (string tag in tags)
+            {
+                MinimapReference.TryGetItemGameObject(tag).GetComponent<PositionDatabaseWaypointHandle>().SetDbChangable(false, handleReference: true);
+            }
+            */
+            
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- found tags to remove: {tags.Count}");
+            var enm = tags.GetEnumerator();
+            int deleted = 0;
+            int skip = 0;
+            while (enm.MoveNext())
+            {
+                string cur = enm.Current;
+                Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- cur:{cur}");
+
+                if (ExclusionListWps.Contains(cur))
+                {
+                    Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- object is in exclusion list; skip");
+                    skip++;
+                    continue;
+                }
+
+                Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- removing marker with ID:{cur}");
+                RemoveMarker(cur, removeWpRefFromHash: false);
+                tags.Remove(cur);
+                enm = tags.GetEnumerator();
+                deleted++;
+            }
+
+            ss = "";
+            foreach (var tag in tags) ss += tag + ",";
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- tags after cleanup: {ss}");
+
+            Debug.Log($"RemoveMarkerAll(ExclusionListWps:{ExclusionListWps.Count}) -- END with deleted:{deleted} skip:{skip}");
+        }
+
+        public bool RemoveMarker(string tag, bool removeWpRefFromHash = true)
+        {
+            /*
+            Debug.Log($"RemoveMarker(tag:{tag}) -- ");
+            */
+
+            Debug.Log($"RemoveMarker(tag:{tag}) -- START");
+
+            if (!init) return false;
+            if (!tags.Contains(tag)) return false;
+
+            GameObject toDel = MinimapReference.TryGetItemGameObject(tag);
+            PositionDatabaseWaypointHandle hDel = toDel.GetComponent<PositionDatabaseWaypointHandle>();
+            Debug.Log($"RemoveMarker(tag:{tag}) -- toDel with posID:{hDel.DatabasePosition.PositionID}");
+
+            hDel.SetDbChangable(false, handleReference: true);
+
+            Debug.Log($"RemoveMarker(tag:{tag}) -- found links:{hDel.DatabasePosition.Paths.Count}");
+            foreach (PositionDatabasePath link in hDel.DatabasePosition.Paths)
+            {
+                string pathKey = link.PathKey;
+                if(!linkKeys.Contains(pathKey))
+                {
+                    Debug.Log($"RemoveMarker(tag:{tag}) -- link with key:{pathKey} not instanced; skip");
+                    continue;
+                }
+
+                Debug.Log($"RemoveMarker(tag:{tag}) -- removing link with key:{pathKey}");
+
+                FlexibleLineRenderer line = (FlexibleLineRenderer) link.Renderer;
+                Debug.Log($"RemoveMarker(tag:{tag}) -- line to Detroy is owned by go:{line.gameObject.name}");
+                MonoBehaviour.DestroyImmediate(line, true);
+
+                linkKeys.Remove(pathKey);
+            }
+
+            MinimapReference.UntrackGameObject(tag, destroy: true);
+            if(removeWpRefFromHash) tags.Remove(tag);
+
+            Debug.Log($"RemoveMarker(tag:{tag}) -- END returning true");
+            return true;
         }
 
 
