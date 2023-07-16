@@ -2905,7 +2905,7 @@ MonoBehaviour:
   lifetime: 0
   PositionOffset: {x: -0.25, y: -0.2, z: 0.5}
   RotationOffset: {x: -45, y: 0, z: 0}
-  RotationMaxX: 15
+  RotationMaxX: 10
 --- !u!114 &1049658713
 MonoBehaviour:
   m_ObjectHideFlags: 0
