@@ -99,13 +99,13 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
             if (prevWp != null)
             {
-                Debug.Log($"onChangeCallback() -- Found prevWP:{prevWp.PositionID}");
+                // Debug.Log($"onChangeCallback() -- Found prevWP:{prevWp.PositionID}");
 
                 string wpPrevTag = DrawerReference.TagOf(prevWp);
                 PositionDatabaseWaypointHandle wpPrevObj = DrawerReference.GetHandleOfWaypoint(wpPrevTag);
                 if(wpPrevObj == null)
                 {
-                    Debug.LogError($"onChangeCallback() -- DrawerReference.GetHandleOfWaypoint(wpPrevTag:{wpPrevTag}) returned NULL");
+                    // Debug.LogError($"onChangeCallback() -- DrawerReference.GetHandleOfWaypoint(wpPrevTag:{wpPrevTag}) returned NULL");
                 }
 
                 if (!swichMarkerStatus(wpPrevObj, false)) return;
@@ -118,7 +118,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             Debug.Log($"onChangeCallback() -- current zone is {wp.PositionID} with TAG:{wpTag}");
             if (!DrawerReference.IsHandledByDrawerWaypoint(wpTag))
             {
-                Debug.Log($"onChangeCallback() -- unknown TAG:{wpTag} -- CLOSING");
+                // Debug.Log($"onChangeCallback() -- unknown TAG:{wpTag} -- CLOSING");
                 return;
             }
 
@@ -132,8 +132,6 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
         private bool swichMarkerStatus(PositionDatabaseWaypointHandle wpHandle, bool opt)
         {
-            Debug.Log($"swichMarkerStatus(wpHandle:{wpHandle.DatabasePosition.PositionID}, opt:{opt}) -- START");
-
             GameObject wpGo = wpHandle.gameObject;
             if(wpGo.transform.Find("home") == null)
             {
@@ -159,7 +157,6 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             else
             {
                 // disattiva (prev)
-
                 renderedGo.GetComponent<Renderer>().material = baseMaterial;
 
                 foreach (PositionDatabasePath link in wpHandle.DatabasePosition.Paths)
