@@ -2923,6 +2923,7 @@ MonoBehaviour:
   MapPivot: {fileID: 1990617025}
   SwitchUpdate: 1
   ApplyDisplacement: 1
+  RotateMapByCamera: 1
   ScaleFactor: 10
   SpaceSize: {x: 6, y: 1, z: 6}
   dbZone: 1
@@ -3086,6 +3087,8 @@ GameObject:
   - component: {fileID: 1124494748}
   - component: {fileID: 1124494749}
   - component: {fileID: 1124494751}
+  - component: {fileID: 1124494746}
+  - component: {fileID: 1124494747}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -3128,6 +3131,37 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1124494746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fe0a95e5cda4fc47a7a537c60dd7317, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  orientation: {x: 0, y: 0, z: 0}
+  VerticalAngle: 0
+--- !u!114 &1124494747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40712e67ca4acb24398c8db7d14f5728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DrawerReference: {fileID: 1124494749}
+  DatabaseReference: {fileID: 1124494744}
+  CursorMaterial: {fileID: 2100000, guid: 884537f440f6f7241957fab32772edfe, type: 2}
+  prevID: -1
+  ID: -1
 --- !u!114 &1124494748
 MonoBehaviour:
   m_ObjectHideFlags: 0

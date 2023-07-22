@@ -256,6 +256,18 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
 
 
 
+        // ===== GET MARKERS ===== //
+
+        public PositionDatabaseWaypointHandle GetHandleOfWaypoint(string tag)
+        {
+            if (!init) return null;
+            if (!tags.Contains(tag)) return null;
+
+            return MinimapReference.TryGetItemGameObject(tag).GetComponent<PositionDatabaseWaypointHandle>();
+        }
+
+
+
         // ===== DATA CHECKS ===== //
 
         public bool IsHandledByDrawerWaypoint(string tag)

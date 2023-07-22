@@ -20,6 +20,8 @@ public class MinimapPivot : MonoBehaviour
     public bool SwitchUpdate = true;
     [Tooltip("(test) Apply pivot displace?")]
     public bool ApplyDisplacement = true;
+    [Tooltip("Apply rotation wrt the camera")]
+    public bool RotateMapByCamera = true;
     [Tooltip("Scaling factor for the main object")]
     [Min(0.0f)]
     public float ScaleFactor = 100.0f;
@@ -40,6 +42,8 @@ public class MinimapPivot : MonoBehaviour
 
     // ...
     private BoundsControl boundsControl = null;
+    // ...
+    private GameObject externalPivot = null;
 
     
 
@@ -51,6 +55,13 @@ public class MinimapPivot : MonoBehaviour
         BoxReference.center = 0.5f * SpaceSize;
         boundsControl = MapRoot.AddComponent<BoundsControl>();
         boundsControl.CalculationMethod = BoundsCalculationMethod.ColliderOnly;
+
+        externalPivot = new GameObject();
+        externalPivot.name = "External Pivot";
+        externalPivot.transform.parent = MapRoot.transform;
+        externalPivot.transform.localPosition = 0.5f * SpaceSize;
+        externalPivot.transform.localRotation = Quaternion.identity;
+        MapPivot.transform.parent = externalPivot.transform;
     }
 
     private void Update()
@@ -63,11 +74,13 @@ public class MinimapPivot : MonoBehaviour
         spacePoint = spaceCenter;
 
         displaceVector = spaceCenter - avgPos;
-        if(ApplyDisplacement)
-            // MapPivot.transform.localPosition = MapRoot.transform.localPosition + (spaceCenter - avgPos);
-            MapPivot.transform.localPosition = (spaceCenter - avgPos);
+        // if(ApplyDisplacement) MapPivot.transform.localPosition = (spaceCenter - avgPos);
+        if (ApplyDisplacement) MapPivot.transform.localPosition = -avgPos;
 
         MapRoot.transform.localScale = (ScaleFactor / 100.0f) * Vector3.one;
+
+        if(RotateMapByCamera)
+            externalPivot.transform.localRotation = Quaternion.Euler(x: 0.0f, y: -Camera.main.transform.rotation.eulerAngles.y, z: 0.0f);
     }
 
 
