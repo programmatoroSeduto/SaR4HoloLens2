@@ -115,7 +115,7 @@ namespace SaR4Hololens2.Scenes.BuildingExplorationV2.Scripts.Components
             }
 
             string wpTag = DrawerReference.TagOf(wp);
-            Debug.Log($"onChangeCallback() -- current zone is {wp.PositionID} with TAG:{wpTag}");
+            // Debug.Log($"onChangeCallback() -- current zone is {wp.PositionID} with TAG:{wpTag}");
             if (!DrawerReference.IsHandledByDrawerWaypoint(wpTag))
             {
                 // Debug.Log($"onChangeCallback() -- unknown TAG:{wpTag} -- CLOSING");

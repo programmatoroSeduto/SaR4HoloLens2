@@ -2877,6 +2877,7 @@ GameObject:
   - component: {fileID: 1049658715}
   - component: {fileID: 1049658716}
   - component: {fileID: 1049658712}
+  - component: {fileID: 1049658717}
   m_Layer: 0
   m_Name: MinimapMainRoot
   m_TagString: Untagged
@@ -2977,6 +2978,23 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0.5, y: 0.5, z: 0.5}
+--- !u!114 &1049658717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1049658711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40712e67ca4acb24398c8db7d14f5728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DrawerReference: {fileID: 1124494749}
+  DatabaseReference: {fileID: 1124494744}
+  CursorMaterial: {fileID: 2100000, guid: 884537f440f6f7241957fab32772edfe, type: 2}
+  prevID: -1
+  ID: -1
 --- !u!1 &1097077923
 GameObject:
   m_ObjectHideFlags: 0
@@ -3088,7 +3106,6 @@ GameObject:
   - component: {fileID: 1124494749}
   - component: {fileID: 1124494751}
   - component: {fileID: 1124494746}
-  - component: {fileID: 1124494747}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -3145,23 +3162,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orientation: {x: 0, y: 0, z: 0}
   VerticalAngle: 0
---- !u!114 &1124494747
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1124494743}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40712e67ca4acb24398c8db7d14f5728, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DrawerReference: {fileID: 1124494749}
-  DatabaseReference: {fileID: 1124494744}
-  CursorMaterial: {fileID: 2100000, guid: 884537f440f6f7241957fab32772edfe, type: 2}
-  prevID: -1
-  ID: -1
 --- !u!114 &1124494748
 MonoBehaviour:
   m_ObjectHideFlags: 0
