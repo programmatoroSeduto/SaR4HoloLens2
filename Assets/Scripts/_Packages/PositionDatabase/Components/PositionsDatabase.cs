@@ -217,18 +217,6 @@ namespace Packages.PositionDatabase.Components
 
         private void Update()
         {
-            // DEBUG ZONE
-            /*
-            if (currentZone != null)
-            {
-                debug_currentZoneID = CurrentZone.PositionID;
-            }
-            debug_sortWorkingIdx = dynSortData.WorkingClusters;
-            debug_sortIdx = (List<int>)dynSortData.WorkingIndices;
-            debug_dbCount = db.Count;
-            */
-            // DEBUG ZONE
-
             tryInsertPosition();
             updateReferenceObect();
             dynamicSortStep();
@@ -237,15 +225,13 @@ namespace Packages.PositionDatabase.Components
 
 
 
-        // ===== EVENTS ===== //
+        // ===== PUBLIC METHODS ===== //
 
-        // ...
-
-
-
-        // ===== PUBLIC CLASS METHODS ===== //
-
-        // ...
+        public void SortAll()
+        {
+            if (sortReferencePosition != null)
+                db.Sort();
+        }
 
 
 

@@ -2771,6 +2771,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1124494745}
+  - component: {fileID: 1124494744}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -2778,6 +2779,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1124494744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8286624d5938393478548abbc8b087af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FilePath: C:\Shared\output
+  FileName: output.txt
+  WriteThis: 
+  FileContent: 
 --- !u!4 &1124494745
 Transform:
   m_ObjectHideFlags: 0

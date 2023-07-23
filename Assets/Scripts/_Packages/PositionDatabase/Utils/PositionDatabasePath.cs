@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,9 +29,9 @@ namespace Packages.PositionDatabase.Utils
             }
         }
 
-        public string PathKey
+        public string Key
         {
-            get => wp1.PositionID.ToString("0000") + "_" + wp2.PositionID.ToString("0000");
+            get => wp1.Key + "_" + wp2.Key;
         }
 
 

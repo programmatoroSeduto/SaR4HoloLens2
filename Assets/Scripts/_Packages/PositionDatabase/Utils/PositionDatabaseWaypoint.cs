@@ -15,6 +15,11 @@ namespace Packages.PositionDatabase.Utils
             get => positionID;
         }
 
+        public string Key
+        {
+            get => positionID.ToString("0000");
+        }
+
         // references
         public PositionsDatabase DBReference = null;
         public GameObject ObjectCenterReference = null;
