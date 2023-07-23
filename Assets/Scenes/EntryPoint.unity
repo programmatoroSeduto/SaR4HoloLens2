@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SceneName: BuildingGeolocation
-  UseDelay: 1
+  UseDelay: 0
   DelaySeconds: 2
 --- !u!4 &69658199
 Transform:
