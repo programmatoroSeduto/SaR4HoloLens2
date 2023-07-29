@@ -787,7 +787,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d9acc7968244a8886f3af591305bcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activeProfile: {fileID: 11400000, guid: 31a611a779d3499e8e35f1a2018ca841, type: 2}
+  activeProfile: {fileID: 11400000, guid: 2cf65003fa6c96046ac9a375833f55a5, type: 2}
 --- !u!4 &495584285
 Transform:
   m_ObjectHideFlags: 0
@@ -2771,9 +2771,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1124494745}
+  - component: {fileID: 1124494748}
+  - component: {fileID: 1124494746}
   - component: {fileID: 1124494744}
   - component: {fileID: 1124494747}
-  - component: {fileID: 1124494746}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -2788,17 +2789,51 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8286624d5938393478548abbc8b087af, type: 3}
+  m_Script: {fileID: 11500000, guid: e06e8a4354e4c6845aa2e4115d703f60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FilePath: C:\Shared\output
-  FileName: output.txt
-  OperationPeriod: 1
-  StillWriting: 0
-  WriteThis: 
-  FileContent: 
+  BaseDistance: 0.75
+  DistanceTolerance: 0.01
+  ReferenceObject: {fileID: 0}
+  UseClusters: 0
+  ClusterSize: 4
+  UseMaxIndices: 0
+  MaxIndices: 2
+  CallOnZoneCreated:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1124494748}
+        m_TargetAssemblyTypeName: Packages.PositionDatabase.ModuleTesting.TestingPositionDB,
+          Assembly-CSharp
+        m_MethodName: EVENT_OnZoneCreated
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  CallOnZoneChanged:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1124494748}
+        m_TargetAssemblyTypeName: Packages.PositionDatabase.ModuleTesting.TestingPositionDB,
+          Assembly-CSharp
+        m_MethodName: EVENT_OnZoneChanged
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  WriterReference: {fileID: 1124494746}
 --- !u!4 &1124494745
 Transform:
   m_ObjectHideFlags: 0
@@ -2822,20 +2857,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1124494743}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Script: {fileID: 11500000, guid: 87dfb3841755380498a836cd667c9b84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FileName: yay
-  UseTimestamp: 1
-  CreateFileOnStart: 1
-  CSVFields:
-  - kkey
-  - ca2
-  - ca3
-  ApplyTimestampColumn: 1
-  ApplyDurationColumn: 1
-  ApplyCounter: 1
-  Separator: ___
 --- !u!114 &1124494747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2843,14 +2867,67 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8cc8532930d5634ca45934711558484, type: 3}
+  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FileName: newfile
-  UseTimestamp: 0
-  CreateFileOnStart: 0
+  isFocusRequired: 0
+  keywords:
+  - keyword: Export
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1124494744}
+          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionsDatabase,
+            Assembly-CSharp
+          m_MethodName: EVENT_ExportJson
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - keyword: Import
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1124494744}
+          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionsDatabase,
+            Assembly-CSharp
+          m_MethodName: EVENT_ImportJson
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  persistentKeywords: 0
+  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
+--- !u!114 &1124494748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b36918ad299a88e4e99fb0afe40f2faa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DatabaseReference: {fileID: 1124494744}
+  ManageZoneCreated: 1
+  ManageZoneChanged: 1
+  debug_currentZoneID: -1
+  debug_hit: 0
+  debug_miss: 0
 --- !u!1 &1130242957
 GameObject:
   m_ObjectHideFlags: 0

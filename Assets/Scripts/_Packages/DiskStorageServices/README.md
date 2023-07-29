@@ -43,6 +43,10 @@ Packages.DiskStorageServices.Components
 	
 	This component allows to create a very simple output stream on file for the Unity log. 
 
+- StorageWriterOneShot
+	
+	it allows a more detailed management on the creation and management of the files of the application. UWP functionalities are abstracted in this class.
+
 ```
 Packages.DiskStorageServices.Utils
 ```

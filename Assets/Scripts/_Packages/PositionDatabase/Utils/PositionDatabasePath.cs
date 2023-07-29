@@ -50,5 +50,24 @@ namespace Packages.PositionDatabase.Utils
 
             return (wp1 == wpFrom ? wp2 : wp1);
         }
+
+
+
+        // ===== FEATURE EXPORT DATA ===== //
+
+        // export as JSON item
+        public string ToJson()
+        {
+            return "{" + $"'key':'{this.Key}' , 'wp1':'{this.wp1.Key}' , 'wp2':'{this.wp2.Key}'" + "}";
+        }
+
+        // export as CSV item
+        public List<string> ToCsv(bool header=false)
+        {
+            if (header)
+                return new List<string> { "key", "wp1", "wp2" };
+            else
+                return new List<string> { this.Key, this.wp1.Key, this.wp2.Key };
+        }
     }
 }

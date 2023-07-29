@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Packages.PositionDatabase.Utils;
+using Packages.DiskStorageServices.Components;
 
 namespace Packages.PositionDatabase.Components
 {
@@ -36,6 +37,10 @@ namespace Packages.PositionDatabase.Components
         public List<UnityEvent> CallOnZoneCreated = new List<UnityEvent>();
         [Tooltip("Events called when the current zone changes")]
         public List<UnityEvent> CallOnZoneChanged = new List<UnityEvent>();
+
+        [Header("Import Export settings")]
+        [Tooltip("reference to the writer")]
+        public StorageHubOneShot WriterReference = null;
 
         // [Header("For in-editor Debugging mode")]
         // public int debug_dbCount = 0;
@@ -72,6 +77,8 @@ namespace Packages.PositionDatabase.Components
         private PositionDatabaseWaypoint prevZone = null;
         // used by notifications
         private PositionDatabaseWaypoint dataZoneCreated = null;
+        // active when the database is importing infos from file
+        private bool isImporting = false;
 
         // the database is a sem-ordered list of positions (the current zone "is" the first element of the list, best approximation)
         private List<PositionDatabaseWaypoint> db = new List<PositionDatabaseWaypoint>();
@@ -122,9 +129,24 @@ namespace Packages.PositionDatabase.Components
             public int MaxIndices = -1; // -1 if not used
 
             private int N = 0; // elements in the array
-            private int np; // used for updating cluster size
+            private int np = 0; // used for updating cluster size
             private List<int> idx = new List<int>();
             private int idxMax = 0;
+
+            public void Reset(int cluster=-1, int maxIdx=-1)
+            {
+                N = db.Count;
+                MaxIndices = maxIdx;
+                ClusterLength = cluster;
+
+                idx.Clear();
+                if (cluster > 0)
+                {
+                    int cap = (int)Math.Floor(Math.Min((float)N / (float)cluster, (maxIdx <= 0 ? int.MaxValue : maxIdx)));
+                    for (int i = 0; i < cap; ++i) idx.Add(0);
+                    redistributeIdx();
+                }
+            }
 
             public void DynamicSort(Vector3 sortReferencePosition)
             {
@@ -217,10 +239,185 @@ namespace Packages.PositionDatabase.Components
 
         private void Update()
         {
+            if (isImporting) return;
+
             tryInsertPosition();
-            updateReferenceObect();
+            updateReferenceObject();
             dynamicSortStep();
             onZoneChange();
+        }
+
+
+
+        // ===== FEATURE IMPORT EXPORT ===== //
+
+        [Serializable]
+        private class JsonDb
+        {
+            public float BaseDistance;
+            public float DistanceTolerance;
+            public bool UseClusters;
+            public int ClusterSize;
+            public bool UseMaxIndices;
+            public int MaxIndices;
+
+            public List<JsonWaypoint> Waypoints = new List<JsonWaypoint>();
+            // public List<JsonLink> Links;
+        }
+
+        [Serializable]
+        private class JsonWaypoint
+        {
+            public string Key;
+            public int PositionID;
+            public float AreaRadius;
+            public List<float> AreaCenter = new List<float> { 0.0f, 0.0f, 0.0f };
+            public List<float> FirstAreaCenter = new List<float> { 0.0f, 0.0f, 0.0f };
+            public List<JsonLink> Paths = new List<JsonLink>();
+            public string CreatedAt;
+        }
+
+        [Serializable]
+        private class JsonLink
+        {
+            public string Key;
+            public int Waypoint1;
+            public int Waypoint2;
+        }
+
+        public void EVENT_ExportJson()
+        {
+            if (WriterReference == null) return;
+
+            // Debug.Log("Collecting data ... ");
+
+            JsonDb dump = new JsonDb();
+
+            dump.BaseDistance = this.BaseDistance;
+            dump.DistanceTolerance = this.DistanceTolerance;
+            dump.UseClusters = this.UseClusters;
+            dump.UseMaxIndices = this.UseMaxIndices;
+            dump.MaxIndices = this.MaxIndices;
+
+            foreach(PositionDatabaseWaypoint wp in db)
+            {
+                JsonWaypoint jsonWp = new JsonWaypoint();
+
+                jsonWp.Key = wp.Key;
+                jsonWp.PositionID = wp.PositionID;
+                jsonWp.AreaRadius = wp.AreaRadius;
+                jsonWp.AreaCenter = new List<float> { wp.AreaCenter.x, wp.AreaCenter.y, wp.AreaCenter.z };
+                jsonWp.FirstAreaCenter = new List<float> { wp.FirstAreaCenter.x, wp.FirstAreaCenter.y, wp.FirstAreaCenter.z };
+                jsonWp.CreatedAt = wp.Timestamp.ToString();
+
+                foreach(PositionDatabasePath link in wp.Paths)
+                {
+                    if(link.Key.StartsWith(wp.Key))
+                    {
+                        JsonLink lk = new JsonLink();
+                        
+                        lk.Key = link.Key;
+                        lk.Waypoint1 = link.wp1.PositionID;
+                        lk.Waypoint2 = link.wp2.PositionID;
+
+                        jsonWp.Paths.Add(lk);
+                    }
+                }
+
+                dump.Waypoints.Add(jsonWp);
+            }
+
+            // Debug.Log("Calling component ... ");
+            WriterReference.WriteOneShot("db_export", "json", JsonUtility.ToJson(dump), useTimestamp: false);
+        }
+
+        public void EVENT_ImportJson(bool fullRefresh = false)
+        {
+            StartCoroutine(COR_ImportJson());
+        }
+
+        public IEnumerator COR_ImportJson(bool fullRefresh = false)
+        {
+            Debug.Log("Starting import...");
+            yield return null;
+            isImporting = true;
+
+            if (fullRefresh)
+            {
+                // DA RIVEDERE -- molto pericolosa
+                Debug.Log("full refresh...");
+                db.Clear();
+            }
+
+            yield return StartCoroutine(WriterReference.ReadOneShot("db_export.json"));
+            if(!WriterReference.FileReadSuccess)
+            {
+                Debug.LogError("ERROR while reading the JSON code for the import");
+                isImporting = false;
+                yield break;
+            }
+
+            Debug.Log("reading JSON...");
+            JsonDb jdb = JsonUtility.FromJson<JsonDb>(WriterReference.FileContent);
+
+            this.BaseDistance = jdb.BaseDistance;
+            this.DistanceTolerance = jdb.DistanceTolerance;
+            this.UseClusters = jdb.UseClusters;
+            this.UseMaxIndices = jdb.UseMaxIndices;
+            this.MaxIndices = jdb.MaxIndices;
+
+            Dictionary<int, PositionDatabaseWaypoint> wpDict = new Dictionary<int, PositionDatabaseWaypoint>();
+            Dictionary<int, PositionDatabasePath> waitingLinks = new Dictionary<int, PositionDatabasePath>();
+            foreach(JsonWaypoint wp in jdb.Waypoints)
+            {
+                PositionDatabaseWaypoint dbwp = new PositionDatabaseWaypoint();
+                dbwp.setPositionID(wp.PositionID);
+                dbwp.AreaRadius = wp.AreaRadius;
+                dbwp.AreaCenter = new Vector3(wp.AreaCenter[0], wp.AreaCenter[1], wp.AreaCenter[2]);
+                dbwp.setFirstAreaCenter(new Vector3(wp.FirstAreaCenter[0], wp.FirstAreaCenter[1], wp.FirstAreaCenter[2]));
+                DateTime.TryParse(wp.CreatedAt, out dbwp.Timestamp);
+                Debug.Log($"reading WP {wp.PositionID}");
+
+                foreach(JsonLink link in wp.Paths)
+                {
+                    Debug.Log($"Reading link {link.Key}");
+
+                    PositionDatabasePath dblink = new PositionDatabasePath();
+                    dblink.wp1 = dbwp;
+                    if (wpDict.ContainsKey(link.Waypoint2))
+                    {
+                        Debug.Log($"Reading link {link.Key} CREATE");
+                        dblink.wp2 = wpDict[link.Waypoint2];
+                        dbwp.AddPath(wpDict[link.Waypoint2]);
+                    }
+                    else
+                    {
+                        Debug.Log($"Reading link {link.Key} WAIT");
+                        waitingLinks.Add(link.Waypoint2, dblink);
+                    }
+                        
+                }
+
+                wpDict.Add(wp.PositionID, dbwp);
+                db.Add(dbwp);
+            }
+            foreach(KeyValuePair<int, PositionDatabasePath> unresolved in waitingLinks)
+            {
+                Debug.Log($"Reading link {unresolved.Value.wp1.Key}_{wpDict[unresolved.Key].Key} RESOLVE");
+                unresolved.Value.wp2 = wpDict[unresolved.Key];
+                wpDict[unresolved.Key].AddPath(unresolved.Value.wp2);
+            }
+
+            Debug.Log("Sorting and setting up...");
+
+            dynSortData.Reset();
+            SortAll();
+            currentZone = db[0];
+            Debug.Log($"Current position is {db[0]}");
+            onZoneChange();
+
+            isImporting = false;
+            Debug.Log("Done!");
         }
 
 
@@ -230,14 +427,17 @@ namespace Packages.PositionDatabase.Components
         public void SortAll()
         {
             if (sortReferencePosition != null)
-                db.Sort();
+                db.Sort((wp1, wp2) => { 
+                    updateReferenceObject(); 
+                    return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition)); 
+                });
         }
 
 
 
         // ===== PRIVATE METHODS ===== //
 
-        private void updateReferenceObect()
+        private void updateReferenceObject()
         {
             if (ReferenceObject == null)
                 sortReferencePosition = Camera.main.transform.position;

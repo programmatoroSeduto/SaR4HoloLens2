@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
-// using Packages.DiskStorageServices.Types;
-
 #if WINDOWS_UWP
 using Windows.Foundation;
 using Windows.Storage;
@@ -26,10 +24,8 @@ namespace Packages.DiskStorageServices.Components
         [Header("Storage Base Settings")]
         [Tooltip("Name of the text file to write on")]
         public string FileName = "newfile";
-
         [Tooltip("Add timestamp at the end of the file")]
         public bool UseTimestamp = false;
-
         [Tooltip("Create file on start")]
         public bool CreateFileOnStart = false;
 
@@ -151,7 +147,8 @@ namespace Packages.DiskStorageServices.Components
 
             return true;
 #else
-        return false;
+            Debug.LogWarning($"[StorageWriterBase] WARNING: calling UWP function from non-UWP environment");
+            return true;
 #endif
         }
 

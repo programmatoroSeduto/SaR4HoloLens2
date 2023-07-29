@@ -15,7 +15,7 @@ maxdepth: 2
 
 ## Dependencies
 
-- **THIS PACKAGE** : 
+- **Disk Storage Services** : StorageWriterOneShot
 
 --
 
@@ -75,5 +75,13 @@ The script can be used for tuning the Position Database Component:
 - passing in a common area, the number of miss should keep the same value during the exploration
 - if the number of misses increases even if you're passing on a previously explored zone, the position database is not capable of following the user's movement
 - use clusters and max indexes to improve the follow rate
+
+--
+
+## Database Import Export
+
+currently, the database can be exported and imported in JSON format. 
+
+- **Export** : EVENT_ExportJson()
 
 --
