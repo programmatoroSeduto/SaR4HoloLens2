@@ -16,8 +16,9 @@ maxdepth: 2
 ## Dependencies
 
 - **Disk Storage Services** : StorageWriterOneShot
+- **AR Marker** : ARMarkerHandle
 
---
+---
 
 ## Namespaces Classes and Resources
 
@@ -27,6 +28,12 @@ Packages.PositionDatabase.Components
 
 - PositionsDatabase
 - PositionDatabaseWaypointHandle
+
+	Options:
+
+	<image src="./_docs/images/PositionDatabaseWaypointHandleComponent.png" alt="PositionDatabaseWaypointHandleComponent"/>
+
+	The script indicates that the marker, owner of this component, represents one position previously recorded into the database. The main functionality of the handle (curently) is to make positions in the database *modifieable* from their representations, which enables the user to correct some wrong position. 
 
 ```
 Packages.PositionDatabase.Utils
@@ -43,13 +50,13 @@ Packages.PositionDatabase.ModuleTesting
 	
 	<img src="./_docs/images/SETTINGS_TestingPositionDB.png" alt="">
 
---
+---
 
 ## Installation
 
 1. place the script inside the folder `_Packages`
 
---
+---
 
 ## Perform module testing and tuning
 
@@ -76,12 +83,31 @@ The script can be used for tuning the Position Database Component:
 - if the number of misses increases even if you're passing on a previously explored zone, the position database is not capable of following the user's movement
 - use clusters and max indexes to improve the follow rate
 
---
+---
 
 ## Database Import Export
 
 currently, the database can be exported and imported in JSON format. 
 
 - **Export** : EVENT_ExportJson()
+- **Import** : EVENT_ImportJson(), COR_ImportJson()
 
---
+---
+
+## Live Position Update (TRADURRE IN LINGUAGGIO UMANO e magari anche in inglese)
+
+Il principio è che, al primo inserimento, il DB registra la posizione corrente del riferimento. Questo record rimane nell’oggetto fin quando non viene assegnato un oggetto che rappresenta il waypoint. A quel punto, quando andrò a chiedere la posizione del waypoint, quello mi dovrà ritornare in maniera trasparente la posizione dell’oggetto piuttosto che la posizione iniziale. 
+
+Questo però non modifica di per sè la posizione. Per far sì che la posizione interna venga modificata, è necessario impostare a true il flag `bool CanUpdate` che dice al waypoint di aggiornare anche il record interno ogni volta che viene richiesta la posizione. Quindi il waypoint può riferirsi ad un oggetto, ma per poter effettivamente modificare il waypoint tramite la posizione dell’oggetto occorre usare il `CanUpdate`.
+
+---
+
+```{toctree}
+---
+cation: contents:
+maxdepth: 2
+---
+./README.md
+```
+
+---

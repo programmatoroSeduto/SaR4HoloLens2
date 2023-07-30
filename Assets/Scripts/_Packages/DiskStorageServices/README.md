@@ -17,7 +17,7 @@ maxdepth: 2
 
 *No dependencies are needed for this package.*
 
---
+---
 
 ## Namespaces Classes and Resources
 
@@ -51,12 +51,14 @@ Packages.DiskStorageServices.Components
 Packages.DiskStorageServices.Utils
 ```
 
-- ...
+*The package doesn't include Utils classes.*
 
 ```
 Packages.DiskStorageServices.ModuleTesting
 ```
 
 - TestingPCWriter
+	
+	Just for testing the SystemIO library from the PC. The script allows to use a file as a storage: it can write on the file, as well as read from the file, showing the content in the editor GUI inside a text box. 
 
---
+---

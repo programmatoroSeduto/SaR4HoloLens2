@@ -42,14 +42,6 @@ namespace Packages.PositionDatabase.Components
         [Tooltip("reference to the writer")]
         public StorageHubOneShot WriterReference = null;
 
-        // [Header("For in-editor Debugging mode")]
-        // public int debug_dbCount = 0;
-        // public int debug_currentZoneID;
-        // public Vector3 debug_currentZoneVector;
-        // public int debug_sortWorkingIdx = 0;
-        // public List<int> debug_sortIdx;
-
-
 
 
         // ===== PUBLIC ===== //
@@ -338,26 +330,26 @@ namespace Packages.PositionDatabase.Components
 
         public IEnumerator COR_ImportJson(bool fullRefresh = false)
         {
-            Debug.Log("Starting import...");
+            // Debug.Log("Starting import...");
             yield return null;
             isImporting = true;
 
             if (fullRefresh)
             {
                 // DA RIVEDERE -- molto pericolosa
-                Debug.Log("full refresh...");
+                // Debug.Log("full refresh...");
                 db.Clear();
             }
 
             yield return StartCoroutine(WriterReference.ReadOneShot("db_export.json"));
             if(!WriterReference.FileReadSuccess)
             {
-                Debug.LogError("ERROR while reading the JSON code for the import");
+                // Debug.LogError("ERROR while reading the JSON code for the import");
                 isImporting = false;
                 yield break;
             }
 
-            Debug.Log("reading JSON...");
+            // Debug.Log("reading JSON...");
             JsonDb jdb = JsonUtility.FromJson<JsonDb>(WriterReference.FileContent);
 
             this.BaseDistance = jdb.BaseDistance;
@@ -376,23 +368,23 @@ namespace Packages.PositionDatabase.Components
                 dbwp.AreaCenter = new Vector3(wp.AreaCenter[0], wp.AreaCenter[1], wp.AreaCenter[2]);
                 dbwp.setFirstAreaCenter(new Vector3(wp.FirstAreaCenter[0], wp.FirstAreaCenter[1], wp.FirstAreaCenter[2]));
                 DateTime.TryParse(wp.CreatedAt, out dbwp.Timestamp);
-                Debug.Log($"reading WP {wp.PositionID}");
+                // Debug.Log($"reading WP {wp.PositionID}");
 
                 foreach(JsonLink link in wp.Paths)
                 {
-                    Debug.Log($"Reading link {link.Key}");
+                    // Debug.Log($"Reading link {link.Key}");
 
                     PositionDatabasePath dblink = new PositionDatabasePath();
                     dblink.wp1 = dbwp;
                     if (wpDict.ContainsKey(link.Waypoint2))
                     {
-                        Debug.Log($"Reading link {link.Key} CREATE");
+                        // Debug.Log($"Reading link {link.Key} CREATE");
                         dblink.wp2 = wpDict[link.Waypoint2];
                         dbwp.AddPath(wpDict[link.Waypoint2]);
                     }
                     else
                     {
-                        Debug.Log($"Reading link {link.Key} WAIT");
+                        // Debug.Log($"Reading link {link.Key} WAIT");
                         waitingLinks.Add(link.Waypoint2, dblink);
                     }
                         
@@ -403,21 +395,21 @@ namespace Packages.PositionDatabase.Components
             }
             foreach(KeyValuePair<int, PositionDatabasePath> unresolved in waitingLinks)
             {
-                Debug.Log($"Reading link {unresolved.Value.wp1.Key}_{wpDict[unresolved.Key].Key} RESOLVE");
+                // Debug.Log($"Reading link {unresolved.Value.wp1.Key}_{wpDict[unresolved.Key].Key} RESOLVE");
                 unresolved.Value.wp2 = wpDict[unresolved.Key];
                 wpDict[unresolved.Key].AddPath(unresolved.Value.wp2);
             }
 
-            Debug.Log("Sorting and setting up...");
+            // Debug.Log("Sorting and setting up...");
 
             dynSortData.Reset();
             SortAll();
             currentZone = db[0];
-            Debug.Log($"Current position is {db[0]}");
+            // Debug.Log($"Current position is {db[0]}");
             onZoneChange();
 
             isImporting = false;
-            Debug.Log("Done!");
+            // Debug.Log("Done!");
         }
 
 

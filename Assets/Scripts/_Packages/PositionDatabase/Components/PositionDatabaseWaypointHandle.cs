@@ -7,6 +7,7 @@ using Microsoft.MixedReality.Toolkit.UI;
 using Microsoft.MixedReality.Toolkit.Input;
 
 using Packages.PositionDatabase.Utils;
+using Packages.ARMarker.Components;
 
 
 
@@ -18,6 +19,8 @@ namespace Packages.PositionDatabase.Components
         [Header("Main settings")]
         [Tooltip("Represented position")]
         public PositionDatabaseWaypoint DatabasePosition = null;
+        [Tooltip("The script of the marker")]
+        public ARMarkerHandle MarkerHandle = null;
 
 
 
@@ -34,8 +37,6 @@ namespace Packages.PositionDatabase.Components
 
         // either the component is allowed to change the position of the row in the db, or not
         private bool CanModifyDbPosition = false;
-        private ObjectManipulator objectManipulator = null;
-        private NearInteractionGrabbable nearInteraction = null;
 
 
 
@@ -43,13 +44,7 @@ namespace Packages.PositionDatabase.Components
 
         private void Start()
         {
-            Init();
-        }
-
-        public void Init()
-        {
-            objectManipulator = gameObject.GetComponent<ObjectManipulator>();
-            nearInteraction = gameObject.GetComponent<NearInteractionGrabbable>();
+            MarkerHandle = gameObject.GetComponent<ARMarkerHandle>();
         }
 
         private void OnDestroy()
@@ -63,8 +58,7 @@ namespace Packages.PositionDatabase.Components
 
 
         // ===== FEATURE SET CHANGABLE DB RECORD ===== //
-
-        // ritorna se la richiesta è andata a buon fine o no
+        
         public bool SetDbChangable(bool opt = false, bool handleReference = false)
         {
             if (DatabasePosition == null) return false;
@@ -80,15 +74,14 @@ namespace Packages.PositionDatabase.Components
 
         public bool SetManipulation(bool opt = true)
         {
-            if (objectManipulator == null || nearInteraction == null)
+            if(MarkerHandle == null)
             {
-                Debug.LogError("SetManipulation returned false");
-                return false;
+                MarkerHandle = gameObject.GetComponent<ARMarkerHandle>();
+                if (MarkerHandle == null)
+                    return false;
             }
 
-            objectManipulator.enabled = opt;
-            nearInteraction.enabled = opt;
-
+            MarkerHandle.IsManipulable = opt;
             return true;
         }
     }

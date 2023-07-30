@@ -104,8 +104,8 @@ namespace Packages.PositionDatabase.Utils
                 if (link.Renderer != null)
                 {
                     GameObject.Destroy(link.Renderer);
-                    link.Renderer = null;
                 }
+                link.Renderer = null;
             }
         }
 
