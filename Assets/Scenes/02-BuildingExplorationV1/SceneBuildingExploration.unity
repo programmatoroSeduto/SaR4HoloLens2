@@ -2771,11 +2771,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1124494745}
-  - component: {fileID: 1124494748}
   - component: {fileID: 1124494746}
   - component: {fileID: 1124494744}
-  - component: {fileID: 1124494747}
-  - component: {fileID: 1124494749}
   m_Layer: 0
   m_Name: TestServices
   m_TagString: Untagged
@@ -2790,51 +2787,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e06e8a4354e4c6845aa2e4115d703f60, type: 3}
+  m_Script: {fileID: 11500000, guid: 8029b51180a95b949baa7d232492e2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BaseDistance: 0.75
-  DistanceTolerance: 0.01
-  ReferenceObject: {fileID: 0}
-  UseClusters: 0
-  ClusterSize: 4
-  UseMaxIndices: 0
-  MaxIndices: 2
-  CallOnZoneCreated:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1124494748}
-        m_TargetAssemblyTypeName: Packages.PositionDatabase.ModuleTesting.TestingPositionDB,
-          Assembly-CSharp
-        m_MethodName: EVENT_OnZoneCreated
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  CallOnZoneChanged:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1124494748}
-        m_TargetAssemblyTypeName: Packages.PositionDatabase.ModuleTesting.TestingPositionDB,
-          Assembly-CSharp
-        m_MethodName: EVENT_OnZoneChanged
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  WriterReference: {fileID: 1124494746}
+  DbReference: {fileID: 1124494746}
+  DrawerReference: {fileID: 0}
+  StructureReference: {fileID: 0}
+  MarkersRoot: {fileID: 1427127098}
 --- !u!4 &1124494745
 Transform:
   m_ObjectHideFlags: 0
@@ -2856,96 +2817,21 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87dfb3841755380498a836cd667c9b84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1124494747
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isFocusRequired: 0
-  keywords:
-  - keyword: Export
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1124494744}
-          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionsDatabase,
-            Assembly-CSharp
-          m_MethodName: EVENT_ExportJson
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: Import
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1124494744}
-          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionsDatabase,
-            Assembly-CSharp
-          m_MethodName: EVENT_ImportJson
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  persistentKeywords: 0
-  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
---- !u!114 &1124494748
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b36918ad299a88e4e99fb0afe40f2faa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DatabaseReference: {fileID: 1124494744}
-  ManageZoneCreated: 1
-  ManageZoneChanged: 1
-  debug_currentZoneID: -1
-  debug_hit: 0
-  debug_miss: 0
---- !u!114 &1124494749
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1124494743}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 129391ab48451b04ca15e2d309d80f64, type: 3}
+  m_Script: {fileID: 11500000, guid: e06e8a4354e4c6845aa2e4115d703f60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  InitName: ARMarkerBuilder
-  InitPosition: {x: 0, y: 0, z: 1}
-  InitRotation: {x: -0, y: 0, z: 0}
-  SpawnOnStart: 1
-  SpawnUnderObject: {fileID: 0}
+  BaseDistance: 0.5
+  DistanceTolerance: 0.1
+  ReferenceObject: {fileID: 0}
+  UseClusters: 1
+  ClusterSize: 50
+  UseMaxIndices: 1
+  MaxIndices: 10
+  CallOnZoneCreated: []
+  CallOnZoneChanged: []
+  WriterReference: {fileID: 0}
 --- !u!1 &1130242957
 GameObject:
   m_ObjectHideFlags: 0
@@ -3909,6 +3795,36 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1386258048}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1427127098
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1427127100}
+  m_Layer: 0
+  m_Name: CollectionRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1427127100
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1427127098}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1442485739
 GameObject:
   m_ObjectHideFlags: 0
@@ -4013,6 +3929,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1446711983}
+  - component: {fileID: 1446711984}
   m_Layer: 0
   m_Name: TestInputs
   m_TagString: Untagged
@@ -4034,6 +3951,73 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1446711984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446711982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFocusRequired: 0
+  keywords:
+  - keyword: Export
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 0}
+          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionsDatabase,
+            Assembly-CSharp
+          m_MethodName: EVENT_ExportJson
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - keyword: Import
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 0}
+          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionsDatabase,
+            Assembly-CSharp
+          m_MethodName: EVENT_ImportJson
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  - keyword: On Update
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1124494744}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_SpatialOnUpdate
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  persistentKeywords: 0
+  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
 --- !u!1 &1479351448
 GameObject:
   m_ObjectHideFlags: 0

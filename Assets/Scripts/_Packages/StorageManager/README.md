@@ -21,7 +21,7 @@ maxdepth: 2
 
 ---
 
-## Namespaces Classes
+## Namespaces and Classes
 
 ```
 Packages.StorageManager.Components

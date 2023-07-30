@@ -50,13 +50,15 @@ Packages.ARMarker.Components
 Packages.ARMarker.Utils
 ```
 
-- ...
+*The package doesn't include Utils classes.*
 
 ```
 Packages.ARMarker.ModuleTesting
 ```
 
-- ...
+*The package doesn't include ModuleTesting classes.*
+
+---
 
 ## Resources
 

@@ -17,7 +17,7 @@ namespace Packages.StorageManager.Components
         [Header("Main settings")]
         [Tooltip("Reference to the Minimap Structure tool")]
         public MinimapStructure MinimapReference = null;
-        [Tooltip("Managed GameObject where to draw paths inside")]
+        [Tooltip("(dynamic) Managed GameObject where to draw paths inside")]
         public GameObject RootObject = null;
 
 
@@ -48,6 +48,7 @@ namespace Packages.StorageManager.Components
             }
             builder = gameObject.AddComponent<ARMarkerBuilder>();
             RootObject = (RootObject == null ? gameObject : RootObject);
+            builder.SpawnUnderObject = RootObject;
 
             init = true;
         }
