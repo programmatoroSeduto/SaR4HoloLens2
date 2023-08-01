@@ -24,6 +24,12 @@ namespace Packages.SarExplorationFeatures.Components
         [Tooltip("Root object for the drawer; if null, the class creates its own Go")]
         public GameObject MarkersRoot = null;
 
+        [Header("SpatialAround Feature Settings")]
+        [Tooltip("(dynamic) Max Drawable radius")]
+        public float DrawableRadius = 10.0f;
+        [Tooltip("(dynamic) Levels of search depth")]
+        public List<float> Intensities = new List<float>{ 1.0f, 2.0f, 5.0f, 10.0f, 25.0f };
+
 
 
         // ===== PUBLIC ===== //
@@ -33,7 +39,8 @@ namespace Packages.SarExplorationFeatures.Components
         {
             NotReady,
             Ready,
-            SpatialOnUpdate
+            SpatialOnUpdate,
+            SpatialAround
         }
 
         public SarExplorationControlUnitStatus Status
@@ -51,6 +58,10 @@ namespace Packages.SarExplorationFeatures.Components
         private SarExplorationControlUnitStatus status = SarExplorationControlUnitStatus.NotReady;
         // FEATURE SpatialOnUpdate
         private FeatureSpatialOnUpdate spatialOnUpdate = null;
+        // FEATURE SpatialAround
+        private FeatureSpatialAround spatialAround = null;
+        // intensity of the feature SpatialAround
+        private int spatialAroundIntensity = 0;
 
 
 
@@ -101,18 +112,51 @@ namespace Packages.SarExplorationFeatures.Components
 
         // ===== INTERACTIONS AND EVENTS ===== //
 
-        public void VOICE_SpatialOnUpdate()
+        public void VOICE_SpatialOnUpdate(bool clean = false)
         {
             if (!init) return;
 
-            Debug.Log($"{!(status == SarExplorationControlUnitStatus.SpatialOnUpdate)}");
             if (!(status == SarExplorationControlUnitStatus.SpatialOnUpdate))
             {
                 SWITCH_SpatialOnUpdate();
                 ONOFF_SpatialOnUpdate(true);
             }
             else
+            {
+                if(clean) DrawerReference.RemoveMarkerAll();
                 ONOFF_SpatialOnUpdate(false);
+            }
+        }
+
+        public void VOICE_SpatialAround(bool clean = false)
+        {
+            if (!init) return;
+
+            if (!(status == SarExplorationControlUnitStatus.SpatialAround))
+            {
+                SWITCH_SpatialAround();
+                ONOFF_SpatialAround(true);
+            }
+            else
+            {
+                if (clean) DrawerReference.RemoveMarkerAll();
+                ONOFF_SpatialAround(false);
+            }
+        }
+
+        public void VOICE_SpatialAroundIntensity(bool more = true)
+        {
+            if (status != SarExplorationControlUnitStatus.SpatialAround) return;
+
+            if (more)
+                spatialAroundIntensity = (spatialAroundIntensity + 1 >= Intensities.Count ? Intensities.Count - 1 : spatialAroundIntensity + 1);
+            else
+                spatialAroundIntensity = (spatialAroundIntensity - 1 < 0 ? 0 : spatialAroundIntensity - 1);
+            
+            DrawableRadius = Intensities[spatialAroundIntensity];
+            spatialAround.DrawableRadius = DrawableRadius;
+
+            spatialAround.OnZoneChanged();
         }
 
 
@@ -153,18 +197,74 @@ namespace Packages.SarExplorationFeatures.Components
 
         private void SWITCH_SpatialOnUpdate()
         {
-            if(status == SarExplorationControlUnitStatus.NotReady)
-            {
-                return;
-            }
             if(status == SarExplorationControlUnitStatus.Ready)
             {
-                return;
+                DrawerReference.RemoveMarkerAll();
             }
-            if(status == SarExplorationControlUnitStatus.SpatialOnUpdate)
+            else if(status == SarExplorationControlUnitStatus.SpatialAround)
             {
-                return;
+                ONOFF_SpatialAround(false);
             }
+        }
+
+
+
+        // ===== FEATURE SPATIAL AROUND ===== //
+
+        private void ONOFF_SpatialAround(bool opt = true)
+        {
+            if (!init) return;
+
+            if (opt && spatialAround == null)
+            {
+                spatialAround = gameObject.AddComponent<FeatureSpatialAround>();
+                spatialAround.DbReference = DbReference;
+                spatialAround.DrawerReference = DrawerReference;
+                spatialAround.IsRunning = false;
+            }
+
+            if (opt && !spatialAround.IsRunning)
+            {
+                DbReference.CallOnZoneChanged.Clear();
+                UnityEvent onChangeCallbackEvent = new UnityEvent();
+                onChangeCallbackEvent.AddListener(spatialAround.OnZoneChanged);
+                DbReference.CallOnZoneChanged.Add(onChangeCallbackEvent);
+
+                spatialAround.IsRunning = true;
+                spatialAround.DrawableRadius = this.DrawableRadius;
+                status = SarExplorationControlUnitStatus.SpatialAround;
+                spatialAround.OnZoneChanged();
+            }
+            else if (!opt && spatialAround.IsRunning)
+            {
+                DbReference.CallOnZoneChanged.Clear();
+
+                spatialAround.IsRunning = false;
+                status = SarExplorationControlUnitStatus.Ready;
+            }
+        }
+
+        private void SWITCH_SpatialAround()
+        {
+            if (status == SarExplorationControlUnitStatus.Ready)
+            {
+                DrawerReference.RemoveMarkerAll();
+            }
+            else if (status == SarExplorationControlUnitStatus.SpatialOnUpdate)
+            {
+                ONOFF_SpatialOnUpdate(false);
+            }
+        }
+
+
+
+        // ===== FEATURE MINIMAP AROUND ===== //
+
+        private void ONOFF_MinimapAround(bool opt = true)
+        {
+            if (!init) return;
+
+
         }
     }
 }
