@@ -25,7 +25,17 @@ maxdepth: 2
 Packages.MinimapTools.Components
 ```
 
-- ...
+- MinimapSolver
+
+    Options:
+
+    ...
+
+- MinimapPivot
+    
+    Options:
+
+    ...
 
 ```
 Packages.PositionDatabase.Utils

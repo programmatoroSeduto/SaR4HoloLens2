@@ -40,7 +40,8 @@ namespace Packages.SarExplorationFeatures.Components
             NotReady,
             Ready,
             SpatialOnUpdate,
-            SpatialAround
+            SpatialAround,
+            MinimapFollowingAround
         }
 
         public SarExplorationControlUnitStatus Status
@@ -62,6 +63,12 @@ namespace Packages.SarExplorationFeatures.Components
         private FeatureSpatialAround spatialAround = null;
         // intensity of the feature SpatialAround
         private int spatialAroundIntensity = 0;
+        // FEATURE MinimapTransition
+        private FeatureMinimapTransition minimapTransition = null;
+        // Is minimap mode on 
+        private bool isUsingMinimap = false;
+        // Is minimap following the user
+        private bool isMinimapFollowingUser = false;
 
 
 
@@ -157,6 +164,24 @@ namespace Packages.SarExplorationFeatures.Components
             spatialAround.DrawableRadius = DrawableRadius;
 
             spatialAround.OnZoneChanged();
+        }
+
+        public void VOICE_MinimapFollowingAround(bool clean = false)
+        {
+            if (!init) return;
+
+            if (!(status == SarExplorationControlUnitStatus.MinimapFollowingAround))
+            {
+                Debug.Log("ENABLING FEATURE");
+                SWITCH_MinimapFollowingAround();
+                ONOFF_MinimapFollowingAround(true);
+            }
+            else
+            {
+                Debug.Log("DISABLING FEATURE");
+                if (clean) DrawerReference.RemoveMarkerAll();
+                ONOFF_MinimapFollowingAround(false);
+            }
         }
 
 
@@ -260,10 +285,41 @@ namespace Packages.SarExplorationFeatures.Components
 
         // ===== FEATURE MINIMAP AROUND ===== //
 
-        private void ONOFF_MinimapAround(bool opt = true)
+        private void ONOFF_MinimapFollowingAround(bool opt = true)
         {
             if (!init) return;
 
+            if(opt && minimapTransition == null)
+            {
+                Debug.Log("CREATING COMPONENT FEATURE");
+                minimapTransition = gameObject.AddComponent<FeatureMinimapTransition>();
+                minimapTransition.DbReference = DbReference;
+                minimapTransition.DrawerReference = DrawerReference;
+                minimapTransition.MinimapRoot = MarkersRoot;
+                minimapTransition.IsRunning = false;
+            }
+
+            if (opt && !minimapTransition.IsRunning)
+            {
+                minimapTransition.IsRunning = true;
+                Debug.Log(minimapTransition.CreateMinimapStructure());
+                Debug.Log(minimapTransition.MakeFollowingMinimapStructure());
+
+                ONOFF_SpatialAround(true);
+                status = SarExplorationControlUnitStatus.MinimapFollowingAround;
+            }
+            else if (!opt && minimapTransition.IsRunning)
+            {
+                minimapTransition.IsRunning = false;
+                minimapTransition.DeleteFollowingMinimapStructure();
+                minimapTransition.DeleteMinimapStructure();
+
+                ONOFF_SpatialAround(false);
+            }
+        }
+
+        private void SWITCH_MinimapFollowingAround()
+        {
 
         }
     }

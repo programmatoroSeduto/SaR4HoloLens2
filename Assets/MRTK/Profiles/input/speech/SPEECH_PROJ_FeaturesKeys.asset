@@ -58,3 +58,10 @@ MonoBehaviour:
       id: 0
       description: Select
       axisConstraint: 2
+  - localizationKey: 
+    keyword: Minimap
+    keyCode: 109
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2
