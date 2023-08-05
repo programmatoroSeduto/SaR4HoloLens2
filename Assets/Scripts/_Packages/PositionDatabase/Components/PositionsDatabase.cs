@@ -15,6 +15,8 @@ namespace Packages.PositionDatabase.Components
         [Header("Positions Recording Settings")]
         [Tooltip("Base distance around a waypoint (in meters); each waypoint will be distant to another one by two times this value. ")]
         public float BaseDistance = 1.0f;
+        [Tooltip("Height of the cilinder around one waypoint")]
+        public float BaseHeight = 0.8f;
         [Tooltip("Tolerance in collecting the measurements (in meters). ")]
         public float DistanceTolerance = 0.01f;
 
@@ -247,6 +249,7 @@ namespace Packages.PositionDatabase.Components
         private class JsonDb
         {
             public float BaseDistance;
+            public float BaseHeight;
             public float DistanceTolerance;
             public bool UseClusters;
             public int ClusterSize;
@@ -281,11 +284,10 @@ namespace Packages.PositionDatabase.Components
         {
             if (WriterReference == null) return;
 
-            // Debug.Log("Collecting data ... ");
-
             JsonDb dump = new JsonDb();
 
             dump.BaseDistance = this.BaseDistance;
+            dump.BaseHeight = this.BaseHeight;
             dump.DistanceTolerance = this.DistanceTolerance;
             dump.UseClusters = this.UseClusters;
             dump.UseMaxIndices = this.UseMaxIndices;
@@ -319,7 +321,6 @@ namespace Packages.PositionDatabase.Components
                 dump.Waypoints.Add(jsonWp);
             }
 
-            // Debug.Log("Calling component ... ");
             WriterReference.WriteOneShot("db_export", "json", JsonUtility.ToJson(dump), useTimestamp: false);
         }
 
@@ -330,29 +331,26 @@ namespace Packages.PositionDatabase.Components
 
         public IEnumerator COR_ImportJson(bool fullRefresh = false)
         {
-            // Debug.Log("Starting import...");
             yield return null;
             isImporting = true;
 
             if (fullRefresh)
             {
                 // DA RIVEDERE -- molto pericolosa
-                // Debug.Log("full refresh...");
                 db.Clear();
             }
 
             yield return StartCoroutine(WriterReference.ReadOneShot("db_export.json"));
             if(!WriterReference.FileReadSuccess)
             {
-                // Debug.LogError("ERROR while reading the JSON code for the import");
                 isImporting = false;
                 yield break;
             }
 
-            // Debug.Log("reading JSON...");
             JsonDb jdb = JsonUtility.FromJson<JsonDb>(WriterReference.FileContent);
 
             this.BaseDistance = jdb.BaseDistance;
+            this.BaseHeight = jdb.BaseHeight;
             this.DistanceTolerance = jdb.DistanceTolerance;
             this.UseClusters = jdb.UseClusters;
             this.UseMaxIndices = jdb.UseMaxIndices;
@@ -368,23 +366,19 @@ namespace Packages.PositionDatabase.Components
                 dbwp.AreaCenter = new Vector3(wp.AreaCenter[0], wp.AreaCenter[1], wp.AreaCenter[2]);
                 dbwp.setFirstAreaCenter(new Vector3(wp.FirstAreaCenter[0], wp.FirstAreaCenter[1], wp.FirstAreaCenter[2]));
                 DateTime.TryParse(wp.CreatedAt, out dbwp.Timestamp);
-                // Debug.Log($"reading WP {wp.PositionID}");
 
                 foreach(JsonLink link in wp.Paths)
                 {
-                    // Debug.Log($"Reading link {link.Key}");
 
                     PositionDatabasePath dblink = new PositionDatabasePath();
                     dblink.wp1 = dbwp;
                     if (wpDict.ContainsKey(link.Waypoint2))
                     {
-                        // Debug.Log($"Reading link {link.Key} CREATE");
                         dblink.wp2 = wpDict[link.Waypoint2];
                         dbwp.AddPath(wpDict[link.Waypoint2]);
                     }
                     else
                     {
-                        // Debug.Log($"Reading link {link.Key} WAIT");
                         waitingLinks.Add(link.Waypoint2, dblink);
                     }
                         
@@ -395,21 +389,16 @@ namespace Packages.PositionDatabase.Components
             }
             foreach(KeyValuePair<int, PositionDatabasePath> unresolved in waitingLinks)
             {
-                // Debug.Log($"Reading link {unresolved.Value.wp1.Key}_{wpDict[unresolved.Key].Key} RESOLVE");
                 unresolved.Value.wp2 = wpDict[unresolved.Key];
                 wpDict[unresolved.Key].AddPath(unresolved.Value.wp2);
             }
 
-            // Debug.Log("Sorting and setting up...");
-
             dynSortData.Reset();
             SortAll();
             currentZone = db[0];
-            // Debug.Log($"Current position is {db[0]}");
             onZoneChange();
 
             isImporting = false;
-            // Debug.Log("Done!");
         }
 
 
@@ -476,11 +465,16 @@ namespace Packages.PositionDatabase.Components
         {
             if (!init || currentZone == null || db.Count == 0) return false;
 
+            float planeDist = (currentZone.AreaCenter.x - sortReferencePosition.x) * (currentZone.AreaCenter.x - sortReferencePosition.x) + (currentZone.AreaCenter.z - sortReferencePosition.z) * (currentZone.AreaCenter.z - sortReferencePosition.z);
+
             return between(
-                Vector3.Distance(currentZone.AreaCenter, sortReferencePosition),
+                planeDist,
                 2.0f * BaseDistance - DistanceTolerance, 2.0f * BaseDistance + DistanceTolerance,
-                strict: false
-            );
+                strict: false ) || 
+                between(
+                currentZone.AreaCenter.y - sortReferencePosition.y,
+                2.0f * BaseHeight - DistanceTolerance, 2.0f * BaseHeight + DistanceTolerance,
+                strict: false );
         }
 
         private void dynamicSortStep()

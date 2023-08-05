@@ -65,3 +65,10 @@ MonoBehaviour:
       id: 0
       description: Select
       axisConstraint: 2
+  - localizationKey: 
+    keyword: Close
+    keyCode: 113
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2

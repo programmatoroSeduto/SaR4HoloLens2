@@ -625,7 +625,7 @@ PlayerSettings:
   metroCertificatePassword: 
   metroCertificateSubject: DefaultCompany
   metroCertificateIssuer: DefaultCompany
-  metroCertificateNotAfter: 80cbdcfa9ba0da01
+  metroCertificateNotAfter: 00bd87ea99e6da01
   metroApplicationDescription: Sar4HoloLens2
   wsaImages: {}
   metroTileShortName: MRTK2TemplateProject

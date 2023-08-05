@@ -43,7 +43,7 @@ namespace Packages.CustomRenderers.Components
         [Tooltip("(dyynamic) update line width at each frame")]
         public bool UpdateWidth = true;
         public bool ScaleWithParent = true;
-        [Tooltip("(dyynamic) update line colour at each frame")]
+        [Tooltip("(dynamic) update line colour at each frame")]
         public bool UpdateColor = false;
 
 
@@ -134,7 +134,9 @@ namespace Packages.CustomRenderers.Components
 
         public bool TrySetupFlexibleLineRenderer(bool startCoroutine = true)
         {
-            if(goLineRenderer == null)
+            if (init) return true;
+
+            if (goLineRenderer == null)
             {
                 goLineRenderer = new GameObject();
                 goLineRenderer.name = "LINE_RENDERER_" + (id++).ToString("0000");
@@ -162,6 +164,7 @@ namespace Packages.CustomRenderers.Components
             if (UpdateOnStart)
                 COR_UpdateLineRenderer = StartCoroutine(BSCOR_UpdateLineRenderer());
 
+            init = true;
             return true;
         }
 

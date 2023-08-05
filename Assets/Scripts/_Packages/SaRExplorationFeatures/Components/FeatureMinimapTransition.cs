@@ -18,6 +18,11 @@ namespace Packages.SarExplorationFeatures.Components
         [HideInInspector] // the size of the box containing the minimap
         public Vector3 SpaceSize = new Vector3(6.0f, 1.0f, 6.0f);
 
+        public FeaturePositionVisualizer PositionVisualizer
+        {
+            get => positionVisualizer;
+        }
+
 
 
         // ===== PRIVATE ===== //
@@ -31,7 +36,17 @@ namespace Packages.SarExplorationFeatures.Components
         // minimap pivot component
         private MinimapPivot pivotComponent = null;
         // reference to the box collider of the minimap
-        private BoxCollider boxCollider = null;
+        private GameObject boxCollider = null;
+        // path of the material
+        private static readonly string mapMaterialPath = "MinimapFeature/Materials/MinimapWrapperMaterial";
+        // reference to the material for the minimap
+        private Material mapMaterial = null;
+        // path of the material used for pointing out the current position in movable map
+        private static readonly string currentPosMaterialPath = "MinimapFeature/Materials/MinimapWrapperMaterial";
+        // reference to the material for the current position
+        private Material currentPosMaterial = null;
+        // reference to the component used for pointing ut the user's current position
+        private FeaturePositionVisualizer positionVisualizer = null;
 
 
 
@@ -46,9 +61,6 @@ namespace Packages.SarExplorationFeatures.Components
             outerRoot.transform.localPosition = Vector3.zero;
             outerRoot.transform.localRotation = Quaternion.identity;
             outerRoot.transform.localScale = Vector3.one;
-            boxCollider = outerRoot.AddComponent<BoxCollider>();
-            boxCollider.center = Vector3.zero;
-            boxCollider.size = SpaceSize;
 
             mapPivot = new GameObject(name: "MinimapPivot");
             mapPivot.transform.SetParent(outerRoot.transform);
@@ -70,6 +82,9 @@ namespace Packages.SarExplorationFeatures.Components
                 return false;
 
             MinimapRoot.transform.parent = null;
+            MinimapRoot.transform.localPosition = Vector3.zero;
+            MinimapRoot.transform.localRotation = Quaternion.identity;
+            MinimapRoot.transform.localScale = Vector3.one;
 
             GameObject.Destroy(outerRoot);
             outerRoot = null;
@@ -85,8 +100,28 @@ namespace Packages.SarExplorationFeatures.Components
 
         public bool MakeFollowingMinimapStructure()
         {
-            if (MinimapRoot == null || mapPivot == null || mapSolver != null)
+            if (MinimapRoot == null)
                 return false;
+            if (mapPivot == null || mapSolver != null)
+                return false;
+            if(mapMaterial == null)
+            {
+                mapMaterial = Resources.Load(mapMaterialPath) as Material;
+                if(mapMaterial == null)
+                {
+                    Debug.LogError($"Unable to find the material, given folder '{mapMaterialPath}'");
+                    return false;
+                }
+            }
+            if (currentPosMaterial == null)
+            {
+                currentPosMaterial = Resources.Load(currentPosMaterialPath) as Material;
+                if (currentPosMaterial == null)
+                {
+                    Debug.LogError($"Unable to find the material, given folder '{currentPosMaterialPath}'");
+                    return false;
+                }
+            }
 
             mapSolver = outerRoot.AddComponent<MinimapSolver>();
             
@@ -95,23 +130,50 @@ namespace Packages.SarExplorationFeatures.Components
             pivotComponent.RotateMapByCamera = true;
             pivotComponent.ApplyDisplacement = true;
             
-            boxCollider.size = SpaceSize;
             pivotComponent.ScaleFactorPercent = ScaleFactor;
-            pivotComponent.BoxReference = boxCollider;
-            pivotComponent.MapRoot = outerRoot;
+            
+            pivotComponent.BoxReference = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            pivotComponent.BoxReference.name = "MapBox";
+            pivotComponent.BoxReference.transform.SetParent(outerRoot.transform);
+            pivotComponent.BoxReference.transform.localPosition = Vector3.zero;
+            pivotComponent.BoxReference.transform.localRotation = Quaternion.identity;
+            pivotComponent.BoxReference.transform.localScale = SpaceSize;
+            pivotComponent.BoxReference.GetComponent<Renderer>().material = mapMaterial;
+            
+            pivotComponent.MapWrapper = outerRoot;
             pivotComponent.MapPivot = mapPivot;
+            pivotComponent.MapRoot = MinimapRoot;
+
+            if(positionVisualizer == null)
+            {
+                positionVisualizer = outerRoot.AddComponent<FeaturePositionVisualizer>();
+                positionVisualizer.DrawerReference = DrawerReference;
+                positionVisualizer.DbReference = DbReference;
+                positionVisualizer.CursorMaterial = currentPosMaterial;
+            }
+            positionVisualizer.IsRunning = true;
 
             return true;
         }
 
-        public bool DeleteFollowingMinimapStructure()
+        public bool DeleteFollowingMinimapStructure(bool resetPosition = false, bool resetRotation = true)
         {
-            if (MinimapRoot == null || mapPivot == null || mapSolver == null)
+            if (MinimapRoot == null)
                 return false;
+            if (mapPivot == null || mapSolver == null || positionVisualizer == null)
+                return false;
+
+            if (resetPosition)
+                MinimapRoot.transform.localPosition = Vector3.zero;
+            if (resetRotation)
+                MinimapRoot.transform.localRotation = Quaternion.identity;
+
+            positionVisualizer.IsRunning = false;
 
             Destroy(mapSolver);
             mapSolver = null;
 
+            Destroy(pivotComponent.BoxReference);
             Destroy(pivotComponent);
             pivotComponent = null;
 

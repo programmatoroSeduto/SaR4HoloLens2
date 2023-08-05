@@ -11,9 +11,9 @@ namespace Packages.MinimapTools.Components
 
         [Header("Minimap options")]
         [Tooltip("Position offset")]
-        public Vector3 PositionOffset = new Vector3(0.0f, -0.25f, 0.5f);
+        public Vector3 PositionOffset = new Vector3(0.0f, -0.2f, 1.0f);
         [Tooltip("Rotation Offset")]
-        public Vector3 RotationOffset = new Vector3(-45.0f, 0.0f, 0.0f);
+        public Vector3 RotationOffset = new Vector3(-60.0f, 0.0f, 0.0f);
         [Tooltip("Limits for the x rotation")]
         public float RotationMaxX = 10.0f;
 

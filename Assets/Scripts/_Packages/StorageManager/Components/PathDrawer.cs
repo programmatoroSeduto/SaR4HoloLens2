@@ -19,6 +19,8 @@ namespace Packages.StorageManager.Components
         public MinimapStructure MinimapReference = null;
         [Tooltip("(dynamic) Managed GameObject where to draw paths inside")]
         public GameObject RootObject = null;
+        [Tooltip("Markers Relative Height compard to the original height")]
+        public float MarkerHeight = 0.0f;
 
 
 
@@ -118,7 +120,7 @@ namespace Packages.StorageManager.Components
         {
             builder.SpawnUnderObject = RootObject;
             builder.InitName = tag;
-            builder.Build(position: pos.AreaCenter);
+            builder.Build(position: pos.AreaCenter + MarkerHeight * Vector3.up);
 
             GameObject go = builder.LastSpawnedGameObject;
             MinimapReference.TrackGameObject(go, tag, ignoreOrderCriterion: true);

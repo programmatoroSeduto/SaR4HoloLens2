@@ -12,10 +12,15 @@ namespace Packages.SarExplorationFeatures.Components
     public class FeatureSpatialAround : FeatureBase
     {
         // ===== PUBLIC ===== //
-        [HideInInspector] // Max Drawable radius
+        [HideInInspector]
+        [Tooltip("Max Drawable radius")]
         public float DrawableRadius = 10.0f;
-        [HideInInspector] // GameObject where to draw paths inside
+        [HideInInspector]
+        [Tooltip("GameObject where to draw paths inside")]
         public GameObject RootObject = null;
+        [HideInInspector]
+        [Tooltip("Reference to the Position Visualizer to run after the update process")]
+        public FeaturePositionVisualizer positionVisualizer = null;
 
 
 
@@ -27,6 +32,9 @@ namespace Packages.SarExplorationFeatures.Components
 
             HashSet<string> instances = drawNeighborhood(wp, remainingDistance: DrawableRadius);
             DrawerReference.RemoveMarkerAll(ExclusionListWps: instances);
+
+            if (positionVisualizer != null)
+                positionVisualizer.onChangeCallback();
         }
 
         private HashSet<string> drawNeighborhood(PositionDatabaseWaypoint wp, PositionDatabaseWaypoint userPos = null, float remainingDistance = float.MaxValue, HashSet<string> instances = null)

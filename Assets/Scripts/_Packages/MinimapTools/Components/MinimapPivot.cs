@@ -13,10 +13,12 @@ namespace Packages.MinimapTools.Components
         // ===== GUI ===== //
 
         [Header("Main Settings")]
-        [Tooltip("Minimap main root object reference")]
+        [Tooltip("Minimap main root object reference (not the external wrapper!)")]
         public GameObject MapRoot = null;
-        [Tooltip("Reference to the box collider of the minimap")]
-        public BoxCollider BoxReference = null;
+        [Tooltip("The outmost wrapper of the minimap structure")]
+        public GameObject MapWrapper = null;
+        [Tooltip("Reference to the Game Object representing the box of the minimap")]
+        public GameObject BoxReference = null;
         [Tooltip("Minimap Pivot reference")]
         public GameObject MapPivot = null;
         [Tooltip("(test) Apply pivot displace?")]
@@ -46,13 +48,16 @@ namespace Packages.MinimapTools.Components
 
         private void Update()
         {
+            if (MapWrapper == null || MapPivot == null || MapRoot == null) return;
+
             AdjustBoundsControl();
             Vector3 avgPos = ComputeAveragePosition();
 
-            if (ApplyDisplacement) 
-                MapPivot.transform.localPosition = -avgPos;
+            if (ApplyDisplacement)
+                MapRoot.transform.localPosition = -avgPos;
 
-            MapRoot.transform.localScale = (ScaleFactorPercent / 100.0f) * Vector3.one;
+            if(MapWrapper != null)
+                MapWrapper.transform.localScale = (ScaleFactorPercent / 100.0f) * Vector3.one;
 
             if (RotateMapByCamera)
                 MapPivot.transform.localRotation = Quaternion.Euler(x: 0.0f, y: -Camera.main.transform.rotation.eulerAngles.y, z: 0.0f);
@@ -66,7 +71,7 @@ namespace Packages.MinimapTools.Components
         {
             Vector3 avgPos = Vector3.zero;
             int N = 0;
-            foreach (Transform t in MapPivot.transform)
+            foreach (Transform t in MapRoot.transform)
             {
                 avgPos += t.localPosition;
                 ++N;
@@ -84,15 +89,7 @@ namespace Packages.MinimapTools.Components
             if(SpaceSize.x != prevSpaceSize.x || SpaceSize.y != prevSpaceSize.y || SpaceSize.z != prevSpaceSize.z)
             {
                 prevSpaceSize = SpaceSize;
-
-                BoxReference.size = SpaceSize;
-                BoxReference.center = 0.5f * SpaceSize;
-                
-                if (boundsControl != null)
-                    Destroy(boundsControl);
-                boundsControl = MapRoot.AddComponent<BoundsControl>();
-
-                boundsControl.CalculationMethod = BoundsCalculationMethod.ColliderOnly;
+                BoxReference.transform.localScale = SpaceSize;
             }
         }
     }
