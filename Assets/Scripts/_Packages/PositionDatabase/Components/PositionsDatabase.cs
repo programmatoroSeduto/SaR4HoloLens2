@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using Packages.PositionDatabase.Utils;
 using Packages.DiskStorageServices.Components;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Packages.PositionDatabase.Components
 {
@@ -245,79 +247,23 @@ namespace Packages.PositionDatabase.Components
 
         // ===== FEATURE IMPORT EXPORT ===== //
 
-        [Serializable]
-        private class JsonDb
-        {
-            public float BaseDistance;
-            public float BaseHeight;
-            public float DistanceTolerance;
-            public bool UseClusters;
-            public int ClusterSize;
-            public bool UseMaxIndices;
-            public int MaxIndices;
-
-            public List<JsonWaypoint> Waypoints = new List<JsonWaypoint>();
-            // public List<JsonLink> Links;
-        }
-
-        [Serializable]
-        private class JsonWaypoint
-        {
-            public string Key;
-            public int PositionID;
-            public float AreaRadius;
-            public List<float> AreaCenter = new List<float> { 0.0f, 0.0f, 0.0f };
-            public List<float> FirstAreaCenter = new List<float> { 0.0f, 0.0f, 0.0f };
-            public List<JsonLink> Paths = new List<JsonLink>();
-            public string CreatedAt;
-        }
-
-        [Serializable]
-        private class JsonLink
-        {
-            public string Key;
-            public int Waypoint1;
-            public int Waypoint2;
-        }
-
         public void EVENT_ExportJson()
         {
             if (WriterReference == null) return;
 
-            JsonDb dump = new JsonDb();
-
-            dump.BaseDistance = this.BaseDistance;
-            dump.BaseHeight = this.BaseHeight;
-            dump.DistanceTolerance = this.DistanceTolerance;
-            dump.UseClusters = this.UseClusters;
-            dump.UseMaxIndices = this.UseMaxIndices;
-            dump.MaxIndices = this.MaxIndices;
+            JSONPositionDatabase dump = new JSONPositionDatabase(this);
 
             foreach(PositionDatabaseWaypoint wp in db)
             {
-                JsonWaypoint jsonWp = new JsonWaypoint();
-
-                jsonWp.Key = wp.Key;
-                jsonWp.PositionID = wp.PositionID;
-                jsonWp.AreaRadius = wp.AreaRadius;
-                jsonWp.AreaCenter = new List<float> { wp.AreaCenter.x, wp.AreaCenter.y, wp.AreaCenter.z };
-                jsonWp.FirstAreaCenter = new List<float> { wp.FirstAreaCenter.x, wp.FirstAreaCenter.y, wp.FirstAreaCenter.z };
-                jsonWp.CreatedAt = wp.Timestamp.ToString();
+                JSONWaypoint jsonWp = new JSONWaypoint(wp);
 
                 foreach(PositionDatabasePath link in wp.Paths)
                 {
                     if(link.Key.StartsWith(wp.Key))
                     {
-                        JsonLink lk = new JsonLink();
-                        
-                        lk.Key = link.Key;
-                        lk.Waypoint1 = link.wp1.PositionID;
-                        lk.Waypoint2 = link.wp2.PositionID;
-
-                        jsonWp.Paths.Add(lk);
+                        jsonWp.Paths.Add(new JSONPath(link));
                     }
                 }
-
                 dump.Waypoints.Add(jsonWp);
             }
 
@@ -347,29 +293,17 @@ namespace Packages.PositionDatabase.Components
                 yield break;
             }
 
-            JsonDb jdb = JsonUtility.FromJson<JsonDb>(WriterReference.FileContent);
-
-            this.BaseDistance = jdb.BaseDistance;
-            this.BaseHeight = jdb.BaseHeight;
-            this.DistanceTolerance = jdb.DistanceTolerance;
-            this.UseClusters = jdb.UseClusters;
-            this.UseMaxIndices = jdb.UseMaxIndices;
-            this.MaxIndices = jdb.MaxIndices;
+            JSONPositionDatabase jdb = JsonUtility.FromJson<JSONPositionDatabase>(WriterReference.FileContent);
+            jdb.SetDatabase(this);
 
             Dictionary<int, PositionDatabaseWaypoint> wpDict = new Dictionary<int, PositionDatabaseWaypoint>();
             Dictionary<int, PositionDatabasePath> waitingLinks = new Dictionary<int, PositionDatabasePath>();
-            foreach(JsonWaypoint wp in jdb.Waypoints)
+            foreach(JSONWaypoint wp in jdb.Waypoints)
             {
-                PositionDatabaseWaypoint dbwp = new PositionDatabaseWaypoint();
-                dbwp.setPositionID(wp.PositionID);
-                dbwp.AreaRadius = wp.AreaRadius;
-                dbwp.AreaCenter = new Vector3(wp.AreaCenter[0], wp.AreaCenter[1], wp.AreaCenter[2]);
-                dbwp.setFirstAreaCenter(new Vector3(wp.FirstAreaCenter[0], wp.FirstAreaCenter[1], wp.FirstAreaCenter[2]));
-                DateTime.TryParse(wp.CreatedAt, out dbwp.Timestamp);
+                PositionDatabaseWaypoint dbwp = wp.FromJsonWaypoint();
 
-                foreach(JsonLink link in wp.Paths)
+                foreach(JSONPath link in wp.Paths)
                 {
-
                     PositionDatabasePath dblink = new PositionDatabasePath();
                     dblink.wp1 = dbwp;
                     if (wpDict.ContainsKey(link.Waypoint2))
@@ -394,7 +328,7 @@ namespace Packages.PositionDatabase.Components
             }
 
             dynSortData.Reset();
-            SortAll();
+            yield return BSCOR_SortAll();
             currentZone = db[0];
             onZoneChange();
 
@@ -412,6 +346,24 @@ namespace Packages.PositionDatabase.Components
                     updateReferenceObject(); 
                     return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition)); 
                 });
+        }
+
+        public IEnumerator BSCOR_SortAll()
+        {
+            yield return null;
+
+            Task t = new Task(() =>
+            {
+                if (sortReferencePosition != null)
+                    db.Sort((wp1, wp2) =>
+                    {
+                        updateReferenceObject();
+                        return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition));
+                    });
+            });
+
+            while (!t.IsCompleted)
+                yield return new WaitForEndOfFrame();
         }
 
 
