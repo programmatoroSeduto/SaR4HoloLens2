@@ -84,7 +84,7 @@ namespace Packages.PositionDatabase.Components
             public List<PositionDatabaseWaypoint> db = null; // reference to the database to sort
 
             public int ClusterLength = -1; // -1 if not used
-            public bool UseCuster
+            public bool UseCluster
             {
                 get
                 {
@@ -98,6 +98,7 @@ namespace Packages.PositionDatabase.Components
                         ClusterLength = -1;
                 }
             }
+
             public int WorkingClusters
             {
                 get => idx.Count;
@@ -147,7 +148,7 @@ namespace Packages.PositionDatabase.Components
             public void DynamicSort(Vector3 sortReferencePosition)
             {
                 if (db.Count < 2) return;
-                if (UseCuster && ClusterLength <= 3) return;
+                if (UseCluster && ClusterLength <= 3) return;
 
                 if (idx.Count == 0) idx.Add(0);
 
@@ -156,8 +157,8 @@ namespace Packages.PositionDatabase.Components
                     np = ClusterLength * MaxIndices;
 
                 sortStep(sortReferencePosition);
-                if (UseCuster) checkNewCluster();
-                if (UseCuster && UseMaxIndices) checkMaxIdx();
+                if (UseCluster) checkNewCluster();
+                if (UseCluster && UseMaxIndices) checkMaxIdx();
             }
 
             private void sortStep(Vector3 Puser)
@@ -225,7 +226,7 @@ namespace Packages.PositionDatabase.Components
         private void Start()
         {
             dynSortData.db = db;
-            dynSortData.UseCuster = UseClusters;
+            dynSortData.UseCluster = UseClusters;
             if (UseClusters) dynSortData.ClusterLength = ClusterSize;
             dynSortData.UseMaxIndices = UseMaxIndices;
             if (UseMaxIndices) dynSortData.MaxIndices = MaxIndices;
@@ -341,9 +342,9 @@ namespace Packages.PositionDatabase.Components
 
         public void SortAll()
         {
+            updateReferenceObject();
             if (sortReferencePosition != null)
                 db.Sort((wp1, wp2) => { 
-                    updateReferenceObject(); 
                     return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition)); 
                 });
         }
@@ -352,15 +353,7 @@ namespace Packages.PositionDatabase.Components
         {
             yield return null;
 
-            Task t = new Task(() =>
-            {
-                if (sortReferencePosition != null)
-                    db.Sort((wp1, wp2) =>
-                    {
-                        updateReferenceObject();
-                        return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition));
-                    });
-            });
+            Task t = new Task(SortAll);
 
             while (!t.IsCompleted)
                 yield return new WaitForEndOfFrame();
