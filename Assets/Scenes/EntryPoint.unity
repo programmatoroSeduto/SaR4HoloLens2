@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 69658199}
   - component: {fileID: 69658198}
   - component: {fileID: 69658200}
+  - component: {fileID: 69658201}
   m_Layer: 0
   m_Name: EntryPointServices
   m_TagString: EntryPoint
@@ -153,7 +154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2e0ac525a632c246a247b1cec824f19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SceneName: BuildingGeolocation
+  SceneName: SARHL2
   UseDelay: 0
   DelaySeconds: 2
 --- !u!4 &69658199
@@ -185,3 +186,18 @@ MonoBehaviour:
   UserHeight: 1.85
   ServerIpAddress: 127.0.0.1
   ServerPortNo: 5000
+  DebugMode: 1
+  StorageUtilityOneShot: {fileID: 69658201}
+  PositionsDatabase: {fileID: 0}
+--- !u!114 &69658201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69658197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87dfb3841755380498a836cd667c9b84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

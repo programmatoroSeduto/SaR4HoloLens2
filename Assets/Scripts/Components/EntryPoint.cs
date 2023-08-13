@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
-namespace SaR4Hololens2.Scripts.Components
+namespace Project.Scripts.Components
 {
     public class EntryPoint : MonoBehaviour
     {

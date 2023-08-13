@@ -108,7 +108,7 @@ namespace Packages.SarExplorationFeatures.Components
             {
                 DrawerReference = gameObject.AddComponent<PathDrawer>();
                 DrawerReference.MarkerHeight -= MarkerHeightPercent * UserHeight;
-                if (MarkersRoot)
+                if (MarkersRoot == null)
                 {
                     MarkersRoot = new GameObject(name: "SaRExplorationRoot");
                     MarkersRoot.transform.position = Vector3.zero;
