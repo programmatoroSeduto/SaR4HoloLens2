@@ -1,12 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
-using UnityEngine;
-using UnityEngine.Events;
-
 using Packages.PositionDatabase.Components;
 using Packages.StorageManager.Components;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace Packages.SarExplorationFeatures.Components
 {
@@ -347,8 +343,8 @@ namespace Packages.SarExplorationFeatures.Components
             if (opt && !minimapTransition.IsRunning)
             {
                 minimapTransition.IsRunning = true;
-                Debug.Log(minimapTransition.CreateMinimapStructure());
-                Debug.Log(minimapTransition.MakeFollowingMinimapStructure());
+                minimapTransition.CreateMinimapStructure();
+                minimapTransition.MakeFollowingMinimapStructure();
                 positionVisualizer = minimapTransition.PositionVisualizer;
 
                 ONOFF_SpatialAround(true, useVisualizer: true);

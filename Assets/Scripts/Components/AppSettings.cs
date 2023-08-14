@@ -38,6 +38,7 @@ namespace Project.Scripts.Components
             StaticAppSettings.SetOpt("ServerPortNo", ServerPortNo);
             StaticAppSettings.SetOpt("IsDebugMode", (DebugMode ? "true" : "false"));
 
+            StaticAppSettings.SetObject("AppSettings", this);
             StaticAppSettings.SetObject("StorageHub", StorageHub);
             StaticAppSettings.SetObject("PositionsDatabase", PositionsDatabase);
         }

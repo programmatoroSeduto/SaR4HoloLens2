@@ -9,7 +9,7 @@ namespace Project.Scripts.Components
 {
     public class EntryPoint : MonoBehaviour
     {
-
+        
         public string SceneName = "";
 
         public bool UseDelay = false;
@@ -22,7 +22,6 @@ namespace Project.Scripts.Components
         // Start is called before the first frame update
         void Start()
         {
-            // SceneManager.LoadScene($"Scene{SceneName}", LoadSceneMode.Additive);
             COR_SwichScene = StartCoroutine(ORCOR_SwitchSceneAdditive("", this.SceneName));
         }
 

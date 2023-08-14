@@ -149,7 +149,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 69658197}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2e0ac525a632c246a247b1cec824f19, type: 3}
   m_Name: 
@@ -183,11 +183,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c45d6133b98ab0468ebb9ca025745f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OperatorUniversalUserID: SARHL2_ID0000000_USER
+  OperatorUniversalDeviceID: SARHL2_ID0000000_DEV
   UserHeight: 1.85
   ServerIpAddress: 127.0.0.1
   ServerPortNo: 5000
   DebugMode: 1
-  StorageUtilityOneShot: {fileID: 69658201}
+  StorageHub: {fileID: 69658201}
   PositionsDatabase: {fileID: 0}
 --- !u!114 &69658201
 MonoBehaviour:

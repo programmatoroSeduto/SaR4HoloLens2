@@ -52,6 +52,9 @@ namespace Packages.PositionDatabase.Utils
         // infos about the paths starting from here
         public List<PositionDatabasePath> Paths = new List<PositionDatabasePath>();
 
+        // area identifier
+        public int AreaIndex = 0;
+
         // creation timestamp
         public DateTime Timestamp = DateTime.Now;
 

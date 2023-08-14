@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using Packages.PositionDatabase.Utils;
 using Packages.DiskStorageServices.Components;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Packages.PositionDatabase.Components
@@ -50,11 +49,19 @@ namespace Packages.PositionDatabase.Components
 
         // ===== PUBLIC ===== //
 
+        // the DB low level reference
+        public PositionDatabaseLowLevel LowLevelDatabase
+        {
+            get => lowLevel;
+        }
+
         // the current zone
         public PositionDatabaseWaypoint CurrentZone
         {
-            get => (db.Count == 0 ? null : db[0]);
+            get => lowLevel.CurrentZone;
         }
+
+        // the last inserted zone
         public PositionDatabaseWaypoint DataZoneCreated
         {
             get => dataZoneCreated;
@@ -64,160 +71,27 @@ namespace Packages.PositionDatabase.Components
 
         // ===== PRIVATE ===== //
 
-        // init done?
-        private bool init = false;
-        // Object reference distance for dynamic sort
-        private Vector3 sortReferencePosition = Vector3.zero;
-        // the current zone 
-        private PositionDatabaseWaypoint currentZone = null;
+        // not exported reference to the low level DB
+        private PositionDatabaseLowLevel lowLevel = new PositionDatabaseLowLevel();
+        // used for the Update event
         private PositionDatabaseWaypoint prevZone = null;
         // used by notifications
         private PositionDatabaseWaypoint dataZoneCreated = null;
         // active when the database is importing infos from file
         private bool isImporting = false;
-
-        // the database is a sem-ordered list of positions (the current zone "is" the first element of the list, best approximation)
-        private List<PositionDatabaseWaypoint> db = new List<PositionDatabaseWaypoint>();
-
-        private class DynamicSortSupport
-        {
-            public List<PositionDatabaseWaypoint> db = null; // reference to the database to sort
-
-            public int ClusterLength = -1; // -1 if not used
-            public bool UseCluster
-            {
-                get
-                {
-                    return ClusterLength > 0;
-                }
-                set
-                {
-                    if (value)
-                        ClusterLength = 4;
-                    else
-                        ClusterLength = -1;
-                }
-            }
-
-            public int WorkingClusters
-            {
-                get => idx.Count;
-            }
-
-            public IReadOnlyList<int> WorkingIndices
-            {
-                get => idx;
-            }
-
-            public bool UseMaxIndices
-            {
-                get
-                {
-                    return MaxIndices > 0;
-                }
-                set
-                {
-                    if (value)
-                        MaxIndices = 10;
-                    else
-                        MaxIndices = -1;
-                }
-            }
-            public int MaxIndices = -1; // -1 if not used
-
-            private int N = 0; // elements in the array
-            private int np = 0; // used for updating cluster size
-            private List<int> idx = new List<int>();
-            private int idxMax = 0;
-
-            public void Reset(int cluster=-1, int maxIdx=-1)
-            {
-                N = db.Count;
-                MaxIndices = maxIdx;
-                ClusterLength = cluster;
-
-                idx.Clear();
-                if (cluster > 0)
-                {
-                    int cap = (int)Math.Floor(Math.Min((float)N / (float)cluster, (maxIdx <= 0 ? int.MaxValue : maxIdx)));
-                    for (int i = 0; i < cap; ++i) idx.Add(0);
-                    redistributeIdx();
-                }
-            }
-
-            public void DynamicSort(Vector3 sortReferencePosition)
-            {
-                if (db.Count < 2) return;
-                if (UseCluster && ClusterLength <= 3) return;
-
-                if (idx.Count == 0) idx.Add(0);
-
-                N = db.Count;
-                if (MaxIndices > 0)
-                    np = ClusterLength * MaxIndices;
-
-                sortStep(sortReferencePosition);
-                if (UseCluster) checkNewCluster();
-                if (UseCluster && UseMaxIndices) checkMaxIdx();
-            }
-
-            private void sortStep(Vector3 Puser)
-            {
-                int j = 0;
-                for (int i = 0; i < idx.Count; ++i)
-                {
-                    j = idx[i];
-                    if (dist(Puser, db[j].AreaCenter) > dist(Puser, db[j + 1].AreaCenter))
-                        swap(j, j + 1);
-
-                    idx[i] = (j + 1) % (N - 1);
-                    if (idx.Count > 1 && idx[i] < j)
-                        redistributeIdx();
-                }
-            }
-
-            private void checkNewCluster()
-            {
-                if (UseMaxIndices && idx.Count >= MaxIndices) return;
-
-                if (N == (idx.Count + 1) * ClusterLength)
-                {
-                    idx.Add(0);
-                    redistributeIdx();
-                }
-            }
-
-            private void checkMaxIdx()
-            {
-                if (UseMaxIndices && idx.Count < MaxIndices) return;
-
-                if (N - np == MaxIndices)
-                {
-                    ++ClusterLength;
-                    np = ClusterLength * MaxIndices;
-                    redistributeIdx();
-                }
-            }
-
-            private void redistributeIdx()
-            {
-                for (int i = 0; i < idx.Count; ++i)
-                    idx[i] = i * ClusterLength;
-            }
-
-            private float dist(Vector3 pos1, Vector3 pos2)
-            {
-                return Vector3.Distance(pos1, pos2);
-            }
-
-            private void swap(int i, int j)
-            {
-                PositionDatabaseWaypoint wpt = db[i];
-                db[i] = db[j];
-                db[j] = wpt;
-            }
-        }
-        private DynamicSortSupport dynSortData = new DynamicSortSupport();
+        // the object which is importing data
+        private PositionDatabaseExportUtility activeImportUtility = null;
+        // type of insert
+        private bool linkedInsert = false;
+        private bool unlinkedInsert = false;
+        // area index
+        private int areaIndex = 0;
+        // active when the class has to reorder the daabase due to a previous deactivation
+        private bool needSort = false;
+        // the coroutine sorting the class when it is re-enabled
+        private Coroutine COR_SortAfterEnable = null;
+        // area efficient renaming
+        private Dictionary<int, int> AreaRenaming = new Dictionary<int, int>();
 
 
 
@@ -225,163 +99,70 @@ namespace Packages.PositionDatabase.Components
 
         private void Start()
         {
-            dynSortData.db = db;
-            dynSortData.UseCluster = UseClusters;
-            if (UseClusters) dynSortData.ClusterLength = ClusterSize;
-            dynSortData.UseMaxIndices = UseMaxIndices;
-            if (UseMaxIndices) dynSortData.MaxIndices = MaxIndices;
+            lowLevel.UseCluster = UseClusters;
+            if (UseClusters) lowLevel.ClusterLength = ClusterSize;
+            lowLevel.UseMaxIndices = UseMaxIndices;
+            if (UseMaxIndices) lowLevel.MaxIndices = MaxIndices;
 
-            init = true;
+            AreaRenaming.Add(0, 0);
         }
 
         private void Update()
         {
-            if (isImporting) return;
+            if (isImporting || needSort) return;
 
+            updateReferenceObject();
+            lowLevel.SortStep();
             tryInsertPosition();
-            updateReferenceObject();
-            dynamicSortStep();
-            onZoneChange();
+            onZoneChanged();
         }
 
-
-
-        // ===== FEATURE IMPORT EXPORT ===== //
-
-        public void EVENT_ExportJson()
+        private void OnDisable()
         {
-            if (WriterReference == null) return;
-
-            JSONPositionDatabase dump = new JSONPositionDatabase(this);
-
-            foreach(PositionDatabaseWaypoint wp in db)
-            {
-                JSONWaypoint jsonWp = new JSONWaypoint(wp);
-
-                foreach(PositionDatabasePath link in wp.Paths)
-                {
-                    if(link.Key.StartsWith(wp.Key))
-                    {
-                        jsonWp.Paths.Add(new JSONPath(link));
-                    }
-                }
-                dump.Waypoints.Add(jsonWp);
-            }
-
-            WriterReference.WriteOneShot("db_export", "json", JsonUtility.ToJson(dump), useTimestamp: false);
+            needSort = true;   
         }
 
-        public void EVENT_ImportJson(bool fullRefresh = false)
+        private void OnEnable()
         {
-            StartCoroutine(COR_ImportJson());
+            if(needSort)
+                COR_SortAfterEnable = StartCoroutine(BSCOR_SortAll());
         }
 
-        public IEnumerator COR_ImportJson(bool fullRefresh = false)
-        {
-            yield return null;
-            isImporting = true;
-
-            if (fullRefresh)
-            {
-                // DA RIVEDERE -- molto pericolosa
-                db.Clear();
-            }
-
-            yield return StartCoroutine(WriterReference.ReadOneShot("db_export.json"));
-            if(!WriterReference.FileReadSuccess)
-            {
-                isImporting = false;
-                yield break;
-            }
-
-            JSONPositionDatabase jdb = JsonUtility.FromJson<JSONPositionDatabase>(WriterReference.FileContent);
-            jdb.SetDatabase(this);
-
-            Dictionary<int, PositionDatabaseWaypoint> wpDict = new Dictionary<int, PositionDatabaseWaypoint>();
-            Dictionary<int, PositionDatabasePath> waitingLinks = new Dictionary<int, PositionDatabasePath>();
-            foreach(JSONWaypoint wp in jdb.Waypoints)
-            {
-                PositionDatabaseWaypoint dbwp = wp.FromJsonWaypoint();
-
-                foreach(JSONPath link in wp.Paths)
-                {
-                    PositionDatabasePath dblink = new PositionDatabasePath();
-                    dblink.wp1 = dbwp;
-                    if (wpDict.ContainsKey(link.Waypoint2))
-                    {
-                        dblink.wp2 = wpDict[link.Waypoint2];
-                        dbwp.AddPath(wpDict[link.Waypoint2]);
-                    }
-                    else
-                    {
-                        waitingLinks.Add(link.Waypoint2, dblink);
-                    }
-                        
-                }
-
-                wpDict.Add(wp.PositionID, dbwp);
-                db.Add(dbwp);
-            }
-            foreach(KeyValuePair<int, PositionDatabasePath> unresolved in waitingLinks)
-            {
-                unresolved.Value.wp2 = wpDict[unresolved.Key];
-                wpDict[unresolved.Key].AddPath(unresolved.Value.wp2);
-            }
-
-            dynSortData.Reset();
-            yield return BSCOR_SortAll();
-            currentZone = db[0];
-            onZoneChange();
-
-            isImporting = false;
-        }
-
-
-
-        // ===== PUBLIC METHODS ===== //
-
-        public void SortAll()
-        {
-            updateReferenceObject();
-            if (sortReferencePosition != null)
-                db.Sort((wp1, wp2) => { 
-                    return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition)); 
-                });
-        }
-
-        public IEnumerator BSCOR_SortAll()
+        private IEnumerator BSCOR_SortAll()
         {
             yield return null;
 
-            Task t = new Task(SortAll);
+            updateReferenceObject();
+            // Task t = lowLevel.SortAllAsync();
 
-            while (!t.IsCompleted)
-                yield return new WaitForEndOfFrame();
+            Debug.Log("Starting sort...");
+            // while (!t.IsCompleted) yield return new WaitForEndOfFrame();
+            lowLevel.SortAll();
+            Debug.Log("Sort ended.");
+
+            needSort = false;
+            COR_SortAfterEnable = null;
         }
 
 
 
-        // ===== PRIVATE METHODS ===== //
+        // ===== REFERENCE POSITION ===== //
 
         private void updateReferenceObject()
         {
             if (ReferenceObject == null)
-                sortReferencePosition = Camera.main.transform.position;
+                lowLevel.SortReferencePosition = Camera.main.transform.position;
             else
-                sortReferencePosition = ReferenceObject.transform.position;
-
-            if (sortReferencePosition == null)
-                Debug.LogError("sortReferencePosition == null");
-
-            currentZone = CurrentZone;
+                lowLevel.SortReferencePosition = ReferenceObject.transform.position;
         }
+
+
+
+        // ===== POSITION INSERT ===== //
 
         private void tryInsertPosition()
         {
-            if (!init) return;
-
-            bool distCheck = checkReferenceDistance();
-            if (currentZone == null || distCheck)
+            if (checkReferenceDistance())
             {
                 insertPosition();
                 onZoneCreated();
@@ -390,60 +171,68 @@ namespace Packages.PositionDatabase.Components
 
         private void insertPosition()
         {
-            if (!init) return;
-
             PositionDatabaseWaypoint wp = new PositionDatabaseWaypoint();
-            wp.setPositionID(db.Count);
-            wp.AreaCenter = sortReferencePosition;
-            wp.AreaRadius = BaseDistance;
             wp.DBReference = this;
+            if (unlinkedInsert)
+            {
+                ++areaIndex;
+                AreaRenaming.Add(areaIndex, areaIndex);
+            }
+            wp.AreaIndex = AreaRenaming[areaIndex];
+            wp.setPositionID(lowLevel.Count);
+            wp.AreaCenter = lowLevel.SortReferencePosition;
+            wp.AreaRadius = BaseDistance;
 
-            db.Insert(0, wp);
+            if (CurrentZone != null && !unlinkedInsert)
+            {
+                wp.AddPath(CurrentZone);
+            }
 
-            if (currentZone != null)
-                wp.AddPath(currentZone);
-
-            currentZone = wp;
+            lowLevel.Insert(wp);
         }
 
+        /// <summary>
+        /// this method checks when the distance condition is satisfied to insert a new position
+        /// </summary>
+        /// <returns> true if it is time to add a new waypoint to the database </returns>
         private bool checkReferenceDistance()
         {
-            if (!init || currentZone == null || db.Count == 0) return false;
+            linkedInsert = false;
+            unlinkedInsert = false;
 
-            float planeDist = (currentZone.AreaCenter.x - sortReferencePosition.x) * (currentZone.AreaCenter.x - sortReferencePosition.x) + (currentZone.AreaCenter.z - sortReferencePosition.z) * (currentZone.AreaCenter.z - sortReferencePosition.z);
+            if (CurrentZone == null) return true;
 
-            return between(
-                planeDist,
-                2.0f * BaseDistance - DistanceTolerance, 2.0f * BaseDistance + DistanceTolerance,
-                strict: false ) || 
-                between(
-                currentZone.AreaCenter.y - sortReferencePosition.y,
-                2.0f * BaseHeight - DistanceTolerance, 2.0f * BaseHeight + DistanceTolerance,
-                strict: false );
+            linkedInsert = 
+                checkLinkedInsert(CurrentZone.AreaCenter, lowLevel.SortReferencePosition, BaseDistance, BaseHeight, DistanceTolerance);
+            
+            unlinkedInsert = 
+                checkUnlinkedInsert(CurrentZone.AreaCenter, lowLevel.SortReferencePosition, BaseDistance, BaseHeight, DistanceTolerance);
+
+            return linkedInsert || unlinkedInsert;
         }
 
-        private void dynamicSortStep()
+        private bool checkLinkedInsert(Vector3 curP, Vector3 refP, float baseDist, float baseH, float toll)
         {
-            if (sortReferencePosition != null)
-                dynSortData.DynamicSort(sortReferencePosition);
+            float planeDist =
+                (curP.x - refP.x) * (curP.x - refP.x) +
+                (curP.z - refP.z) * (curP.z - refP.z);
+
+            float verticalDist = curP.y - refP.y;
+
+            return 
+                between(planeDist, 2.0f * baseDist - toll, 2.0f * baseDist + toll, strict: false) ||
+                between(verticalDist, 2.0f * baseH - toll, 2.0f * baseH + toll, strict: false);
         }
 
-        private void onZoneCreated()
+        private bool checkUnlinkedInsert(Vector3 curP, Vector3 refP, float baseDist, float baseH, float toll)
         {
-            dataZoneCreated = currentZone;
-            foreach (UnityEvent ue in CallOnZoneCreated)
-                ue.Invoke();
-        }
+            float planeDist =
+                (curP.x - refP.x) * (curP.x - refP.x) +
+                (curP.z - refP.z) * (curP.z - refP.z);
 
-        private void onZoneChange()
-        {
-            if (prevZone != currentZone)
-            {
-                foreach (UnityEvent ue in CallOnZoneChanged)
-                    ue.Invoke();
+            float verticalDist = curP.y - refP.y;
 
-                prevZone = currentZone;
-            }
+            return (planeDist > 2.0f * baseDist + toll) || (verticalDist > 2.0f * baseH + toll);
         }
 
         private bool between(float val, float a, float b, bool strict = false)
@@ -452,6 +241,81 @@ namespace Packages.PositionDatabase.Components
                 return (val > a && val < b);
             else
                 return (val >= a && val <= b);
+        }
+
+
+
+        // ===== EVENTS MANAGEMENT AND UPDATE ===== //
+
+        private void onZoneCreated()
+        {
+            dataZoneCreated = CurrentZone;
+            foreach (UnityEvent ue in CallOnZoneCreated)
+                ue.Invoke();
+        }
+
+        private void onZoneChanged()
+        {
+            if (prevZone != CurrentZone)
+            {
+                if (prevZone != null && 
+                    !unlinkedInsert &&
+                    AreaRenaming[prevZone.AreaIndex] != AreaRenaming[CurrentZone.AreaIndex] && 
+                    !prevZone.IsLinkedWith(CurrentZone)
+                    )
+                {
+                    Debug.Log("Adding Arch");
+                    prevZone.AddPath(CurrentZone);
+                    AreaRenaming[prevZone.AreaIndex] = CurrentZone.AreaIndex;
+                }
+                if(prevZone != null)
+                    prevZone.AreaIndex = AreaRenaming[prevZone.AreaIndex];
+                CurrentZone.AreaIndex = AreaRenaming[CurrentZone.AreaIndex];
+
+                foreach (UnityEvent ue in CallOnZoneChanged)
+                    ue.Invoke();
+
+                prevZone = CurrentZone;
+            }
+        }
+
+
+
+        // ===== IMPORT EXPORT SUPPORT ===== //
+
+        public bool SetStatusImporting(PositionDatabaseExportUtility who, bool opt)
+        {
+            if (isImporting) return false;
+
+            if (opt)
+                activeImportUtility = who;
+            else if (!opt && activeImportUtility == who)
+                activeImportUtility = null;
+            else
+                return false;
+
+            isImporting = opt;
+            return true;
+        }
+
+
+
+        // ===== POSITION QUERY SUPPORT ===== //
+
+        public List<PositionDatabaseWaypoint> GetNearestWaypoints(float maxDistance = float.MaxValue, int maxItems = int.MaxValue)
+        {
+            List<PositionDatabaseWaypoint> res = new List<PositionDatabaseWaypoint>();
+            PositionDatabaseWaypoint wpCur = lowLevel.CurrentZone;
+
+            foreach (PositionDatabaseWaypoint wp in lowLevel.Database)
+            {
+                if (Vector3.Distance(wpCur.AreaCenter, wp.AreaCenter) > maxDistance || res.Count > maxItems)
+                    break;
+                else
+                    res.Add(wp);
+            }
+
+            return res;
         }
     }
 

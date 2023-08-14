@@ -28,9 +28,13 @@ namespace Packages.SarExplorationFeatures.Components
 
         public void OnZoneChanged()
         {
-            PositionDatabaseWaypoint wp = DbReference.CurrentZone;
-
-            HashSet<string> instances = drawNeighborhood(wp, remainingDistance: DrawableRadius);
+            HashSet<string> instances = new HashSet<string>();
+            foreach(PositionDatabaseWaypoint wp in DbReference.GetNearestWaypoints(maxItems: 10, maxDistance: DrawableRadius))
+            {
+                if (instances.Contains(DrawerReference.TagOf(wp))) 
+                    continue;
+                instances.UnionWith(drawNeighborhood(wp, remainingDistance: DrawableRadius));
+            }
             DrawerReference.RemoveMarkerAll(ExclusionListWps: instances);
 
             if (positionVisualizer != null)

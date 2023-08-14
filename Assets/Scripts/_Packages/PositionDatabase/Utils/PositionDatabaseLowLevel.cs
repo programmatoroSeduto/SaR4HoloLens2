@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using UnityEngine;
 
-using Packages.PositionDatabase.Components;
 using Packages.PositionDatabase.Types;
 
 namespace Packages.PositionDatabase.Utils
@@ -27,6 +27,9 @@ namespace Packages.PositionDatabase.Utils
 
         /// <summary> Object reference distance for dynamic sort </summary>
         public Vector3 SortReferencePosition { get => sortReferencePosition; set { sortReferencePosition = value; } }
+
+        /// <summary> How many positions are handled by this class </summary>
+        public int Count { get => db.Count; }
 
         /// <summary> if the MaxIndices feature is enabled or not; if activated, the number will be set to 10 by default </summary>
         public bool UseMaxIndices
@@ -70,6 +73,12 @@ namespace Packages.PositionDatabase.Utils
         public IReadOnlyList<int> WorkingIndices
         {
             get => idx;
+        }
+
+        /// <summary> it returns the current zone </summary>
+        public PositionDatabaseWaypoint CurrentZone
+        {
+            get => (db.Count == 0 ? null : db[0]);
         }
 
 
@@ -130,7 +139,7 @@ namespace Packages.PositionDatabase.Utils
 
 
 
-        // ===== DYNAMIC SORT CODE ===== //
+        // ===== SINGLE STEP SORT ===== //
 
         public void SortStep( )
         {
@@ -186,6 +195,34 @@ namespace Packages.PositionDatabase.Utils
                 np = ClusterLength * MaxIndices;
                 redistributeIdx();
             }
+        }
+
+
+
+        // ===== ONESHOT SORT ===== //
+
+        public void SortAll()
+        {
+            if (sortReferencePosition != null)
+                db.Sort((wp1, wp2) => {
+                    return Vector3.Distance(wp1.AreaCenter, sortReferencePosition).CompareTo(Vector3.Distance(wp2.AreaCenter, sortReferencePosition));
+                });
+        }
+
+        public Task SortAllAsync()
+        {
+            return new Task(() => {
+                SortAll();
+            });
+        }
+
+
+
+        // ===== INSERT AND UPDATE ===== //
+
+        public void Insert(PositionDatabaseWaypoint wp)
+        {
+            db.Insert(0, wp);
         }
 
     }
