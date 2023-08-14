@@ -101,9 +101,26 @@ namespace Packages.PositionDatabase.Utils
             return null;
         }
 
+        public PositionDatabasePath GetPathTo(string destKey)
+        {
+            if (destKey == Key)
+                return null;
+
+            foreach (PositionDatabasePath path in Paths)
+                if (path.wp1.Key == destKey || path.wp2.Key == destKey)
+                    return path;
+
+            return null;
+        }
+
         public bool IsLinkedWith(PositionDatabaseWaypoint wpDest)
         {
             return (GetPathTo(wpDest) != null);
+        }
+
+        public bool IsLinkedWith(string destKey)
+        {
+            return (GetPathTo(destKey) != null);
         }
 
         public void TurnOffVisualization()

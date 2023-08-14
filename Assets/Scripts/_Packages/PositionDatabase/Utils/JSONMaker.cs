@@ -46,6 +46,7 @@ namespace Packages.PositionDatabase.Utils
         {
             JSONPositionDatabase res = new JSONPositionDatabase();
 
+            res.CurrentZone = ToJsonClass(db.CurrentZone);
             res.BaseDistance = db.BaseDistance;
             res.BaseHeight = db.BaseHeight;
             res.DistanceTolerance = db.DistanceTolerance;
@@ -72,13 +73,6 @@ namespace Packages.PositionDatabase.Utils
             DateTime.TryParse(jwp.CreatedAt, out wp.Timestamp);
             wp.AreaIndex = jwp.AreaIndex;
         }
-
-        /*
-        public void FromJsonClass(JSONPath jlink, PositionDatabasePath link)
-        {
-            
-        }*/
-
 
         public void FromJsonClass(JSONPositionDatabase jdb, PositionsDatabase db)
         {

@@ -11,6 +11,8 @@ namespace Packages.PositionDatabase.Utils
     [Serializable]
     public class JSONPositionDatabase
     {
+        public JSONWaypoint CurrentZone;
+        
         public float BaseDistance;
         public float BaseHeight;
         public float DistanceTolerance;
