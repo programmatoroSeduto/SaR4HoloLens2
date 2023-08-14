@@ -147,5 +147,19 @@ namespace Packages.ARMarker.Components
             return true;
         }
 
+
+
+        // ===== FEATURE MODIFY MARKER TEXT ===== // 
+
+        public bool SetText(string txt)
+        {
+            if (MarkerTextTooltipComponent == null) return false;
+
+            MarkerTooltipTextFromGameObject = false;
+            MarkerTextTooltipComponent.ToolTipText = txt;
+
+            return true;
+        }
+
     }
 }

@@ -2816,6 +2816,7 @@ GameObject:
   - component: {fileID: 1124494745}
   - component: {fileID: 1124494746}
   - component: {fileID: 1124494744}
+  - component: {fileID: 1124494747}
   m_Layer: 0
   m_Name: SARHL2Services
   m_TagString: Untagged
@@ -2885,6 +2886,24 @@ MonoBehaviour:
   CallOnZoneCreated: []
   CallOnZoneChanged: []
   WriterReference: {fileID: 0}
+--- !u!114 &1124494747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1124494743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dbef2d0f5965f244b30c547f575123e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PositionsDB: {fileID: 1124494746}
+  StorageHub: {fileID: 0}
+  LoadGlobalStorageHub: 1
+  GlobalStorageHubName: StorageHub
+  JsonFileName: db_export
+  UseFileNameTimestamp: 0
 --- !u!1 &1130242957
 GameObject:
   m_ObjectHideFlags: 0
@@ -4110,6 +4129,40 @@ MonoBehaviour:
           m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
             Assembly-CSharp
           m_MethodName: VOICE_CommandClose
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  - keyword: Export
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1124494747}
+          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionDatabaseExportUtility,
+            Assembly-CSharp
+          m_MethodName: EVENT_ExportJsonFull
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  - keyword: Import
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1124494747}
+          m_TargetAssemblyTypeName: Packages.PositionDatabase.Components.PositionDatabaseExportUtility,
+            Assembly-CSharp
+          m_MethodName: EVENT_ImportJsonFull
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}

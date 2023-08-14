@@ -72,3 +72,17 @@ MonoBehaviour:
       id: 0
       description: Select
       axisConstraint: 2
+  - localizationKey: 
+    keyword: Export
+    keyCode: 101
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2
+  - localizationKey: 
+    keyword: Import
+    keyCode: 105
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2

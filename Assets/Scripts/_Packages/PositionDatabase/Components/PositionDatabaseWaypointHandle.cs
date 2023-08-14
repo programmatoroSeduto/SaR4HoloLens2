@@ -37,6 +37,8 @@ namespace Packages.PositionDatabase.Components
 
         // either the component is allowed to change the position of the row in the db, or not
         private bool CanModifyDbPosition = false;
+        // previously set description
+        private string prevDescr = "";
 
 
 
@@ -45,6 +47,15 @@ namespace Packages.PositionDatabase.Components
         private void Start()
         {
             MarkerHandle = gameObject.GetComponent<ARMarkerHandle>();
+        }
+
+        private void Update()
+        {
+            if(DatabasePosition.Description != prevDescr)
+            {
+                prevDescr = DatabasePosition.Description;
+                MarkerHandle.SetText(prevDescr);
+            }
         }
 
         private void OnDestroy()

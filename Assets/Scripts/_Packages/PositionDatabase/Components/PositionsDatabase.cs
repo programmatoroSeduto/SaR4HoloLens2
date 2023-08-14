@@ -67,6 +67,12 @@ namespace Packages.PositionDatabase.Components
             get => dataZoneCreated;
         }
 
+        // the area renaming structure
+        public Dictionary<int, int> AreaRenamingLookup
+        {
+            get => AreaRenaming;
+        }
+
 
 
         // ===== PRIVATE ===== //
@@ -133,12 +139,7 @@ namespace Packages.PositionDatabase.Components
             yield return null;
 
             updateReferenceObject();
-            // Task t = lowLevel.SortAllAsync();
-
-            Debug.Log("Starting sort...");
-            // while (!t.IsCompleted) yield return new WaitForEndOfFrame();
             lowLevel.SortAll();
-            Debug.Log("Sort ended.");
 
             needSort = false;
             COR_SortAfterEnable = null;
@@ -264,7 +265,6 @@ namespace Packages.PositionDatabase.Components
                     !prevZone.IsLinkedWith(CurrentZone)
                     )
                 {
-                    Debug.Log("Adding Arch");
                     prevZone.AddPath(CurrentZone);
                     AreaRenaming[prevZone.AreaIndex] = CurrentZone.AreaIndex;
                 }

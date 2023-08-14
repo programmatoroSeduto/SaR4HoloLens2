@@ -26,6 +26,10 @@ namespace Packages.PositionDatabase.Components
         public bool LoadGlobalStorageHub = false;
         [Tooltip("(OPTIONAL, only with 'LoadGlobalStorageHub' enabled) name of the global property containing the global storage")]
         public string GlobalStorageHubName = "StorageHub";
+        [Tooltip("Name of the JSON export/import file")]
+        public string JsonFileName = "db_export";
+        [Tooltip("Wether using the timestamp at the end of the file name or not (suggested: false)")]
+        public bool UseFileNameTimestamp = false;
 
 
 
@@ -56,7 +60,7 @@ namespace Packages.PositionDatabase.Components
             // init storage hub
             if (StorageHub == null)
             {
-                this.StorageHub = StaticAppSettings.GetObject("StorageHub", null) as StorageHubOneShot;
+                this.StorageHub = StaticAppSettings.GetObject(GlobalStorageHubName, null) as StorageHubOneShot;
                 if (StorageHub == null) return false;
             }
             
@@ -69,9 +73,31 @@ namespace Packages.PositionDatabase.Components
 
         public void EVENT_ExportJsonFull()
         {
+            ExportJsonFull();
+        }
+
+        public void ExportJsonFull()
+        {
             if (!TryInit()) return;
 
-            // ...
+            JSONMaker jm = new JSONMaker();
+            JSONPositionDatabase dump = jm.ToJsonClass(PositionsDB);
+
+            foreach (PositionDatabaseWaypoint wp in lowLevel.Database)
+            {
+                JSONWaypoint jsonWp = jm.ToJsonClass(wp);
+
+                foreach (PositionDatabasePath link in wp.Paths)
+                {
+                    if (link.Key.StartsWith(wp.Key))
+                    {
+                        jsonWp.Paths.Add(jm.ToJsonClass(link));
+                    }
+                }
+                dump.Waypoints.Add(jsonWp);
+            }
+
+            StorageHub.WriteOneShot(JsonFileName, "json", JsonUtility.ToJson(dump, true), useTimestamp: UseFileNameTimestamp);
         }
 
 

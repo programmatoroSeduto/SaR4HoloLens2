@@ -29,6 +29,7 @@ namespace Packages.PositionDatabase.Utils
         public PositionsDatabase DBReference = null;
         public GameObject ObjectCenterReference = null;
         public bool CanUpdate = false;
+        public string Description = "";
 
         // geometry infos
         public Vector3 AreaCenter
@@ -78,7 +79,12 @@ namespace Packages.PositionDatabase.Utils
 
         public void setPositionID(int id)
         {
-            if (positionID == -1) positionID = id;
+            if (positionID == -1)
+            {
+                positionID = id;
+                if (Description == "")
+                    Description = Key;
+            }
         }
 
         public void setFirstAreaCenter(Vector3 ac)

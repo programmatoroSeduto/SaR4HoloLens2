@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+using Packages.PositionDatabase.Components;
+
 namespace Packages.PositionDatabase.Utils
 {
     [Serializable]
-    public class JSONPath
+    public class JSONTuple<Tkey, Tvalue>
     {
-        public string Key;
-        public int Waypoint1;
-        public int Waypoint2;
-        private PositionDatabasePath link;
+        public Tkey key;
+        public Tvalue value;
     }
 }
