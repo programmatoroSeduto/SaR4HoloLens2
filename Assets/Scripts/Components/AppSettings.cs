@@ -24,7 +24,7 @@ namespace Project.Scripts.Components
         [Tooltip("Calibration Position")]
         public string CalibrationPositionID = "SARHL2_ID00000000_REFPOS";
         [Tooltip("Startup mode")]
-        public StartupModes StartupMode = StartupModes.PcDevelopmentMode;
+        public StartupModes StartupMode = StartupModes.PcDevelopment;
         [Tooltip("The component in charge to perform the calibration")]
         public CalibrationUtility CalibrationUnit = null;
 
@@ -44,15 +44,13 @@ namespace Project.Scripts.Components
         [Header("other Settings")]
         [Tooltip("The debug mode allows to develop in editor and to test the application using a particular context on the device during the development of the application")]
         public bool DebugMode = false;
-        [Tooltip("Create globals on update instead than on start")]
-        public bool SetOnUpdate = false;
 
         // global objects
         [Header("Global Objects")]
         [Header("Storage hub if defined")]
         public StorageHubOneShot StorageHub = null;
         [Header("Global position database if defined")]
-        public PositionsDatabase PositionsDatabase = null;
+        public PositionsDatabase PositionsDatabaseReference = null;
 
         [Header("Project Logger Opions")]
         [Tooltip("Wether use or not the log level feature")]
@@ -79,34 +77,64 @@ namespace Project.Scripts.Components
 
 
 
+        // ===== PUBLIC ===== //
+
+        // set reference to position database
+        public PositionsDatabase PositionsDatabase
+        {
+            get
+            {
+                PositionsDatabase db = StaticAppSettings.GetObject("PositionsDatabase", null) as PositionsDatabase;
+                if (db != null)
+                    return db;
+                else if (PositionsDatabaseReference != null)
+                {
+                    PositionsDatabase = PositionsDatabaseReference;
+                    return PositionsDatabaseReference;
+                }
+                else
+                    return null;
+            }
+            set
+            {
+                StaticAppSettings.SetObject("PositionsDatabase", value);
+                PositionsDatabaseReference = value;
+            }
+        }
+
+
+
         // ===== PRIVATE ===== //
 
         // variables set done? 
         bool setEnvDone = false;
 
 
+
+        // ===== UNITY CALLBACKS ===== //
+
+
         private void Start()
         {
-            if(!SetOnUpdate)
-            {
-                SetEnvironment();
-                setEnvDone = true;
-            }
+            StaticLogger.Info(this, "Starting application ... ");
+
+            SetEnvironment();
+            setEnvDone = true;
         }
 
         private void Update()
         {
-            if (SetOnUpdate && !setEnvDone)
-            {
-                SetEnvironment();
-                setEnvDone = true;
-            }
+            
         }
 
         private void OnDestroy()
         {
             StaticLogger.Info(this, "Closing application ... ");
         }
+
+
+
+        // ===== ENVIRONMENT SETUP ===== //
 
         public void SetEnvironment()
         {
@@ -122,7 +150,7 @@ namespace Project.Scripts.Components
 
             StaticLogger.Info(this, "Setting up environment ... ");
 
-            StaticAppSettings.SetObject("AppSettings", this);
+            StaticAppSettings.AppSettings = this;
 
             StaticAppSettings.SetOpt("OperatorUniversalUserID", OperatorUniversalUserID);
             StaticAppSettings.SetOpt("OperatorUniversalDeviceID", OperatorUniversalDeviceID);
@@ -139,7 +167,7 @@ namespace Project.Scripts.Components
             StaticAppSettings.SetOpt("IsDebugMode", (DebugMode ? "true" : "false"));
 
             StaticAppSettings.SetObject("StorageHub", StorageHub);
-            StaticAppSettings.SetObject("PositionsDatabase", PositionsDatabase);
+            StaticAppSettings.SetObject("PositionsDatabase", PositionsDatabaseReference);
 
             StaticAppSettings.SetObject("LoggerMain", LoggerMain);
             StaticAppSettings.SetObject("LoggerInfo", LoggerInfo);

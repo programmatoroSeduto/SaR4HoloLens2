@@ -198,11 +198,10 @@ MonoBehaviour:
   ServerIpAddress: 127.0.0.1
   ServerPortNo: 5000
   DebugMode: 1
-  SetOnUpdate: 0
   StorageHub: {fileID: 1772066001}
-  PositionsDatabase: {fileID: 0}
-  UseLogLayer: 0
-  LogLayer: 0
+  PositionsDatabaseReference: {fileID: 0}
+  UseLogLayer: 1
+  LogLayer: 3
   IgnoreListMessages: 1
   SuppressedLogs:
   - Please remove the CanvasRenderer component from the [Label] GameObject as this

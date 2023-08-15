@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Project.Scripts.Utils;
+using Packages.PositionDatabase.Components;
 
 namespace Project.Scripts.Components
 {
@@ -50,7 +51,9 @@ namespace Project.Scripts.Components
         // The main command to start the calibration
         public void EVENT_Calibrate(bool redo = false)
         {
-            if(calibrationInProgress)
+            StaticLogger.Info(this, $"EVENT_Calibrate(bool redo = {redo})", logLayer: 2);
+
+            if (calibrationInProgress)
             {
                 StaticLogger.Warn(this, "Cannot calibrate when another calibration process is running", logLayer: 2);
                 return;
@@ -84,6 +87,7 @@ namespace Project.Scripts.Components
             yield return new WaitForSecondsRealtime(1.0f);
 
             StaticLogger.Info(this, "Collecting calibration positions ... ", logLayer: 1);
+            
             GameObject pointer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             for(int i=10; i>0; --i)
             {
@@ -91,8 +95,11 @@ namespace Project.Scripts.Components
                 pointer.transform.localScale = 0.1f * Vector3.one;
                 yield return new WaitForSecondsRealtime(0.1f);
             }
+
             Vector3 refPos = Camera.main.transform.position;
             Quaternion refRot = Camera.main.transform.rotation;
+
+            pointer.transform.localScale = 0.25f * Vector3.one;
             yield return new WaitForSecondsRealtime(1.0f);
             DestroyImmediate(pointer);
             StaticLogger.Info(this, "Collecting calibration positions ... OK ", logLayer: 1);
@@ -100,6 +107,20 @@ namespace Project.Scripts.Components
             StaticLogger.Info(this, "Calibrating the device ... ", logLayer: 1);
             StaticTransform.SetReference(refName, refPos, refRot);
             StaticLogger.Info(this, "Calibrating the device ... OK ", logLayer: 1);
+
+            StaticLogger.Info(this, $"Calibration test\n\tCurrent position: {StaticTransform.ReferencePosition} (expected any coordinate, the coordinates of the reference point)\n\tTranformed Position: {StaticTransform.TransformPoint(StaticTransform.ReferencePosition)} (expected very close to zero)", logLayer: 2);
+
+            StaticLogger.Info(this, "Enabling position database ... ", logLayer: 1);
+            PositionsDatabase db = StaticAppSettings.AppSettings.PositionsDatabase;
+            if(db == null)
+            {
+                StaticLogger.Warn(this, "Global reference to main position database found unset at runtime! Unexpected");
+            }
+            else
+            {
+                db.enabled = true;
+                StaticLogger.Info(this, "Enabling position database ... OK ", logLayer: 1);
+            }
 
             StopAudio();
             yield return new WaitForSecondsRealtime(1.0f);

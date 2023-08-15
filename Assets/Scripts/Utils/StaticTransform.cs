@@ -14,7 +14,7 @@ namespace Project.Scripts.Utils
         public static CalibrationUtility CalibrationComponent = null;
 
         /// <summary> reference poition name (from global app settings) </summary>
-        public static string ReferencePositionNameGlobal
+        public static string ReferencePositionID
         {
             get
             {
@@ -38,6 +38,15 @@ namespace Project.Scripts.Utils
             }
         }
 
+        /// <summary> the original reference position from the calibration </summary>
+        public static Vector3 ReferencePosition
+        {
+            get
+            {
+                return refPos;
+            }
+        }
+
         /// <summary> get transformed position (equals to the AppPosition if no calibation is performed) </summary>
         public static Vector3 TransformPosition
         {
@@ -46,13 +55,13 @@ namespace Project.Scripts.Utils
                 if (calibrationDone || CalibrationComponent == null)
                 {
                     Vector3 v = Quaternion.Inverse(refRot) * appPos - refPos;
-                    StaticLogger.Info(SourceLog, $"GET TRANSFORMED POSITION : appPos({appPos}) -> transformPos({v})", logLayer: 1);
+                    StaticLogger.Info(SourceLog, $"GET TRANSFORMED POSITION : appPos({appPos}) -> transformPos({v})", logLayer: 2);
                     StaticLogger.Info(SourceLog, $"GET TRANSFORMED POSITION : refPos({refPos}) refRot({refRot.eulerAngles})", logLayer: 2);
                     return v;
                 }
                 else
                 {
-                    StaticLogger.Warn(SourceLog, "Trying to get the transformed position without calibration; returning AppPos", logLayer: 1);
+                    StaticLogger.Warn(SourceLog, "Trying to get the transformed position without calibration; returning AppPos", logLayer: 2);
                     return appPos;
                 }
             }
@@ -93,6 +102,22 @@ namespace Project.Scripts.Utils
 
             calibrationDone = true;
             return true;
+        }
+
+
+
+        // ===== TRANSFORMATIONS ===== //
+
+        // transformation formula on a generic vector
+        public static Vector3 TransformPoint(Vector3 v)
+        {
+            if (calibrationDone || CalibrationComponent == null)
+                return Quaternion.Inverse(refRot) * v - refPos;
+            else
+            {
+                StaticLogger.Warn(SourceLog, "Trying to get the transformed position without calibration; returning unchanged vector", logLayer: 2);
+                return v;
+            }
         }
     }
 }

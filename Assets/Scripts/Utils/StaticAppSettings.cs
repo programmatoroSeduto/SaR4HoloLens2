@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using Project.Scripts.Components;
 
 namespace Project.Scripts.Utils
 {
@@ -14,6 +15,19 @@ namespace Project.Scripts.Utils
 #else
         public static bool IsEnvUWP = false;
 #endif
+
+        // get reference to the AppSettings object
+        public static AppSettings AppSettings
+        {
+            get
+            {
+                return StaticAppSettings.GetObject("AppSettings") as AppSettings;
+            }
+            set
+            {
+                StaticAppSettings.SetObject("AppSettings", value);
+            }
+        }
 
 
 
