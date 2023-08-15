@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SceneName: SARHL2
-  UseDelay: 0
+  UseDelay: 1
   DelaySeconds: 2
 --- !u!4 &69658199
 Transform:
@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7bd4f408373b80488e24c872f57bb1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AudioSourceComponent: {fileID: 0}
+  AudioSourceComponent: {fileID: 288968059}
 --- !u!82 &288968059
 AudioSource:
   m_ObjectHideFlags: 0

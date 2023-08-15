@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using Project.Scripts.Components;
+using System;
 
 namespace Project.Scripts.Utils
 {
@@ -54,7 +55,7 @@ namespace Project.Scripts.Utils
             {
                 if (calibrationDone || CalibrationComponent == null)
                 {
-                    Vector3 v = Quaternion.Inverse(refRot) * appPos - refPos;
+                    Vector3 v = ToRefPoint(appPos);
                     StaticLogger.Info(SourceLog, $"GET TRANSFORMED POSITION : appPos({appPos}) -> transformPos({v})", logLayer: 2);
                     StaticLogger.Info(SourceLog, $"GET TRANSFORMED POSITION : refPos({refPos}) refRot({refRot.eulerAngles})", logLayer: 2);
                     return v;
@@ -109,10 +110,21 @@ namespace Project.Scripts.Utils
         // ===== TRANSFORMATIONS ===== //
 
         // transformation formula on a generic vector
-        public static Vector3 TransformPoint(Vector3 v)
+        public static Vector3 ToRefPoint(Vector3 v)
         {
             if (calibrationDone || CalibrationComponent == null)
-                return Quaternion.Inverse(refRot) * v - refPos;
+                return Quaternion.Inverse(refRot) * v - Quaternion.Inverse(refRot) * refPos;
+            else
+            {
+                StaticLogger.Warn(SourceLog, "Trying to get the transformed position without calibration; returning unchanged vector", logLayer: 2);
+                return v;
+            }
+        }
+
+        public static Vector3 ToAppPoint(Vector3 v)
+        {
+            if (calibrationDone || CalibrationComponent == null)
+                return refPos + refRot * v;
             else
             {
                 StaticLogger.Warn(SourceLog, "Trying to get the transformed position without calibration; returning unchanged vector", logLayer: 2);

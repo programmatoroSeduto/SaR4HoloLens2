@@ -21,6 +21,7 @@ namespace Packages.PositionDatabase.Utils
         public bool UseMaxIndices;
         public JSONTupleList<int, int> AreaRenaming = new JSONTupleList<int, int>();
         public int MaxIndices;
+        public string ReferenceID;
 
         public List<JSONWaypoint> Waypoints = new List<JSONWaypoint>();
     }

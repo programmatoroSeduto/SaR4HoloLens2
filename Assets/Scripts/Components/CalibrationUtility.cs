@@ -89,7 +89,7 @@ namespace Project.Scripts.Components
             StaticLogger.Info(this, "Collecting calibration positions ... ", logLayer: 1);
             
             GameObject pointer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            for(int i=10; i>0; --i)
+            for(int i=30; i>0; --i)
             {
                 pointer.transform.localPosition = Camera.main.transform.position + Camera.main.transform.rotation * Vector3.forward;
                 pointer.transform.localScale = 0.1f * Vector3.one;
@@ -108,7 +108,11 @@ namespace Project.Scripts.Components
             StaticTransform.SetReference(refName, refPos, refRot);
             StaticLogger.Info(this, "Calibrating the device ... OK ", logLayer: 1);
 
-            StaticLogger.Info(this, $"Calibration test\n\tCurrent position: {StaticTransform.ReferencePosition} (expected any coordinate, the coordinates of the reference point)\n\tTranformed Position: {StaticTransform.TransformPoint(StaticTransform.ReferencePosition)} (expected very close to zero)", logLayer: 2);
+            StaticLogger.Info(this, $"Calibration test\n" + 
+                $"\tCurrent position: {StaticTransform.ReferencePosition} (expected any coordinate, the coordinates of the reference point)\n" + 
+                $"\tTranformed Position: {StaticTransform.ToRefPoint(StaticTransform.ReferencePosition)} (expected very close to zero)\n" + 
+                $"\tRefPos: {refPos}\n" + 
+                $"\tRefRot (euler Angles): {refRot.eulerAngles}\n", logLayer: 2);
 
             StaticLogger.Info(this, "Enabling position database ... ", logLayer: 1);
             PositionsDatabase db = StaticAppSettings.AppSettings.PositionsDatabase;

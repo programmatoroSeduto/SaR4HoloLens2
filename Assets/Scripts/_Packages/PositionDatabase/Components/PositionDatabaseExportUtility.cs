@@ -89,7 +89,13 @@ namespace Packages.PositionDatabase.Components
 
         public string ExportJsonFullCode(bool pretty = false)
         {
-            if (!TryInit()) return "{}";
+            StaticLogger.Info(this, "JSON export FULL START");
+
+            if (!TryInit())
+            {
+                StaticLogger.Warn(this, "Unable to export data! Can't init the ExportUtility class; returning empty JSON", logLayer: 1);
+                return "{}";
+            }
 
             JSONMaker jm = new JSONMaker();
             JSONPositionDatabase dump = jm.ToJsonClass(PositionsDB);
@@ -108,7 +114,10 @@ namespace Packages.PositionDatabase.Components
                 dump.Waypoints.Add(jsonWp);
             }
 
-            return JsonUtility.ToJson(dump, pretty);
+            string jsonCode = JsonUtility.ToJson(dump, pretty);
+            StaticLogger.Info(this, "JSON export FULL END", logLayer: 1);
+            StaticLogger.Info(this, "JSON code exported:\n\t" + jsonCode + "\n\n", logLayer: 3);
+            return jsonCode;
         }
 
 

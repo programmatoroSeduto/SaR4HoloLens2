@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Packages.PositionDatabase.Components;
+using Project.Scripts.Components;
+using Project.Scripts.Utils;
 
 namespace Packages.PositionDatabase.Utils
 {
@@ -53,6 +55,7 @@ namespace Packages.PositionDatabase.Utils
             res.UseClusters = db.UseClusters;
             res.UseMaxIndices = db.UseMaxIndices;
             res.MaxIndices = db.MaxIndices;
+            res.ReferenceID = StaticTransform.ReferencePositionID;
 
             res.AreaRenaming = DictToJSON<int, int>(db.AreaRenamingLookup);
 
@@ -88,14 +91,22 @@ namespace Packages.PositionDatabase.Utils
 
         // ===== UTILITIES ===== //
 
-        public static List<float> Vector3ToJSON(Vector3 v)
+        public static List<float> Vector3ToJSON(Vector3 v, bool applyReferenceTransform = true)
         {
+            if (applyReferenceTransform)
+                v = StaticTransform.ToRefPoint(v);
+            
             return new List<float> { v.x, v.y, v.z };
         }
 
-        public static Vector3 JSONToVector3(List<float> vl)
+        public static Vector3 JSONToVector3(List<float> vl, bool applyReferenceTransform = true)
         {
-            return new Vector3(vl[0], vl[1], vl[2]);
+            Vector3 v = new Vector3(vl[0], vl[1], vl[2]);
+
+            if (applyReferenceTransform)
+                v = StaticTransform.ToAppPoint(v);
+            
+            return v;
         }
 
         public static JSONTupleList<Tkey, Tvalue> DictToJSON<Tkey, Tvalue>(Dictionary<Tkey, Tvalue> dict)
