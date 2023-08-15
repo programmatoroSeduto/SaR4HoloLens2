@@ -28,6 +28,8 @@ namespace Packages.DiskStorageServices.Components
         public bool UseTimestamp = false;
         [Tooltip("Create file on start")]
         public bool CreateFileOnStart = false;
+        [Tooltip("Apply timestamp to each line")]
+        public bool UseLineTimestamp = false;
 
 
 
@@ -96,7 +98,22 @@ namespace Packages.DiskStorageServices.Components
         protected virtual void OnDestroy()
         {
 #if UNITY_EDITOR
+            Update();
             StorageFile.Close();
+#endif
+        }
+
+        protected virtual void Update()
+        {
+#if UNITY_EDITOR
+            if(qlines.Count > 0)
+            {
+                while (qlines.Count > 0)
+                {
+                    StorageFile.Write((string)qlines.Dequeue());
+                }
+                StorageFile.Flush();
+            }
 #endif
         }
 
@@ -191,8 +208,9 @@ namespace Packages.DiskStorageServices.Components
             if (!EVENT_IsEnabled())
                 return false;
 
+            string lineTmStp = $"[{DateTime.Now}] ";
             lock (MUTEX_qlines)
-                qlines.Enqueue(line + (endline ? "\n" : ""));
+                qlines.Enqueue((UseLineTimestamp ? lineTmStp : "") + line + (endline && !line.EndsWith("\n") ? "\n" : ""));
 
             return true;
         }
@@ -209,7 +227,7 @@ namespace Packages.DiskStorageServices.Components
 
             yield return BSCOR_NewFile(FileName, format);
 
-// #if WINDOWS_UWP
+#if WINDOWS_UWP
             TASK_StorageOutput = Task.Run(() =>
             {
                 while (true)
@@ -218,7 +236,7 @@ namespace Packages.DiskStorageServices.Components
                     Task.Delay(1000);
                 }
             });
-// #endif
+#endif
         }
 
         private void BSTASK_StorageOutputBackground()
@@ -228,9 +246,14 @@ namespace Packages.DiskStorageServices.Components
                 lock (MUTEX_qlines)
                     FileIO.AppendTextAsync(fil, (string)qlines.Dequeue()).AsTask().GetAwaiter().GetResult();
 #else
+            /*
             while (qlines.Count > 0)
                 lock (MUTEX_qlines)
+                {
                     StorageFile.Write((string)qlines.Dequeue());
+                    StorageFile.Flush();
+                }
+            */
 #endif
         }
     }

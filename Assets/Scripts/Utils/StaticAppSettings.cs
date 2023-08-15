@@ -7,6 +7,16 @@ namespace Project.Scripts.Utils
 {
     public class StaticAppSettings
     {
+        // ===== PUBLIC ===== //
+
+#if WINDOWS_UWP
+        public static bool IsEnvUWP = true;
+#else
+        public static bool IsEnvUWP = false;
+#endif
+
+
+
         // ===== PRIVATE ===== //
 
         // global settings

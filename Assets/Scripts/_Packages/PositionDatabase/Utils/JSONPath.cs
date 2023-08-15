@@ -10,8 +10,8 @@ namespace Packages.PositionDatabase.Utils
     public class JSONPath
     {
         public string Key;
-        public int Waypoint1;
-        public int Waypoint2;
+        public string Waypoint1;
+        public string Waypoint2;
         private PositionDatabasePath link;
     }
 }

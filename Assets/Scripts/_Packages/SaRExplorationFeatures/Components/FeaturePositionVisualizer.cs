@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using Project.Scripts.Utils;
 
 using Packages.ARMarker.Components;
 using Packages.PositionDatabase.Components;
@@ -107,7 +108,12 @@ namespace Packages.SarExplorationFeatures.Components
                     continue;
                 }
 
-                if (((FlexibleLineRenderer)link.Renderer).TrySetupFlexibleLineRenderer())
+                if(((FlexibleLineRenderer)link.Renderer) == null)
+                {
+                    StaticLogger.Err(this.gameObject, "Link.Renderer is null!");
+                    continue;
+                }
+                else if (((FlexibleLineRenderer)link.Renderer).TrySetupFlexibleLineRenderer())
                     ((FlexibleLineRenderer)link.Renderer).SetLineColor((opt ? Color.red : Color.green));
             }
 

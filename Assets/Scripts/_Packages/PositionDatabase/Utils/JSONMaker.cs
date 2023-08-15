@@ -35,8 +35,8 @@ namespace Packages.PositionDatabase.Utils
             JSONPath res = new JSONPath();
 
             res.Key = link.Key;
-            res.Waypoint1 = link.wp1.PositionID;
-            res.Waypoint2 = link.wp2.PositionID;
+            res.Waypoint1 = link.wp1.Key;
+            res.Waypoint2 = link.wp2.Key;
 
             return res;
         }

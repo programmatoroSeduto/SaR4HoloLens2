@@ -71,6 +71,10 @@ namespace Packages.PositionDatabase.Components
         public Dictionary<int, int> AreaRenamingLookup
         {
             get => AreaRenaming;
+            set
+            {
+                AreaRenaming = value;
+            }
         }
 
 
@@ -123,14 +127,20 @@ namespace Packages.PositionDatabase.Components
             onZoneChanged();
         }
 
-        private void OnDisable()
+        public void OnDisable()
         {
             needSort = true;   
         }
 
-        private void OnEnable()
+        public void OnEnable()
         {
             if(needSort)
+                COR_SortAfterEnable = StartCoroutine(BSCOR_SortAll());
+        }
+
+        public void OnEnable(bool forceSort = false)
+        {
+            if (forceSort || needSort)
                 COR_SortAfterEnable = StartCoroutine(BSCOR_SortAll());
         }
 
@@ -285,7 +295,7 @@ namespace Packages.PositionDatabase.Components
 
         public bool SetStatusImporting(PositionDatabaseExportUtility who, bool opt)
         {
-            if (isImporting) return false;
+            if (isImporting && opt) return false;
 
             if (opt)
                 activeImportUtility = who;
