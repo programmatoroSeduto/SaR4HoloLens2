@@ -135,7 +135,7 @@ namespace Packages.PositionDatabase.Components
         public IEnumerator BSCOR_ImportJsonMerge(string jsonCode = "")
         {
             yield return null;
-            Debug.Log("JSON import MERGE START");
+            StaticLogger.Info(this, "JSON import MERGE START");
 
             if (!TryInit() || !PositionsDB.SetStatusImporting(this, true))
                 yield break;
@@ -143,29 +143,29 @@ namespace Packages.PositionDatabase.Components
             // lettura JSON
             if (jsonCode == "")
             {
-                Debug.Log("JSON import from file; reading file ...");
+                StaticLogger.Info(this, "JSON import from file; reading file ...");
                 yield return StorageHub.ReadOneShot($"{JsonFileName}.json");
                 jsonCode = StorageHub.FileContent;
             }
-            Debug.Log("getting JSON code ...");
+            StaticLogger.Info(this, "getting JSON code ...");
             JSONMaker jm = new JSONMaker();
             JSONPositionDatabase jdb = JsonUtility.FromJson<JSONPositionDatabase>(jsonCode);
-            Debug.Log("getting JSON code ... OK");
+            StaticLogger.Info(this, "getting JSON code ... OK");
 
             // primo setup db
-            Debug.Log("setting up DB ... ");
+            StaticLogger.Info(this, "setting up DB ... ");
             jm.FromJsonClass(jdb, PositionsDB);
-            Debug.Log("setting up DB ... OK");
+            StaticLogger.Info(this, "setting up DB ... OK");
 
             // oridinamento low level rispetto alriferimento comune
             Vector3 wpRef = JSONMaker.JSONToVector3(jdb.CurrentZone.AreaCenter);
-            Debug.Log($"sorting DB by reference ({wpRef.x},{wpRef.y},{wpRef.z}) ... ");
+            StaticLogger.Info(this, $"sorting DB by reference ({wpRef.x},{wpRef.y},{wpRef.z}) ... ");
             PositionsDB.LowLevelDatabase.SortReferencePosition = wpRef;
             PositionsDB.LowLevelDatabase.SortAll();
-            Debug.Log($"sorting DB by reference ({wpRef.x},{wpRef.y},{wpRef.z}) ... OK");
+            StaticLogger.Info(this, $"sorting DB by reference ({wpRef.x},{wpRef.y},{wpRef.z}) ... OK");
 
             // caricamento waypoints e segna gli archi trovati
-            Debug.Log("loading local renamings ... ");
+            StaticLogger.Info(this, "loading local renamings ... ");
             Dictionary<int, int> AreaRenamingLocal = JSONMaker.JSONToDict<int, int>(jdb.AreaRenaming);
             Dictionary<int, List<PositionDatabaseWaypoint>> AreaWp = new Dictionary<int, List<PositionDatabaseWaypoint>>();
             HashSet<int> UnresolvedAreaLocal = new HashSet<int>();
@@ -174,16 +174,16 @@ namespace Packages.PositionDatabase.Components
                 AreaWp.Add(tup.Key, new List<PositionDatabaseWaypoint>());
                 UnresolvedAreaLocal.Add(tup.Key);
             }
-            Debug.Log($"loading local renamings ... OK found {AreaRenamingLocal.Count} renamings");
+            StaticLogger.Info(this, $"loading local renamings ... OK found {AreaRenamingLocal.Count} renamings");
 
             HashSet<JSONPath> links = new HashSet<JSONPath>();
             Dictionary<string, PositionDatabaseWaypoint> LocalKeyToWp = new Dictionary<string, PositionDatabaseWaypoint>();
             HashSet<PositionDatabaseWaypoint> mergedLocations = new HashSet<PositionDatabaseWaypoint>();
 
-            Debug.Log("Loading waypoints START");
+            StaticLogger.Info(this, "Loading waypoints START");
             foreach (JSONWaypoint jwp in jdb.Waypoints)
             {
-                Debug.Log($"(from JSON) jwp with ID:{jwp.Key}");
+                StaticLogger.Info(this, $"(from JSON) jwp with ID:{jwp.Key}");
 
                 // max dist dal ref
                 Vector3 wpPos = JSONMaker.JSONToVector3(jwp.FirstAreaCenter);
@@ -202,7 +202,7 @@ namespace Packages.PositionDatabase.Components
                     if (Vector3.Distance(wp.AreaCenter, dbwp.AreaCenter) <= 2.0f * PositionsDB.BaseDistance - PositionsDB.DistanceTolerance)
                     {
                         // se trovi, --> correggi la pos del marker, assegna l'area finale (segna la conversione)
-                        Debug.Log($"jwp with ID:{jwp.Key} merge with ID{wp.PositionID}");
+                        StaticLogger.Info(this, $"jwp with ID:{jwp.Key} merge with ID{wp.PositionID}");
                         dbwp.AreaCenter = wp.AreaCenter;
                         AreaRenamingLocal[wp.AreaIndex] = PositionsDB.AreaRenamingLookup[dbwp.AreaIndex];
                         UnresolvedAreaLocal.Remove(wp.AreaIndex);
@@ -217,7 +217,7 @@ namespace Packages.PositionDatabase.Components
                     else if (Vector3.Distance(wpRef, dbwp.AreaCenter) >= maxDist || i == PositionsDB.LowLevelDatabase.Count - 1)
                     {
                         // altrimenti, inserisci nel DB e nel dubbio tieni da parte
-                        Debug.Log($"(from JSON) jwp with ID:{jwp.Key} is new point of the set");
+                        StaticLogger.Info(this, $"(from JSON) jwp with ID:{jwp.Key} is new point of the set");
                         PositionsDB.LowLevelDatabase.Database.Add(wp);
                         wp.setPositionID(PositionsDB.LowLevelDatabase.Count);
                         AreaWp[wp.AreaIndex].Add(wp);
@@ -229,20 +229,20 @@ namespace Packages.PositionDatabase.Components
                     }
                 }
             }
-            Debug.Log("Loading waypoints END");
+            StaticLogger.Info(this, "Loading waypoints END");
 
             // caricamento archi
-            Debug.Log("Loading edges START");
+            StaticLogger.Info(this, "Loading edges START");
             foreach (JSONPath p in links)
             {
-                Debug.Log($"(from JSON) path with ID:{p.Key}");
+                StaticLogger.Info(this, $"(from JSON) path with ID:{p.Key}");
 
                 PositionDatabaseWaypoint wp1 = LocalKeyToWp[p.Waypoint1];
                 PositionDatabaseWaypoint wp2 = LocalKeyToWp[p.Waypoint2];
 
                 if (!wp1.IsLinkedWith(wp2))
                 {
-                    Debug.Log($"path with ID:{p.Key} adding link");
+                    StaticLogger.Info(this, $"path with ID:{p.Key} adding link");
                     wp1.AddPath(wp2);
                 }
 
@@ -257,7 +257,7 @@ namespace Packages.PositionDatabase.Components
                     UnresolvedAreaLocal.Remove(wp2.AreaIndex);
                 }
             }
-            Debug.Log("Loading edges END");
+            StaticLogger.Info(this, "Loading edges END");
 
             // risoluzione zone non ancora associate
             foreach (int unresolvedArea in UnresolvedAreaLocal)
@@ -268,7 +268,7 @@ namespace Packages.PositionDatabase.Components
             }
 
             // infine aggiornamento delle aree
-            Debug.Log("Final operations START");
+            StaticLogger.Info(this, "Final operations START");
             foreach (PositionDatabaseWaypoint wp in LocalKeyToWp.Values)
             {
                 if (!mergedLocations.Contains(wp))
@@ -276,18 +276,18 @@ namespace Packages.PositionDatabase.Components
                     wp.AreaIndex = AreaRenamingLocal[wp.AreaIndex];
                 }
             }
-            Debug.Log("Final operations END");
+            StaticLogger.Info(this, "Final operations END");
 
             PositionsDB.SetStatusImporting(this, false);
             isImporting = false;
 
-            Debug.Log("JSON import MERGE END");
+            StaticLogger.Info(this, "JSON import MERGE END");
         }
 
         public IEnumerator BSCOR_ImportJsonFull(string jsonCode = "")
         {
             yield return null;
-            Debug.Log("JSON import FULL START");
+            StaticLogger.Info(this, "JSON import FULL START");
 
             if (!TryInit() || !PositionsDB.SetStatusImporting(this, true))
                 yield break;
@@ -295,35 +295,35 @@ namespace Packages.PositionDatabase.Components
             // lettura JSON
             if (jsonCode == "")
             {
-                Debug.Log("JSON import from file; reading file ...");
+                StaticLogger.Info(this, "JSON import from file; reading file ...");
                 yield return StorageHub.ReadOneShot($"{JsonFileName}.json");
                 jsonCode = StorageHub.FileContent;
             }
-            Debug.Log("getting JSON code ...");
+            StaticLogger.Info(this, "getting JSON code ...");
             JSONMaker jm = new JSONMaker();
             JSONPositionDatabase jdb = JsonUtility.FromJson<JSONPositionDatabase>(jsonCode);
-            Debug.Log("getting JSON code ... OK");
+            StaticLogger.Info(this, "getting JSON code ... OK");
 
             // clean status
-            Debug.Log("cleaning DB status ... ");
+            StaticLogger.Info(this, "cleaning DB status ... ");
             PositionsDB.LowLevelDatabase.Database.Clear();
             PositionsDB.AreaRenamingLookup.Clear();
-            Debug.Log("cleaning DB status ... OK ");
+            StaticLogger.Info(this, "cleaning DB status ... OK ");
 
             // import db settings
-            Debug.Log("setting up DB ... ");
+            StaticLogger.Info(this, "setting up DB ... ");
             jm.FromJsonClass(jdb, PositionsDB);
             PositionsDB.AreaRenamingLookup = JSONMaker.JSONToDict<int, int>(jdb.AreaRenaming);
-            Debug.Log("setting up DB ... OK");
+            StaticLogger.Info(this, "setting up DB ... OK");
 
             HashSet<JSONPath> links = new HashSet<JSONPath>();
             Dictionary<string, PositionDatabaseWaypoint> wpLookup = new Dictionary<string, PositionDatabaseWaypoint>();
 
             // create waypoints
-            Debug.Log("Loading waypoints START");
+            StaticLogger.Info(this, "Loading waypoints START");
             foreach (JSONWaypoint jwp in jdb.Waypoints)
             {
-                Debug.Log($"(from JSON) jwp with ID:{jwp.Key}");
+                StaticLogger.Info(this, $"(from JSON) jwp with ID:{jwp.Key}");
 
                 PositionDatabaseWaypoint wp = new PositionDatabaseWaypoint();
                 jm.FromJsonClass(jwp, wp);
@@ -334,15 +334,15 @@ namespace Packages.PositionDatabase.Components
                 foreach (JSONPath p in jwp.Paths)
                     links.Add(p);
             }
-            Debug.Log("Loading waypoints END");
+            StaticLogger.Info(this, "Loading waypoints END");
 
             // create paths 
-            Debug.Log("Loading edges START");
+            StaticLogger.Info(this, "Loading edges START");
             foreach (JSONPath p in links)
             {
                 wpLookup[p.Waypoint1].AddPath(wpLookup[p.Waypoint2]);
             }
-            Debug.Log("Loading edges END");
+            StaticLogger.Info(this, "Loading edges END");
 
             // sort wrt the current reference
             PositionsDB.OnEnable(true);
@@ -350,7 +350,7 @@ namespace Packages.PositionDatabase.Components
             PositionsDB.SetStatusImporting(this, false);
             isImporting = false;
 
-            Debug.Log("JSON import FULL END");
+            StaticLogger.Info(this, "JSON import FULL END");
         }
     }
 }

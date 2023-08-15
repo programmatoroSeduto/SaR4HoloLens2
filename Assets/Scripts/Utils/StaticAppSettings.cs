@@ -23,6 +23,8 @@ namespace Project.Scripts.Utils
         private static Dictionary<string, string> GlobalSettings = new Dictionary<string, string>();
         // global object references
         private static Dictionary<string, object> GlobalObjects = new Dictionary<string, object>();
+        // name of this class (for logging purposes)
+        private static readonly string logSource = "Static App Settings";
 
 
 
@@ -38,6 +40,8 @@ namespace Project.Scripts.Utils
                 StaticAppSettings.GlobalSettings[key] = val;
             else
                 StaticAppSettings.GlobalSettings.Add(key, val);
+
+            StaticLogger.Info(logSource, $"SUCCESS SET PARAMETER key({key}) val({val})");
 
             return val;
         }
@@ -66,6 +70,7 @@ namespace Project.Scripts.Utils
             try { jsonVal = JsonUtility.ToJson(val); }
             catch (System.Exception)
             {
+                StaticLogger.Warn(logSource, $"FAILED SET JSON PARAMETER key({key})");
                 return null;
             }
 
@@ -75,6 +80,9 @@ namespace Project.Scripts.Utils
                 StaticAppSettings.GlobalSettings[key] = jsonVal;
             else
                 StaticAppSettings.GlobalSettings.Add(key, jsonVal);
+
+            StaticLogger.Info(logSource, $"SUCCESS SET JSON PARAMETER key({key})");
+            StaticLogger.Info(logSource, $"JSON PARAMETER key({key}) with code: \n{jsonVal}", logLayer: 1);
 
             return jsonVal;
         }
@@ -122,6 +130,8 @@ namespace Project.Scripts.Utils
                 StaticAppSettings.GlobalObjects[key] = val;
             else
                 StaticAppSettings.GlobalObjects.Add(key, val);
+
+            StaticLogger.Info(logSource, $"SUCCESS SET OBJECT REFERENCE PARAMETER key({key})", logLayer: 1);
 
             return val;
         }

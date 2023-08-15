@@ -18,6 +18,16 @@ namespace Project.Scripts.Components
         [Tooltip("OperatorUniversalDeviceID (8 digits)")]
         public string OperatorUniversalDeviceID = "SARHL2_ID00000000_DEV";
 
+        [Header("Startup Settings")]
+        [Tooltip("Entry Point Component")]
+        public EntryPoint EntryPointComponent = null;
+        [Tooltip("Calibration Position")]
+        public string CalibrationPositionID = "SARHL2_ID00000000_REFPOS";
+        [Tooltip("Startup mode")]
+        public StartupModes StartupMode = StartupModes.PcDevelopmentMode;
+        [Tooltip("The component in charge to perform the calibration")]
+        public CalibrationUtility CalibrationUnit = null;
+
         // User Settings
         [Header("User settings")]
         [Tooltip("User Height")]
@@ -31,9 +41,11 @@ namespace Project.Scripts.Components
         public string ServerPortNo = "5000";
 
         // other settings
-        [Header("Development Settings")]
+        [Header("other Settings")]
         [Tooltip("The debug mode allows to develop in editor and to test the application using a particular context on the device during the development of the application")]
         public bool DebugMode = false;
+        [Tooltip("Create globals on update instead than on start")]
+        public bool SetOnUpdate = false;
 
         // global objects
         [Header("Global Objects")]
@@ -65,25 +77,39 @@ namespace Project.Scripts.Components
         [Tooltip("Component writing the ERRORs on file")]
         public TxtWriter LoggerError = null;
 
+
+
+        // ===== PRIVATE ===== //
+
+        // variables set done? 
+        bool setEnvDone = false;
+
+
         private void Start()
         {
-            StaticAppSettings.SetOpt("OperatorUniversalUserID", OperatorUniversalUserID);
-            StaticAppSettings.SetOpt("OperatorUniversalDeviceID", OperatorUniversalDeviceID);
+            if(!SetOnUpdate)
+            {
+                SetEnvironment();
+                setEnvDone = true;
+            }
+        }
 
-            StaticAppSettings.SetOpt("UserHeight", UserHeight.ToString());
-            StaticAppSettings.SetOpt("ServerIpAddress", ServerIpAddress);
-            StaticAppSettings.SetOpt("ServerPortNo", ServerPortNo);
-            StaticAppSettings.SetOpt("IsDebugMode", (DebugMode ? "true" : "false"));
+        private void Update()
+        {
+            if (SetOnUpdate && !setEnvDone)
+            {
+                SetEnvironment();
+                setEnvDone = true;
+            }
+        }
 
-            StaticAppSettings.SetObject("AppSettings", this);
-            StaticAppSettings.SetObject("StorageHub", StorageHub);
-            StaticAppSettings.SetObject("PositionsDatabase", PositionsDatabase);
+        private void OnDestroy()
+        {
+            StaticLogger.Info(this, "Closing application ... ");
+        }
 
-            StaticAppSettings.SetObject("LoggerMain", LoggerMain);
-            StaticAppSettings.SetObject("LoggerInfo", LoggerInfo);
-            StaticAppSettings.SetObject("LoggerWarning", LoggerWarning);
-            StaticAppSettings.SetObject("LoggerError", LoggerError);
-
+        public void SetEnvironment()
+        {
             if (UseLogLayer)
                 StaticLogger.CurrentLogLayer = LogLayer;
             else
@@ -93,6 +119,34 @@ namespace Project.Scripts.Components
                 StaticLogger.SuppressedLogs.Clear();
             else
                 StaticLogger.SuppressedLogs = new HashSet<string>(SuppressedLogs);
+
+            StaticLogger.Info(this, "Setting up environment ... ");
+
+            StaticAppSettings.SetObject("AppSettings", this);
+
+            StaticAppSettings.SetOpt("OperatorUniversalUserID", OperatorUniversalUserID);
+            StaticAppSettings.SetOpt("OperatorUniversalDeviceID", OperatorUniversalDeviceID);
+
+            StaticAppSettings.SetObject("EntryPointComponent", EntryPointComponent);
+            StaticAppSettings.SetOpt("CalibrationPositionID", CalibrationPositionID);
+            StaticAppSettings.SetObject("StartupMode", StartupMode);
+            StaticAppSettings.SetObject("CalibrationUnit", CalibrationUnit);
+            StaticTransform.CalibrationComponent = CalibrationUnit;
+
+            StaticAppSettings.SetOpt("UserHeight", UserHeight.ToString());
+            StaticAppSettings.SetOpt("ServerIpAddress", ServerIpAddress);
+            StaticAppSettings.SetOpt("ServerPortNo", ServerPortNo);
+            StaticAppSettings.SetOpt("IsDebugMode", (DebugMode ? "true" : "false"));
+
+            StaticAppSettings.SetObject("StorageHub", StorageHub);
+            StaticAppSettings.SetObject("PositionsDatabase", PositionsDatabase);
+
+            StaticAppSettings.SetObject("LoggerMain", LoggerMain);
+            StaticAppSettings.SetObject("LoggerInfo", LoggerInfo);
+            StaticAppSettings.SetObject("LoggerWarning", LoggerWarning);
+            StaticAppSettings.SetObject("LoggerError", LoggerError);
+
+            StaticLogger.Info(this, "Setting up environment ... OK ");
         }
 
     }

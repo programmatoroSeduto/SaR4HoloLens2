@@ -22,7 +22,7 @@ namespace Project.Scripts.Utils
         {
             if (logLayer > StaticLogger.CurrentLogLayer) return;
 
-            if((SuppressLog && SuppressedLogs.Contains(text)) || !SuppressLog)
+            if((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.Log(WrapMessage(refObj, text));
 
             if (pause) BreakPoint();
@@ -31,8 +31,17 @@ namespace Project.Scripts.Utils
         {
             if (logLayer > StaticLogger.CurrentLogLayer) return;
 
-            if ((SuppressLog && SuppressedLogs.Contains(text)) || !SuppressLog)
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.Log(WrapMessage(refObj, text));
+
+            if (pause) BreakPoint();
+        }
+        public static void Info(string sourcext, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
+        {
+            if (logLayer > StaticLogger.CurrentLogLayer) return;
+
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
+                Debug.Log(WrapMessage(sourcext, text));
 
             if (pause) BreakPoint();
         }
@@ -45,7 +54,7 @@ namespace Project.Scripts.Utils
         {
             if (logLayer > StaticLogger.CurrentLogLayer) return;
 
-            if ((SuppressLog && SuppressedLogs.Contains(text)) || !SuppressLog)
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogWarning(WrapMessage(refObj, text));
 
             if (pause) BreakPoint();
@@ -54,8 +63,17 @@ namespace Project.Scripts.Utils
         {
             if (logLayer > StaticLogger.CurrentLogLayer) return;
 
-            if ((SuppressLog && SuppressedLogs.Contains(text)) || !SuppressLog)
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogWarning(WrapMessage(refObj, text));
+
+            if (pause) BreakPoint();
+        }
+        public static void Warn(string sourcext, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
+        {
+            if (logLayer > StaticLogger.CurrentLogLayer) return;
+
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
+                Debug.LogWarning(WrapMessage(sourcext, text));
 
             if (pause) BreakPoint();
         }
@@ -68,7 +86,7 @@ namespace Project.Scripts.Utils
         {
             if (logLayer > StaticLogger.CurrentLogLayer) return;
 
-            if ((SuppressLog && SuppressedLogs.Contains(text)) || !SuppressLog)
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogError(WrapMessage(refObj, text));
 
             if (pause) BreakPoint();
@@ -77,8 +95,17 @@ namespace Project.Scripts.Utils
         {
             if (logLayer > StaticLogger.CurrentLogLayer) return;
 
-            if ((SuppressLog && SuppressedLogs.Contains(text)) || !SuppressLog)
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogError(WrapMessage(refObj, text));
+
+            if (pause) BreakPoint();
+        }
+        public static void Err(string sourcext, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
+        {
+            if (logLayer > StaticLogger.CurrentLogLayer) return;
+
+            if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
+                Debug.LogError(WrapMessage(sourcext, text));
 
             if (pause) BreakPoint();
         }
@@ -109,6 +136,11 @@ namespace Project.Scripts.Utils
         public static string WrapMessage(MonoBehaviour refComponent, string text)
         {
             return $"[FROM Component:{refComponent.name}] {text}";
+        }
+
+        public static string WrapMessage(string sourcext, string text)
+        {
+            return $"[FROM Component:{(sourcext != "" ? sourcext : "unknown!!!")}] {text}";
         }
     }
 }

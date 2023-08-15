@@ -110,7 +110,7 @@ namespace Packages.SarExplorationFeatures.Components
 
                 if(((FlexibleLineRenderer)link.Renderer) == null)
                 {
-                    StaticLogger.Err(this.gameObject, "Link.Renderer is null!");
+                    StaticLogger.Warn(this.gameObject, "Link.Renderer is null!", logLayer: 0);
                     continue;
                 }
                 else if (((FlexibleLineRenderer)link.Renderer).TrySetupFlexibleLineRenderer())

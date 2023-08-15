@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+using Project.Scripts.Utils;
+using Project.Scripts.Components;
+
 namespace Packages.DiskStorageServices.Components
 {
     public class LogStreamToStorage : MonoBehaviour
@@ -17,6 +20,10 @@ namespace Packages.DiskStorageServices.Components
         public bool SendErrors = true;
         [Tooltip("The component to call when a new message arrives")]
         public TxtWriter StorageChannel = null;
+        [Tooltip("Suppressed warnings from static app settings")]
+        public bool SuppressWarningsFromSettings = true;
+        [Tooltip("Print stack traces also for warnings")]
+        public bool PrintStackTraceWarnings = false;
 
 
 
@@ -24,6 +31,8 @@ namespace Packages.DiskStorageServices.Components
 
         // if the stream is active or not
         private bool isEnabledStream = false;
+        // pending messages
+        private Queue<string> pendingMsgs = new Queue<string>();
 
 
 
@@ -46,6 +55,47 @@ namespace Packages.DiskStorageServices.Components
             isEnabledStream = true;
         }
 
+        private void Update()
+        {
+            while(pendingMsgs.Count > 0)
+            {
+                if (StorageChannel.EVENT_Write(pendingMsgs.Peek(), true))
+                    pendingMsgs.Dequeue();
+                else break;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            try
+            {
+                if (pendingMsgs.Count > 0)
+                {
+                    int retry = 10;
+                    while (pendingMsgs.Count > 0 && retry > 0)
+                    {
+                        if (StorageChannel.EVENT_Write(pendingMsgs.Peek(), true))
+                        {
+                            pendingMsgs.Dequeue();
+                        }
+                        else
+                        {
+                            if(--retry <= 0)
+                            {
+                                retry = 10;
+                                string lostMsg = pendingMsgs.Dequeue();
+                                Debug.LogWarning($"LOST MESSAGE: {lostMsg}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch(System.Exception)
+            {
+                Debug.LogWarning("WARNING: cannot empty le logInfo buffer; a exception occurred");
+            }
+        }
+
         // start reading logs when the object is enabled
         private void OnEnable() => Application.logMessageReceived += LogUnityMessage;
 
@@ -58,15 +108,18 @@ namespace Packages.DiskStorageServices.Components
 
         public void LogUnityMessage(string message, string stackTrace, LogType type)
         {
-            if (!isEnabledStream) return;
-
             if (
                 ((type == LogType.Error || type == LogType.Exception || type == LogType.Assert) && SendErrors)
                 || (type == LogType.Warning && SendWarnings)
                 || (type == LogType.Log && SendInfos)
              )
             {
-                StorageChannel.EVENT_Write(message + "\n");
+                if (SuppressWarningsFromSettings && (type == LogType.Warning && SendWarnings) && ((AppSettings)StaticAppSettings.GetObject("AppSettings")).SuppressedLogs.Contains(message))
+                    return;
+
+                pendingMsgs.Enqueue(message);
+                if (type == LogType.Error || (PrintStackTraceWarnings && type == LogType.Warning))
+                    pendingMsgs.Enqueue("STACK TRACE ERROR:\n\n\t" + stackTrace + "\n\n");
             }
         }
     }
