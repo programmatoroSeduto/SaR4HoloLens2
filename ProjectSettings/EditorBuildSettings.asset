@@ -8,12 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/EntryPoint.unity
     guid: 5a9142312983bf249b07447a686c303b
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/01-SARHL2/SceneSARHL2.unity
     guid: 2a56be5365337584d9aa77894b0892b8
   - enabled: 1
-    path: Assets/Scenes/02-SARHL2_PROD/SceneSARHL2_PROD.unity
-    guid: 8d6798a67ff020c429d3ec7a98773766
+    path: Assets/Scenes/99-DevelopmentZone/SceneDevelopmentZone.unity
+    guid: 97d5f2ef6e921df46b3fcef472e26b86
   m_configObjects:
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: b2428c7c357363b4e93719e692563ed4, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: d6a494c4ff0b91e408d1f8377b86d6e8, type: 2}

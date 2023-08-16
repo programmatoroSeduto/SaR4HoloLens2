@@ -3074,7 +3074,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d462c9eb4caaef4c9ebd4473cb32e72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MapRoot: {fileID: 0}
+  MapRoot: {fileID: 1149276576}
 --- !u!1 &1157729705
 GameObject:
   m_ObjectHideFlags: 0

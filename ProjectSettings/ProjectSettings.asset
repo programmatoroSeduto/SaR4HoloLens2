@@ -645,6 +645,8 @@ PlayerSettings:
       GazeInput: True
       Location: True
       LowLevelDevices: True
+      PrivateNetworkClientServer: True
+      InternetClientServer: True
       SpatialPerception: True
       InternetClient: True
       WebCam: True

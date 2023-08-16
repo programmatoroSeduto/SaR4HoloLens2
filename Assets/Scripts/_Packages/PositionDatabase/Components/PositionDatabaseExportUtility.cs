@@ -167,6 +167,13 @@ namespace Packages.PositionDatabase.Components
             JSONPositionDatabase jdb = JsonUtility.FromJson<JSONPositionDatabase>(jsonCode);
             StaticLogger.Info(this, "getting JSON code ... OK");
 
+            // check reference
+            if (StaticTransform.ReferencePositionID != jdb.ReferenceID)
+            {
+                StaticLogger.Warn(this, $"HoloLens2 device reference position is {StaticTransform.ReferencePositionID} but got referenceID {jdb.ReferenceID} from file to import. \n\tSaR4HL2 actively prevents to import maks with different reference IDs since this could lead to data unconsistencies and visualization issues. \n\tUnable to import.", logLayer: 0);
+                yield break;
+            }
+
             // primo setup db
             StaticLogger.Info(this, "setting up DB ... ");
             jm.FromJsonClass(jdb, PositionsDB);
@@ -318,6 +325,13 @@ namespace Packages.PositionDatabase.Components
             JSONMaker jm = new JSONMaker();
             JSONPositionDatabase jdb = JsonUtility.FromJson<JSONPositionDatabase>(jsonCode);
             StaticLogger.Info(this, "getting JSON code ... OK");
+
+            // check reference
+            if( StaticTransform.ReferencePositionID != jdb.ReferenceID )
+            {
+                StaticLogger.Warn(this, $"HoloLens2 device reference position is {StaticTransform.ReferencePositionID} but got referenceID {jdb.ReferenceID} from file to import. \n\tSaR4HL2 actively prevents to import maks with different reference IDs since this could lead to data unconsistencies and visualization issues. \n\tUnable to import.", logLayer: 0);
+                yield break;
+            }
 
             // clean status
             StaticLogger.Info(this, "cleaning DB status ... ");

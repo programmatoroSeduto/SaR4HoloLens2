@@ -148,7 +148,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 69658197}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2e0ac525a632c246a247b1cec824f19, type: 3}
   m_Name: 
@@ -191,8 +191,8 @@ MonoBehaviour:
   OperatorUniversalUserID: SARHL2_ID0000000_USER
   OperatorUniversalDeviceID: SARHL2_ID0000000_DEV
   EntryPointComponent: {fileID: 69658198}
-  CalibrationPositionID: SARHL2_ID06600660_REFPOS
-  StartupMode: 3
+  CalibrationPositionID: SARHL2_ID90909091_REFPOS
+  StartupMode: 1
   CalibrationUnit: {fileID: 288968058}
   UserHeight: 1.85
   ServerIpAddress: 127.0.0.1
