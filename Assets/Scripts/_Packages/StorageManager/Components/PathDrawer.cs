@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+using Project.Scripts.Components;
+using Project.Scripts.Utils;
+
 using Packages.ARMarker.Components;
 using Packages.PositionDatabase.Components;
 using Packages.PositionDatabase.Utils;
@@ -61,11 +64,21 @@ namespace Packages.StorageManager.Components
 
         public string TagOf(PositionDatabaseWaypoint wp)
         {
+            if(wp == null)
+            {
+                StaticLogger.Warn(this, "cannot get tag from a null waypoint; the 'wp' parameter is null", logLayer: 1);
+                return "";
+            }
             return wp.Key;
         }
 
         public string TagOf(PositionDatabasePath link)
         {
+            if (link == null)
+            {
+                StaticLogger.Warn(this, "cannot get tag from a null link; the 'link' parameter is null", logLayer: 1);
+                return "";
+            }
             return link.Key;
         }
 

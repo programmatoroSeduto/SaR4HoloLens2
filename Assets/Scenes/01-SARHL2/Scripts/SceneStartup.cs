@@ -82,6 +82,9 @@ namespace Project.Scenes.SARHL2.Components
                 case StartupModes.DeviceDevelopmentNoCalibration:
                     StartupDefault();
                     break;
+                case StartupModes.PcProduction:
+                    StartupProd();
+                    break;
                 case StartupModes.DeviceProduction:
                     StartupProd();
                     break;
@@ -106,6 +109,7 @@ namespace Project.Scenes.SARHL2.Components
         {
             StaticLogger.Info(SourceLog, $"Found startup mode: {appStartupMode} USING CALIBRATION", logLayer: 2);
             DatabaseReference.enabled = false;
+            isWaitingCalibration = true;
 
             StaticLogger.Info(SourceLog, $"waiting for calibration command", logLayer: 0);
         }
@@ -114,6 +118,7 @@ namespace Project.Scenes.SARHL2.Components
         {
             StaticLogger.Info(SourceLog, $"Found startup mode: {appStartupMode} USING PROD PROFILE", logLayer: 2);
             DatabaseReference.enabled = false;
+            isWaitingCalibration = true;
 
             StaticLogger.Info(SourceLog, $"waiting for calibration command", logLayer: 0);
         }
@@ -124,9 +129,9 @@ namespace Project.Scenes.SARHL2.Components
 
         public void VOICE_Calibration(bool retry = false)
         {
-            if (!isWaitingCalibration)
+            if (!isWaitingCalibration && !retry)
             {
-                StaticLogger.Info(SourceLog, $"calibration asked, but the class is not waiting for it", logLayer: 2);
+                StaticLogger.Warn(SourceLog, $"calibration asked, but the class is not waiting for it", logLayer: 2);
                 return;
             }
 

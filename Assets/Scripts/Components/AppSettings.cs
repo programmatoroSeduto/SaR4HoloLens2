@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+
 using Project.Scripts.Utils;
 using Packages.DiskStorageServices.Components;
 using Packages.PositionDatabase.Components;
@@ -107,7 +111,19 @@ namespace Project.Scripts.Components
         // ===== PRIVATE ===== //
 
         // variables set done? 
-        bool setEnvDone = false;
+        private bool setEnvDone = false;
+        // is the component running?
+        private bool running = false;
+        // PC dev position ID
+        private readonly string pcDevPosID = "SARHL2_ID90909091_REFPOS";
+        // pc calibration position ID default
+        private readonly string pcDevCalibPosID = "SARHL2_ID06600660_REFPOS";
+        // device calibration pos ID
+        private readonly string deviceCalibPosID = "SARHL2_ID12700385_REFPOS";
+        // device without calibration pos ID
+        private readonly string deviceNoCalibPosID = "SARHL2_66660000_REFPOS";
+        // production refpos (is stands for "ask to the server pls")
+        private readonly string prodDevicePosID = "SARHL2_ID00000000_REFPOS";
 
 
 
@@ -116,7 +132,30 @@ namespace Project.Scripts.Components
 
         private void Start()
         {
+            running = true;
             StaticLogger.Info(this, "Starting application ... ");
+
+#if RUNNING_ON_DEVICE
+            switch (StartupMode)
+            {
+                case StartupModes.Undefined:
+                    StartupMode = StartupModes.DeviceDevelopment;
+                    break;
+                case StartupModes.PcDevelopment:
+                    StartupMode = StartupModes.DeviceDevelopment;
+                    break;
+                case StartupModes.DeviceDevelopment:
+                    break;
+                case StartupModes.PcDevelopmentWithCalibration:
+                    StartupMode = StartupModes.DeviceDevelopment;
+                    break;
+                case StartupModes.DeviceDevelopmentNoCalibration:
+                    break;
+                case StartupModes.DeviceProduction:
+                    break;
+            }      
+#endif
+
 
             SetEnvironment();
             setEnvDone = true;
@@ -130,6 +169,7 @@ namespace Project.Scripts.Components
         private void OnDestroy()
         {
             StaticLogger.Info(this, "Closing application ... ");
+            running = false;
         }
 
 
@@ -156,15 +196,16 @@ namespace Project.Scripts.Components
             StaticAppSettings.SetOpt("OperatorUniversalDeviceID", OperatorUniversalDeviceID);
 
             StaticAppSettings.SetObject("EntryPointComponent", EntryPointComponent);
-            StaticAppSettings.SetOpt("CalibrationPositionID", CalibrationPositionID);
+            SetCalibrationPositionID(CalibrationPositionID);
             StaticAppSettings.SetObject("StartupMode", StartupMode);
+            SetStartupMode();
             StaticAppSettings.SetObject("CalibrationUnit", CalibrationUnit);
             StaticTransform.CalibrationComponent = CalibrationUnit;
 
             StaticAppSettings.SetOpt("UserHeight", UserHeight.ToString());
             StaticAppSettings.SetOpt("ServerIpAddress", ServerIpAddress);
             StaticAppSettings.SetOpt("ServerPortNo", ServerPortNo);
-            StaticAppSettings.SetOpt("IsDebugMode", (DebugMode ? "true" : "false"));
+            SetDebugMode(DebugMode, forceChange: true);
 
             StaticAppSettings.SetObject("StorageHub", StorageHub);
             StaticAppSettings.SetObject("PositionsDatabase", PositionsDatabaseReference);
@@ -177,5 +218,78 @@ namespace Project.Scripts.Components
             StaticLogger.Info(this, "Setting up environment ... OK ");
         }
 
+
+
+        // ===== GUI CHANGE ===== //
+
+        [ExecuteInEditMode]
+        public void OnValidate()
+        {
+            if (running) return;
+
+            SetStartupMode();
+        }
+
+        public void SetStartupMode()
+        {
+            switch (StartupMode)
+            {
+                case StartupModes.Undefined:
+                    break;
+                case StartupModes.PcDevelopment:
+                    SetDebugMode(true);
+                    SetCalibrationPositionID(pcDevPosID);
+                    EntryPointComponent.enabled = false;
+                    break;
+                case StartupModes.DeviceDevelopment:
+                    SetDebugMode(true);
+                    SetCalibrationPositionID(deviceCalibPosID);
+                    EntryPointComponent.enabled = true;
+                    break;
+                case StartupModes.PcDevelopmentWithCalibration:
+                    SetDebugMode(true);
+                    SetCalibrationPositionID(pcDevCalibPosID);
+                    EntryPointComponent.enabled = true;
+                    break;
+                case StartupModes.DeviceDevelopmentNoCalibration:
+                    SetDebugMode(true);
+                    SetCalibrationPositionID(deviceNoCalibPosID);
+                    EntryPointComponent.enabled = false;
+                    break;
+                case StartupModes.PcProduction:
+                    SetDebugMode(false);
+                    SetCalibrationPositionID(pcDevCalibPosID);
+                    EntryPointComponent.enabled = true;
+                    break;
+                case StartupModes.DeviceProduction:
+                    SetDebugMode(false);
+                    SetCalibrationPositionID(prodDevicePosID);
+                    EntryPointComponent.enabled = true;
+                    break;
+            }
+        }
+
+        public void SetDebugMode(bool opt, bool forceChange = false)
+        {
+            if(opt && (!DebugMode || forceChange))
+            {
+                DebugMode = true;
+                if(running) 
+                    StaticAppSettings.SetOpt("IsDebugMode", "true");
+            }
+            else if (!opt && (DebugMode || forceChange))
+            {
+                DebugMode = false;
+                if (running)
+                    StaticAppSettings.SetOpt("IsDebugMode", "false");
+            }
+        }
+
+        public void SetCalibrationPositionID(string id)
+        {
+            CalibrationPositionID = id;
+            if (running)
+                StaticAppSettings.SetOpt("CalibrationPositionID", id);
+        }
     }
 }

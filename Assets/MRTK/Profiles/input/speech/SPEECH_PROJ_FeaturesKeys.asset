@@ -59,7 +59,7 @@ MonoBehaviour:
       description: Select
       axisConstraint: 2
   - localizationKey: 
-    keyword: Minimap
+    keyword: Show Minimap
     keyCode: 109
     action:
       id: 0
@@ -89,6 +89,13 @@ MonoBehaviour:
   - localizationKey: 
     keyword: Calibration
     keyCode: 99
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2
+  - localizationKey: 
+    keyword: Retry Calibration
+    keyCode: 118
     action:
       id: 0
       description: Select

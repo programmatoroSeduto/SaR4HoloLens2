@@ -33,6 +33,11 @@ namespace Project.Scripts.Utils
         DeviceDevelopmentNoCalibration,
 
         /// <summary>
+        /// Used for testing and simulate the project in production from the PC
+        /// </summary>
+        PcProduction,
+
+        /// <summary>
         /// Used for product release
         /// </summary>
         DeviceProduction

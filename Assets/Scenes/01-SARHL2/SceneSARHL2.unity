@@ -552,7 +552,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &287228668
 Transform:
   m_ObjectHideFlags: 0
@@ -769,7 +769,7 @@ GameObject:
   - component: {fileID: 495584285}
   - component: {fileID: 495584284}
   m_Layer: 0
-  m_Name: MixedRealityToolkit
+  m_Name: MixedRealityToolkit (Inactive)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2915,7 +2915,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1124494743}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f3bed72736048e47bae991af77a7ff9, type: 3}
+  m_Script: {fileID: 11500000, guid: abcfb48d63566db40bdc65abf74aac01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   DatabaseReference: {fileID: 1124494746}
@@ -3071,10 +3071,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1149276576}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80d2d3fd805cf6b44879db6e0ffb7ea0, type: 3}
+  m_Script: {fileID: 11500000, guid: 9d462c9eb4caaef4c9ebd4473cb32e72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MapRoot: {fileID: 1149276576}
+  MapRoot: {fileID: 0}
 --- !u!1 &1157729705
 GameObject:
   m_ObjectHideFlags: 0
@@ -4120,7 +4120,7 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-  - keyword: Minimap
+  - keyword: Show Minimap
     response:
       m_PersistentCalls:
         m_Calls:
@@ -4204,6 +4204,23 @@ MonoBehaviour:
             m_FloatArgument: 0
             m_StringArgument: 
             m_BoolArgument: 0
+          m_CallState: 2
+  - keyword: Retry Calibration
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1124494748}
+          m_TargetAssemblyTypeName: Project.Scenes.SARHL2.Components.SceneStartup,
+            Assembly-CSharp
+          m_MethodName: VOICE_Calibration
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
           m_CallState: 2
   persistentKeywords: 0
   speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}

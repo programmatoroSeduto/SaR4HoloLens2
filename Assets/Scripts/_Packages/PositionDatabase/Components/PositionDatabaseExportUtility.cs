@@ -97,6 +97,12 @@ namespace Packages.PositionDatabase.Components
                 return "{}";
             }
 
+            if(PositionsDB.LowLevelDatabase.Count == 0)
+            {
+                StaticLogger.Warn(this, "Nothing to export", logLayer: 2);
+                return "{}";
+            }
+
             JSONMaker jm = new JSONMaker();
             JSONPositionDatabase dump = jm.ToJsonClass(PositionsDB);
 

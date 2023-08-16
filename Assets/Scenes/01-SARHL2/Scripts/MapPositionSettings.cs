@@ -6,7 +6,7 @@ using UnityEngine;
 
 using Project.Scripts.Utils;
 
-namespace Project.Scenes.SARHL2.Components
+namespace Project.Scenes.SARHL2_DEVELOPMENT.Components
 {
     public class MapPositionSettings : MonoBehaviour
     {
