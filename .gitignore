@@ -1,1 +1,6 @@
+.vscore
+.vscode/*
+my_venv
 my_venv/*
+.venv
+.venv/*
