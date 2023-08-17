@@ -14,3 +14,17 @@ services:
     environment:
       - UVICORN_OPTIONS=--reload
       - WEB_CONCURRENCY=1
+  
+  database:
+    container_name: database
+    restart: always
+    build:
+      context: ../database
+      dockerfile: dockerfile
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    hostname: database
