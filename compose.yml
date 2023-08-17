@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-      PG_DATA: /var/lib/postgresql/data/pgdata
+      PG_DATA: /var/lib/postgresql/data
     hostname: database
     networks:
       - internal
@@ -28,11 +28,9 @@ services:
     build:
       context: ./main_app
       dockerfile: dockerfile
-    hostname: sar_fastapi
+    hostname: main_app
     networks:
       - internal
-    ports:
-      - 5000:5000
   
   proxy:
     container_name: proxy
@@ -54,7 +52,6 @@ networks:
   internal: 
     driver: bridge
   external: 
-    driver: bridge
 
 volumes:
   database_volume: {}
