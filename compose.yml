@@ -31,6 +31,9 @@ services:
     hostname: main_app
     networks:
       - internal
+    environment:
+      - UVICORN_OPTIONS=
+      - WEB_CONCURRENCY=10
   
   proxy:
     container_name: proxy

@@ -9,3 +9,8 @@ services:
       dockerfile: dockerfile
     ports:
       - 5000:5000
+    volumes:
+      - ./src:/app/src/
+    environment:
+      - UVICORN_OPTIONS=--reload
+      - WEB_CONCURRENCY=1

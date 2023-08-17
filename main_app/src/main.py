@@ -9,7 +9,10 @@ app = FastAPI(
     description="main backend interface for SAR project"
 )
 
-@app.get("/", status_code=status.HTTP_200_OK)
-async def api_root():
-    return { "success" : "true" }
+@app.get("/test")
+async def test():
+    return { "test" : "true" }
 
+@app.get("/test/{something}")
+async def test_something(something: int):
+    return { "test" : "true" }

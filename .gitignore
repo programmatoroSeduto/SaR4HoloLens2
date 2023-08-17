@@ -4,3 +4,6 @@ my_venv
 my_venv/*
 .venv
 .venv/*
+__pycache__
+**/__pycache__
+**/__pycache__/**
