@@ -6,7 +6,7 @@ services:
     container_name: database
     restart: always
     build:
-      context: ./postgres
+      context: ./database
       dockerfile: dockerfile
     ports:
       - 5432:5432
@@ -14,3 +14,45 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    hostname: database
+    networks:
+      - internal
+  
+  main_app:
+    container_name: main_app
+    restart: always
+    depends_on:
+      - database
+    build:
+      context: ./main_app
+      dockerfile: dockerfile
+    hostname: sar_fastapi
+    networks:
+      - internal
+    ports:
+      - 5000:5000
+  
+  proxy:
+    container_name: proxy
+    restart: always
+    depends_on:
+      - main_app
+      - database
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    hostname: proxy
+    networks:
+      - internal
+      - external
+    ports:
+      - 80:80
+
+networks:
+  internal: 
+    driver: bridge
+  external: 
+    driver: bridge
+
+volumes:
+  database_volume: {}
