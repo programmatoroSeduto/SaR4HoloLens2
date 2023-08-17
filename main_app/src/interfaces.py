@@ -96,7 +96,11 @@ class db_interface:
                 query=query
             )
         except Exception as e:
-            print("Pydantic!", e)
+            return api_models.table_base(
+                status=False,
+                status_detail="UNHANDLED EXCEPTION!" + str(e),
+                query=query
+            )
         
 
 

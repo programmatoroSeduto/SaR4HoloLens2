@@ -22,6 +22,7 @@ class table_base(BaseModel):
         description="the query used to extract results"
     )
     table_schema: list[str] = Field(
+        default=[],
         description="the schema of the able, aligned with the database results"
     )
     table_size: int = Field(
@@ -29,6 +30,7 @@ class table_base(BaseModel):
         description="how many rows inside the table"
     )
     table_values:list[tuple] = Field(
+        default=[],
         description="the values from the table"
     )
 
