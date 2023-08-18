@@ -2,6 +2,7 @@
 class __log_layer_class:
     critical = -1
     important = 0
+    api_access = 1
     working_phase = 1
     working_step = 2
     working_step_detail = 3

@@ -70,33 +70,39 @@ class log:
             return None
 
 
-    def debug_detail(self, msg:str = "", layer:int = log_layer.working_step_detail, end:str = "\n", src:str = "???") -> None:
+    def debug_detail(self, msg:str = "", layer:int = log_layer.working_step_detail, src:str = "???") -> None:
         if self.__log_debug:
             return
         ss = f"{self.__get_log_header(log_type.debug, layer, src)} {msg}"
-        self.__log_print(ss, layer, log_type.debug, end, src)
+        self.__log_print(ss, layer, log_type.debug, src)
 
 
-    def debug(self, msg:str = "", layer:int = log_layer.working_phase, end:str = "\n", src:str = "???") -> None:
+    def debug(self, msg:str = "", layer:int = log_layer.working_phase, src:str = "???") -> None:
         if self.__log_debug:
             return
         ss = f"{self.__get_log_header(log_type.debug, layer, src)} {msg}"
-        self.__log_print(ss, layer, log_type.debug, end, src)
+        self.__log_print(ss, layer, log_type.debug, src)
 
 
-    def info(self, msg:str = "", layer:int = log_layer.working_step, end:str = "\n", src:str = "???") -> None:
+    def info(self, msg:str = "", layer:int = log_layer.working_step, src:str = "???") -> None:
         ss = f"{self.__get_log_header(log_type.info, layer, src)} {msg}"
-        self.__log_print(ss, layer, log_type.info, end, src)
+        self.__log_print(ss, layer, log_type.info, src)
 
 
-    def warn(self, msg:str = "", layer:int = log_layer.important, end:str = "\n", src:str = "???") -> None:
+    def info_api(self, path:str, layer:int = log_layer.api_access, src:str = "???") -> None:
+        msg = f"API ACCESS: {path}"
+        ss = f"{self.__get_log_header(log_type.info, layer, src)} {msg}"
+        self.__log_print(ss, layer, log_type.info, "\n", src)
+
+
+    def warn(self, msg:str = "", layer:int = log_layer.important, src:str = "???") -> None:
         ss = f"{self.__get_log_header(log_type.warning, layer, src)} {msg}"
-        self.__log_print(ss, layer, log_type.warming, end, src)
+        self.__log_print(ss, layer, log_type.warming, src)
 
 
-    def err(self, msg:str = "", layer:int = log_layer.critical, raise_exc:bool = False, end:str = "\n", src:str = "???") -> None:
+    def err(self, msg:str = "", layer:int = log_layer.critical, raise_exc:bool = False, src:str = "???") -> None:
         ss = f"{self.__get_log_header(log_type.error, layer, src)} {msg}"
-        self.__log_print(ss, layer, log_type.error, end, src)
+        self.__log_print(ss, layer, log_type.error, src)
         if raise_exc:
             raise exceptions.api_base_exception(
                 description=ss
@@ -114,11 +120,11 @@ class log:
             return self.__log_history
     
 
-    def __log_print(self, ss, layer:int, ltype:log_type, end:str, src=str) -> None:
+    def __log_print(self, ss, layer:int, ltype:log_type, src=str) -> None:
         self.__log_history.append(self.__log_history_item(ss, layer, ltype, src))
         if(int(layer) > int(self.__current_log_layer)):
             return
-        print(ss, end=end)
+        print(ss)
         if self.__use_log_file_main:
             if self.__log_file_lock is not None:
                 with self.__log_file_lock:
