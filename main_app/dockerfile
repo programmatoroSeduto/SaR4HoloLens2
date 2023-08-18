@@ -5,16 +5,28 @@ RUN apt update && \
     apt upgrade -y
 
 RUN mkdir /app && \
-    mkdir /app/requirements 
+    mkdir /app/requirements && \
+    mkdir /app/src && \
+    mkdir /app/logs && \
+    mkdir /app/logs/main_app
 
 COPY ./requirements.txt /app/requirements/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements/requirements.txt && \
     rm -rf /app/requirements
 
-RUN mkdir /app/src
-COPY ./src /app/src/
+COPY . /app/src
+RUN pip install -e /app/src
 
 EXPOSE 5000
 
-WORKDIR /app/src
-CMD uvicorn main:api --host 0.0.0.0 --port 5000 ${UVICORN_OPTIONS}
+WORKDIR /app/src/main_app
+
+RUN /bin/bash -c '[[ -z "$UVICORN_WEB_CONCURRENCY" ]] && export WEB_CONCURRENCY=10'
+RUN /bin/bash -c '[[ -z "$UVICORN_CMD_OPTIONS" ]] && export UVICORN_CMD_OPTIONS= '
+
+RUN /bin/bash -c '[[ -z "$APP_DEBUG_MODE" ]] && export APP_DEBUG_MODE=false'
+RUN /bin/bash -c '[[ -z "$APP_LOG_PATH" ]] && export APP_LOG_PATH=/app/logs/main_app'
+RUN /bin/bash -c '[[ -z "$APP_LOG_NAME" ]] && export APP_LOG_NAME=main_app'
+RUN /bin/bash -c '[[ -z "$APP_LOG_LAYER" ]] && export APP_LOG_LAYER=main_app'
+
+CMD uvicorn main_app.main:api --host 0.0.0.0 --port 5000 ${UVICORN_CMD_OPTIONS}

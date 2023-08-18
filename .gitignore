@@ -7,3 +7,7 @@ my_venv/*
 __pycache__
 **/__pycache__
 **/__pycache__/**
+main_app/logs
+main_app/logs/**
+**/*.egg-info
+**/*.egg-info/**

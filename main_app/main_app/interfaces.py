@@ -11,14 +11,15 @@ class db_interface:
     across the project. 
     '''
 
-    def __init__(self, conn = None) -> None:
+    def __init__(self, conn = None, logger = None) -> None:
         ''' simple constructor
         
         It prepares the class. To perform the connection, it is required
         to call Init(). 
         '''
-        self.connection = conn
-        self.init_done = False
+        self.__connection = conn
+        self.__init_done = False
+        self.__logger = logger
 
     def connect(self, conn_data: dict = {}) -> bool:
         ''' connection to the database
@@ -28,29 +29,28 @@ class db_interface:
 
         :raises: ConnectionException: wrong connection data
         '''
-        if self.init_done == True:
+        if self.__init_done == True:
             return True
 
         try:
-            self.connection = psycopg2.connect( **conn_data )
-            self.init_done = True
+            self.__connection = psycopg2.connect( **conn_data )
+            self.__init_done = True
         except Exception as e:
-            self.connection = None
-            exc = exceptions.ConnectionException()
+            self.__connection = None
+            exc = exceptions.connection_exception()
             exc.description = str(e)
             raise exc
         
         return True
 
-    def get_cursor(self) -> api_models.table_base:
+    def get_cursor(self) -> any:
         ''' Get the reference to the psycopg2 cursor class
         
         '''
-        if not self.init_done or self.connection is None:
-            print("WARNING: Trying to get cursor from a not connected system")
+        if not self.__init_done or self.__connection is None:
             return None
         else:
-            return self.connection.cursor()
+            return self.__connection.cursor()
 
     def sql(self, query:str="", fetch_max_size:int =-1) -> api_models.table_base:
         ''' Perform a query on the database
@@ -67,11 +67,11 @@ class db_interface:
                 of lines from the query. Default: -1, it causes the method to
                 download the entire table
         '''
-        if not self.init_done or self.connection is None:
+        if not self.__init_done or self.__connection is None:
             print("WARNING: Trying to get cursor from a not connected system")
             return None
         
-        cur = self.connection.cursor()
+        cur = self.__connection.cursor()
         try:
             cur.execute(query)
             extract = ( cur.fetchmany(size=fetch_max_size) if fetch_max_size>=0 else cur.fetchall() )

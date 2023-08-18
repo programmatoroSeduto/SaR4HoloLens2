@@ -1,3 +1,0 @@
-
-class ConnectionException(BaseException):
-    description = ""
