@@ -254,7 +254,7 @@ DROP TABLE IF EXISTS sar.D_USER_ACCESS_CODE;
 CREATE TABLE sar.D_USER_ACCESS_CODE (
 
     USER_ID CHAR(24) NOT NULL
-    , USER_ACCESS_CODE_ID CHAR()
+    , USER_ACCESS_CODE_ID TEXT NOT NULL
 
     -- metadata
     , CREATED_DT TIMESTAMP NOT NULL
@@ -313,8 +313,8 @@ CREATE SEQUENCE sar.F_ACTIVITY_LOG_SEQUENCE
 DROP TABLE IF EXISTS sar.F_ACTIVITY_LOG;
 CREATE TABLE sar.F_ACTIVITY_LOG (
 
-    F_ACTIVITY_LOG_PK CHAR(32) NOT NULL
-        DEFAULT LPAD(CAST(nextval('sar.F_ACTIVITY_LOG_SEQUENCE') AS TEXT), 32, '0')
+    F_ACTIVITY_LOG_PK INT NOT NULL
+        DEFAULT nextval('sar.F_ACTIVITY_LOG_SEQUENCE')
     
     , LOG_CREATION_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
@@ -542,7 +542,7 @@ CREATE TABLE sar.F_DEVICE_ACTIVITY (
 
     , PRIMARY KEY ( DEVICE_ID, USER_ACCESS_TOKEN_ID )
 
-)
+);
 
 
 
@@ -833,6 +833,96 @@ CREATE TABLE sar.F_HL2_SERVICE_STATUS (
 
 ## IoT data integration
 
+in this project, sensory data are integrated by a data integrator asking
+data to a external server. The same approach can be used for every other
+passive device.
 
+The data model is intentionally simple for the data integrators:
+
+- a table storing all the measurements, updated in append -> F_IOT_MEASUREMENTS
+
+====================================================== */
+
+DROP TABLE IF EXISTS sar.F_IOT_MEASUREMENTS;
+CREATE TABLE sar.F_IOT_MEASUREMENTS (
+
+    DEVICE_ID CHAR(24) NOT NULL
+    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+
+    -- geolocation
+    , GEO_LAT_VL FLOAT(15)
+        DEFAULT null
+    , GEO_LON_VL FLOAT(15)
+        DEFAULT null
+    , GEO_UNCERTAINTY_VL FLOAT(15)
+        DEFAULT null
+    , GEO_SOURCE_DS VARCHAR(12)
+        DEFAULT null
+
+    -- device parameters
+    , DEVICE_VOLTAGE_VL FLOAT(15)
+        DEFAULT null
+    
+    -- environmental measurements
+    , AIR_QUALITY_VL FLOAT(15)
+        DEFAULT null
+    , HUMIDITY_VL FLOAT(15)
+        DEFAULT null
+    , AIR_PRESSURE_VL FLOAT(15)
+        DEFAULT null
+    , TEMPERATURE_VL FLOAT(15)
+        DEFAULT null
+
+    -- metadata
+    , DEVICE_STATUS_TS TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+
+
+
+
+
+
+/* ======================================================
+
+## Release Notes - v1.0
+
+Key Entities Definition:
+
+- Devices
+    - DEVICE_ID CHAR(24) NOT NULL
+- Users
+    - USER_ID CHAR(24) NOT NULL
+    - USER_ACCESS_CODE_ID TEXT NOT NULL
+        - hashed
+    - USER_ACCESS_TOKEN_ID TEXT NOT NULL
+        - hashed
+
+Metadata:
+
+- CREATED_DT TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+- DELETED_FL BOOLEAN NOT NULL DEFAULT false
+
+User Metadata:
+
+- USER_CREATION_TS TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    - the time the record is created for the first time
+- USER_UPDATE_TS TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    - the time the record as been created / updated (never null)
+- USER_DELETED_FL BOOLEAN NOT NULL DEFAULT false
+    - if the record has been deleted or not
+- USER_DELETED_TS TIMESTAMP DEFAULT NULL
+    - when the user has been deleted
+
+Final reviews:
+
+- BOOL instead of BOOLEAN
+- numerical precision adn suffixes
+- sequences always used as common INT fields
+- level out all the metadata (classify tables and SCD techniques)
 
 ====================================================== */
