@@ -1,4 +1,6 @@
 
 FROM postgres:15-alpine
 
+COPY ./datamodel/datamodel.sql /docker-entrypoint-initdb.d/datamodel.sql
+
 EXPOSE 5432
