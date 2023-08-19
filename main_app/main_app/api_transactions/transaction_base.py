@@ -3,6 +3,7 @@ import psycopg2
 from main_app.environment import environment
 from main_app.api_logging.logging import log
 from main_app.interfaces import db_interface
+import json
 
 class api_transaction_base:
     ''' base class for DB transactions
@@ -55,3 +56,8 @@ class api_transaction_base:
 
     def to_dict( self, fields:list[str], values:list[str] ):
         return dict(zip(fields, values))
+    
+    def dict_to_field( self, d:dict ):
+        for k in d.keys():
+            d[k] = str(d[k])
+        return json.dumps(d)

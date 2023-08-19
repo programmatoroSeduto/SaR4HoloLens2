@@ -12,6 +12,8 @@ import json
 
 
 
+
+
 api_transaction_user_login_sql_check = """
 SELECT -- query is empty if the user doesn't exist
 
@@ -132,6 +134,10 @@ ON (
 ;
 """
 
+
+
+
+
 api_transaction_user_login_sql_exec_open_session = """
 INSERT INTO sar.F_USER_ACTIVITY (
     USER_ID, 
@@ -153,6 +159,10 @@ VALUES (
 );
 """
 
+
+
+
+
 api_transaction_user_login_sql_exec_set_log = """
 INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL,
@@ -167,6 +177,8 @@ VALUES (
     %(log_data)s
 )
 """
+
+
 
 
 
@@ -234,7 +246,8 @@ class api_transaction_user_login(api_transaction_base):
             return self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
-                log_detail='a external user can\'t access as admin'
+                log_detail='a external user can\'t access as admin',
+                unsecure_request=True
             )
         elif not record['ADMIN_FOUND_FL']:
             return self.__build_response(
@@ -271,7 +284,8 @@ class api_transaction_user_login(api_transaction_base):
                 return self.__build_response(
                     res_status=status.HTTP_403_FORBIDDEN,
                     res_status_description="access denied",
-                    log_detail='session active with one approver, but required the access with another approver'
+                    log_detail='session active with one approver, but required the access with another approver',
+                    unsecure_request=True
                 )
             else:
                 return self.__build_response(
@@ -301,8 +315,8 @@ class api_transaction_user_login(api_transaction_base):
     def __exec_success( self ):
         global api_transaction_user_login_sql_exec_open_session
         global api_transaction_user_login_sql_exec_set_log
+        
         cur = self.db.get_cursor()
-
         cur.execute("BEGIN TRANSACTION;")
 
         # open user session
@@ -322,7 +336,7 @@ class api_transaction_user_login(api_transaction_base):
                 'log_success_fl' : 'true',
                 'log_security_fault_fl' : 'false',
                 'log_detail_ds' : self.__log_detail_ds,
-                'log_data' : self.__dict_to_field(dict(self.request)),
+                'log_data' : self.dict_to_field(dict(self.request)),
             }
         )
 
@@ -341,7 +355,7 @@ class api_transaction_user_login(api_transaction_base):
                 'log_success_fl' : 'false',
                 'log_security_fault_fl' : self.__log_unsecure_request,
                 'log_detail_ds' : self.__log_detail_ds,
-                'log_data' : self.__dict_to_field(dict(self.request)),
+                'log_data' : self.dict_to_field(dict(self.request)),
             }
         )
         cur.execute("COMMIT TRANSACTION;")
@@ -358,11 +372,6 @@ class api_transaction_user_login(api_transaction_base):
 
         self.__check_done = True
         return self.response
-    
-    def __dict_to_field( self, d:dict ):
-        for k in d.keys():
-            d[k] = str(d[k])
-        return json.dumps(d)
 
 
 
