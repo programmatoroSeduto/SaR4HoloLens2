@@ -67,23 +67,23 @@ class api_base_response(BaseModel):
 
 
 
-## ===== USER RESOURCE ===== ##
+## ===== USER LOGIN ===== ##
 
 class api_user_login_request(api_base_request):
     user_id:str = Field(
         description="the user that is requiring to access the service",
         pattern="SARHL2_ID[0-9]{10}_USER"
     )
-    approver_id = Field(
+    approver_id:str = Field(
         description="the user which should approve the request (euqlas to user_id if admin access mode)",
         pattern="SARHL2_ID[0-9]{10}_USER"
     )
-    access_key = Field(
+    access_key:str = Field(
         description="the access key used for accessing the resource"
     )
 
-class api_user_login_response(api_base_request):
-    session_token = Field(
+class api_user_login_response(api_base_response):
+    session_token:str = Field(
         default="",
         description="It is a has code generated directly from the server. It must be attached to any following requests from the user."
     )

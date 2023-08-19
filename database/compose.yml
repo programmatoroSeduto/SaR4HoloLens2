@@ -8,17 +8,16 @@ services:
     build: 
       context: .
       dockerfile: dockerfile
-    volumes:
+    # volumes:
       # - ./datamodel:/docker-entrypoint-initdb.d
-      - volume_database_test:/var/lib/postgresql/data
+      # - volume_database_test:/var/lib/postgresql/data
     ports:
       - 5432:5432
     environment:
-      DB_STARTUP_MODE: install
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
       PGDATA: /var/lib/postgresql/data
 
-volumes:
-  volume_database_test:
+# volumes:
+#   volume_database_test:

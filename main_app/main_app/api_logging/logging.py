@@ -92,7 +92,7 @@ class log:
     def info_api(self, path:str, layer:int = log_layer.api_access, src:str = "???") -> None:
         msg = f"API ACCESS: {path}"
         ss = f"{self.__get_log_header(log_type.info, layer, src)} {msg}"
-        self.__log_print(ss, layer, log_type.info, "\n", src)
+        self.__log_print(ss, layer, log_type.info, src)
 
 
     def warn(self, msg:str = "", layer:int = log_layer.important, src:str = "???") -> None:

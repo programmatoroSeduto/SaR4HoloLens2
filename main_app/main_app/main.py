@@ -26,6 +26,8 @@ from api_logging.logging import log as log_handle
 from api_logging.setup_log import setup_log
 from api_logging.log_layer import log_layer
 from api_logging.log_type import log_type
+from api_transactions.transaction_base import api_transaction_base
+from api_transactions.transaction_user_login import api_transaction_user_login
 
 
 
@@ -78,6 +80,11 @@ log.info("creating environment ... OK", src="main")
 async def root(
     request_body: Annotated[api_models.api_base_request, Body()] = api_models.api_base_request()
 ) -> api_models.api_base_response:
+    ''' root request
+    
+    This is not accessible: the serer will return error if the client tries 
+    to call this path. 
+    '''
     global config, env
     log.info_api( "/", src=metadata.api_tags.root )
 
@@ -98,6 +105,10 @@ async def root(
 async def api_root(
     request_body: Annotated[api_models.api_base_request, Body()] = api_models.api_base_request()
 ) -> api_models.api_base_response:
+    ''' API Status
+    
+    API Call used just to check if the API is online. 
+    '''
     global config, env
     log.info_api( "/api", src=metadata.api_tags.api_root )
 
@@ -106,5 +117,36 @@ async def api_root(
         status=status.HTTP_200_OK, 
         status_detail="service is online"
         )
+
+
+
+@api.post(
+    "/api/user/login",
+    tags=[ metadata.api_tags.api_user_login ],
+    response_model=api_models.api_user_login_response,
+)
+async def api_user_login(
+    request_body: Annotated[api_models.api_user_login_request, Body()]
+) -> api_models.api_user_login_response:
+    ''' User Login
+    
+    the first step to access the server: the user must log in. 
+    '''
+    global config, env
+    log.info_api( "/api/user/login", src=metadata.api_tags.api_user_login )
+
+    tr = api_transaction_user_login(env, request_body)
+    tr.check()
+    tr.execute()
+
+    return utils.set_response_timestamp(
+        request_body,
+        tr.response
+    )
+
+
+
+
+
 
 log.info("Application is running now...", src="main")

@@ -74,9 +74,11 @@ USER_STATUS_IS_ACTIVE_FL
 USER_STATUS_START_AT_DT
 USER_STATUS_APPROVED_BY_ID
 ADMIN_ID
+ADMIN_FOUND_FL
 ADMIN_EXTERNAL_FL
 ADMIN_IS_ADMIN_FL
 USER_APPROVER_CORRECT_FL
+ADMIN_CAN_ACCESS_USER_FL
 ADMIN_STATUS_IS_ACTIVE_FL
 USER_STATUS_PASS_CHECK_FL
 
@@ -220,58 +222,61 @@ USER_STATUS_IS_ACTIVE_FL
 USER_STATUS_START_AT_DT
 USER_STATUS_APPROVED_BY_ID
 ADMIN_ID
+ADMIN_FOUND_FL
 ADMIN_EXTERNAL_FL
 ADMIN_IS_ADMIN_FL
 USER_APPROVER_CORRECT_FL
+ADMIN_CAN_ACCESS_USER_FL
 ADMIN_STATUS_IS_ACTIVE_FL
 USER_STATUS_PASS_CHECK_FL
 
 ```
 IF NOT user exists
-    -> RETURN : incorrect user, admin or pass
+    -> RETURN : 404 incorrect user, admin or pass
     -> LOG: not found user from request
 END IF
 
-IF ( user = admin ) AND ( user is not admin )
-    -> RETURN : wrong approver
+IF ( req.user = req.admin ) AND ( user is not admin )
+    -> RETURN : 404 incorrect user, admin or pass
     -> LOG : trying to access as admin without admin flag
 END IF
 
-IF ( user = admin ) AND ( user is external )
-    -> RETURN : incorrect user, admin or pass
+IF ( req.user = req.admin ) AND ( user is external )
+    -> RETURN : 404 incorrect user, admin or pass
     -> LOG : a external user can't access as admin
 END IF
 
 IF NOT admin exists
-    -> RETURN : incorrect user, admin or pass
+    -> RETURN : 404 incorrect user, admin or pass
     -> LOG: not found admin from request
 END IF
 
 IF admin is not admin 
-    -> RETURN : incorrect user, admin or pass
-    -> LOG: declared admin which is not a admin
+    -> RETURN : 404 incorrect user, admin or pass
+    -> LOG: trying to use admin code referred to non-admin user
 END IF
 
 IF admin is external
-    -> RETURN : incorrect user, admin or pass
+    -> RETURN : 404 incorrect user, admin or pass
     -> LOG: trying to use a external account as approver for a login operation
 END IF
 
 IF password is wrong
-    -> RETURN : incorrect user, admin or pass
+    -> RETURN : 404 incorrect user, admin or pass
     -> LOG: wrong password
 END IF
 
 IF admin has not access to user
-    -> RETURN : incorrect user, admin or pass
+    -> RETURN : 401 incorrect user, admin or pass
     -> LOG: trying to access with a admin which is not auhorized to access users
 END IF
 
 IF user currently active
-    -> RETURN : access denied
     IF user_approver != admin
+        -> RETURN : 403 access denied
         -> LOG: session active with one approver, but required the access with another approver
     ELSE
+        -> RETURN : 403 nothing to do
         -> LOG: trying to access a user already logged in
     END IF
 END IF
@@ -280,6 +285,9 @@ IF admin currently not active
     -> RETURN : access denied
     -> LOG : supervisor not logged in
 END IF
+
+-> RETURN : 200 ok
+-> LOG : user successfully logged in
 ```
 
 ====================================================== */
@@ -311,31 +319,28 @@ INSERT INTO sar.F_USER_ACTIVITY (
     USER_SESSION_TOKEN_ID
 )
 VALUES (
-    'SARHL2_ID1124200849_USER', -- REQUEST (user_id)
-    'SARHL2_ID1124200849_USER', -- REQUEST (approver_id)
+    %(user_id)s,
+    %(approver_id)s,
 
     MD5( CONCAT(
-        FLOOR(RAND() * 1000000), -- salt
-        'SARHL2_ID1124200849_USER', -- REQUEST (user_id)
-        FLOOR(RAND() * 1000000), -- salt
-        'SARHL2_ID1124200849_USER', -- REQUEST (approver_id)
-        FLOOR(RAND() * 1000000), -- salt
+        FLOOR(RANDOM() * 1000000), 
+        %(user_id)s,
+        FLOOR(RANDOM() * 1000000), 
+        %(approver_id)s, 
+        FLOOR(RANDOM() * 1000000)
     ) )
-)
-RETURNING 
-    USER_ID, USER_APPROVER_ID, USER_SESSION_TOKEN_ID
-;
+);
 
 INSERT INTO sar.F_ACTIVITY_LOG (
-    LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL
+    LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL,
     LOG_SOURCE_ID,
     LOG_DETAILS_DS,
     LOG_DATA
 )
 VALUES (
-    'success', true, true, false, false, false,
+    'login success', true, true, false, false, false,
     'api',
-    'user (ADMIN|NOT ADMIN) {} successfully logged in (approved by {} (ADMIN))',
+    'user successfully logged in',
     '...the JSON packet request...'
 )
 
@@ -367,7 +372,7 @@ INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_DATA
 )
 VALUES (
-    'addess denied', true, false, false, false, false|true,
+    'login fail', true, false, false, false, false|true,
     'api',
     '...error message...',
     '...the JSON packet request...'

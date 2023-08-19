@@ -43,7 +43,7 @@ class db_interface:
         
         return True
 
-    def get_cursor(self) -> psycopg2.cursor:
+    def get_cursor(self):
         ''' Get the reference to the psycopg2 cursor class
         
         '''

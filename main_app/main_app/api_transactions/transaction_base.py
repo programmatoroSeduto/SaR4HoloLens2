@@ -52,3 +52,6 @@ class api_transaction_base:
         
         '''
         raise NotImplementedError()
+
+    def to_dict( self, fields:list[str], values:list[str] ):
+        return dict(zip(fields, values))
