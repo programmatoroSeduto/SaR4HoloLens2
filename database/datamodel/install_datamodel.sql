@@ -247,10 +247,12 @@ CREATE TABLE sar.D_USER_ACCESS_DATA (
     , USER_ACCESS_CODE_ID TEXT NOT NULL
 
     -- metadata
-    , CREATED_DT TIMESTAMP NOT NULL
+    , CREATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
     , DELETED_FL BOOLEAN NOT NULL
         DEFAULT false
+    , ANNOTATIONS_DS VARCHAR(500) 
+        DEFAULT NULL
 
     , PRIMARY KEY ( USER_ID )
 );
@@ -274,7 +276,7 @@ CREATE TABLE sar.F_USER_ACTIVITY (
     , USER_SESSION_TOKEN_ID TEXT NOT NULL
 
     -- metadata
-    , CREATED_DT TIMESTAMP NOT NULL
+    , CREATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
 
     , PRIMARY KEY ( USER_ID, USER_START_AT_TS )
@@ -299,7 +301,7 @@ COMMENT
 
 ## log table
 
-This table allows the contro center to check the requrests made upon
+This table allows the control center to check the requrests made upon
 the system. In particular, it enables he admins to check if suspicious
 requests have been sent to the system. 
 
@@ -326,6 +328,8 @@ CREATE TABLE sar.F_ACTIVITY_LOG (
         DEFAULT ''
     , LOG_SOURCE_ID VARCHAR(24)
         DEFAULT null
+    , LOG_DATA TEXT
+        DEFAULT null
         
     , LOG_SUCCESS_FL BOOLEAN
         DEFAULT true
@@ -342,6 +346,21 @@ CREATE TABLE sar.F_ACTIVITY_LOG (
 
     , PRIMARY KEY ( F_ACTIVITY_LOG_PK )
 );
+COMMENT 
+    ON COLUMN sar.F_ACTIVITY_LOG.LOG_TYPE_DS 
+    IS 'The type of the log record. types are: success, warning, error, security_fault';
+COMMENT 
+    ON COLUMN sar.F_ACTIVITY_LOG.LOG_SOURCE_ID 
+    IS 'It identifies the component of the system which creaed the log record. sources are: api, data_integrator, data_processor, ...';
+COMMENT 
+    ON COLUMN sar.F_ACTIVITY_LOG.LOG_TYPE_ACCESS_FL 
+    IS 'it marks the log lines from the login procedure. It indicates that the log is referred to the acquisition or release of a resource.';
+COMMENT 
+    ON COLUMN sar.F_ACTIVITY_LOG.LOG_SECURITY_FAULT_FL 
+    IS 'It is a warning to mark suspicious attempts to acess the resource';
+COMMENT 
+    ON COLUMN sar.F_ACTIVITY_LOG.LOG_DATA 
+    IS 'It contains a copy of the data received from a request, for instance, some JSON code.';
 
 
 
