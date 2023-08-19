@@ -1,12 +1,6 @@
 
 FROM postgres:15-alpine
+
 EXPOSE 5432
 
-# ===== STARTUP MODE ===== #
-RUN mkdir /app && \
-    mkdir /app/init
-COPY ./datamodel/install_datamodel.sql \
-    /app/init/install_datamodel.sql
-
-# ===== STARTUP MODE ===== #
-RUN cp "/app/init/install_datamodel.sql" "/docker-entrypoint-initdb.d/install_datamodel.sql"
+COPY ./datamodel/setup_datamodel.sql /docker-entrypoint-initdb.d/setup_datamodel.sql

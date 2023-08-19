@@ -8,6 +8,10 @@ from typing import (
     Union,
 )
 
+
+
+## ===== SUPPORT MODELS ===== ##
+
 class table_base(BaseModel):
     status: bool = Field(
         default = True,
@@ -34,6 +38,10 @@ class table_base(BaseModel):
         description="the values from the table"
     )
 
+
+
+## ===== BASE REQUEST RESPONSE ===== ##
+
 class api_base_request(BaseModel):
     timestamp: datetime = Field(
         default=datetime.now(),
@@ -55,4 +63,27 @@ class api_base_response(BaseModel):
     status_detail: str = Field(
         default="", 
         title="output message referred to the status code",
+    )
+
+
+
+## ===== USER RESOURCE ===== ##
+
+class api_user_login_request(api_base_request):
+    user_id:str = Field(
+        description="the user that is requiring to access the service",
+        pattern="SARHL2_ID[0-9]{10}_USER"
+    )
+    approver_id = Field(
+        description="the user which should approve the request (euqlas to user_id if admin access mode)",
+        pattern="SARHL2_ID[0-9]{10}_USER"
+    )
+    access_key = Field(
+        description="the access key used for accessing the resource"
+    )
+
+class api_user_login_response(api_base_request):
+    session_token = Field(
+        default="",
+        description="It is a has code generated directly from the server. It must be attached to any following requests from the user."
     )

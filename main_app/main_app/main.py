@@ -108,23 +108,3 @@ async def api_root(
         )
 
 log.info("Application is running now...", src="main")
-
-'''
-ROOT NOT DEFINED
-    /
-
-SERVICE STATUS
-    /api
-
-USER LOGIN
-    /api/user/login
-
-USER LOGOUT
-    /api/user/logout
-
-DEVICE LOGIN
-    /api/device/login
-    
-DEVICE LOGOUT
-    /api/device/logout
-'''
