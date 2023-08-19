@@ -89,14 +89,20 @@ user_status.USER_APPROVER_ID AS USER_STATUS_APPROVED_BY_ID,
 
 -- l'approvatore esiste?
 user_admin_data.USER_ADMIN_ID AS ADMIN_ID,
--- l'admin è esterno? (non può essere che si usi come admi un esterno)
-user_admin_data.USER_IS_EXTERNAL_FL AS ADMIN_EXTERNAL_FL,
 CASE
     WHEN user_admin_data.USER_ADMIN_ID IS NOT NULL THEN true
     ELSE false
 END AS ADMIN_FOUND_FL,
+-- l'admin è esterno? (non può essere che si usi come admin un esterno)
+user_admin_data.USER_IS_EXTERNAL_FL AS ADMIN_EXTERNAL_FL,
 -- l'approvatore è admin? 
 user_admin_data.USER_ADMIN_FL AS ADMIN_IS_ADMIN_FL,
+-- approvatore dichiarato per l'utente coincide con l'utente nella API?
+CASE
+    WHEN user_data.USER_APPROVED_BY_ID IS NULL AND user_data.USER_ADMIN_FL THEN true
+    WHEN NVL( user_data.USER_APPROVED_BY_ID, 'N/A' ) = NVL( user_admin_data.USER_ADMIN_ID, 'N/A' ) THEN true
+    ELSE false
+END AS USER_APPROVER_CORRECT_FL,
 -- l'approvatore possiede diritti di accesso almeno in lettura sull'utente?
 user_admin_data.AUTH_ACCESS_USER_FL AS ADMIN_CAN_ACCESS_USER_FL,
 -- is the admin currently active if there's a admin for this request?
@@ -116,7 +122,8 @@ SELECT
 
 USER_ID,
 USER_ADMIN_FL,
-USER_IS_EXTERNAL_FL
+USER_IS_EXTERNAL_FL,
+USER_APPROVED_BY_ID
 
 FROM sar.D_USER 
 WHERE 1=1

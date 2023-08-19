@@ -146,6 +146,8 @@ CREATE TABLE sar.D_USER (
     -- admins have different checks 
     , USER_ADMIN_FL BOOLEAN NOT NULL
         DEFAULT false
+    , USER_APPROVED_BY_ID CHAR(24)
+        DEFAULT null
 
     -- hold device rights
     , AUTH_HOLD_DEVICE_FL BOOLEAN NOT NULL
@@ -174,8 +176,11 @@ CREATE TABLE sar.D_USER (
     , PRIMARY KEY ( USER_ID )
 );
 COMMENT 
+    ON COLUMN sar.D_USER.USER_APPROVED_BY_ID 
+    IS 'a common user can be approved only by one admin (null for admins)';
+COMMENT 
     ON COLUMN sar.D_USER.USER_HEIGHT_VL 
-    IS 'User''s height in meters';
+    IS 'User''s height in meters (nullable field)';
 COMMENT 
     ON COLUMN sar.D_USER.ANNOTATIONS_DS 
     IS 'Use this field to attach some annotation to the record';
