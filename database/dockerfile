@@ -1,6 +1,34 @@
 
 FROM postgres:15-alpine
-
-COPY ./datamodel/datamodel.sql /docker-entrypoint-initdb.d/datamodel.sql
-
 EXPOSE 5432
+
+# ===== STARTUP MODE ===== #
+RUN mkdir /app && \
+    mkdir /app/init
+
+# INIT : INSTALL -> drop&create
+COPY ./datamodel/install_datamodel.sql \
+    /app/init/install_datamodel.sql
+# INIT : DESIGN -> drop&create
+COPY ./datamodel/design_datamodel.sql \
+    /app/init/design_datamodel.sql
+# INIT : CHECK -> create if not exists
+COPY ./datamodel/check_datamodel.sql \
+    /app/init/check_datamodel.sql
+# INIT : NONE -> perform no operatios at startup
+COPY ./datamodel/none_datamodel.sql \
+    /app/init/none_datamodel.sql
+
+RUN mkdir /app/samples
+RUN /bin/bash -c '[[ -z "${DB_SAMPLES_FILE}" ]] && export DB_SAMPLES_FILE="none"'
+COPY ./samples/run_samples.sh /docker-entrypoint-initdb.d/run_samples.sh
+
+# SAMPLES : NONE -> no samples
+COPY ./samples/sample_none.sql \
+    /app/samples/sample_none.sql
+
+# ===== STARTUP MODE ===== #
+RUN <<-EOSCRIPT
+[[ -z "${DB_STARTUP_MODE}" ]] && export DB_STARTUP_MODE="none"
+cp "/app/init/${DB_STARTUP_MODE}_datamodel.sql" "/docker-entrypoint-initdb.d/${DB_STARTUP_MODE}_datamodel.sql"
+EOSCRIPT

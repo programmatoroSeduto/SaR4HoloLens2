@@ -70,8 +70,10 @@ used by active devices to ask their reference position.
 
 ====================================================== */
 
-DROP SCHEMA IF EXISTS SAR CASCADE;
+DROP SCHEMA IF EXISTS sar CASCADE;
+
 CREATE SCHEMA sar;
+COMMENT ON SCHEMA sar IS 'Database for Search&Rescue Applications.';
 
 
 
@@ -183,22 +185,6 @@ required here.
     - (F_ACTIVITY_LOG) log transaction
     - check and close devices associated to the user
 
-## Trapdoor Requests
-
-The more infos you have about how a user can and cannot do, the more
-the system can react to a malicious scenario if any. 
-
-In this data model, there are situations in which the type of access
-is uncompatible with how it is known that the entity should behave. You
-can perform a request as admin, for instance, when you're not a admin. 
-given how the request is meant, this type of wrong access it's likely
-to be malicious: I put user_id=user_approver_id into the request, this
-is not a common mistake. In this case, the request acts as a "trapdoor 
-request", allowing to identify a potentially dangerous situation. 
-
-There are situations in which sometimes we could be sure that the 
-provided request is suspicious or potentially dangerous. 
-
 ====================================================== */
 
 DROP TABLE IF EXISTS sar.D_USER;
@@ -217,7 +203,7 @@ CREATE TABLE sar.D_USER (
     , USER_HEIGHT_VL FLOAT(2) NOT NULL
 
     -- admins have different checks 
-    , USER_ID_ADMIN_FL BOOLEAN NOT NULL
+    , USER_ADMIN_FL BOOLEAN NOT NULL
         DEFAULT false
 
     -- hold device rights
@@ -237,17 +223,12 @@ CREATE TABLE sar.D_USER (
         DEFAULT false
     
     -- user metadata
-    , USER_CREATION_TS TIMESTAMP NOT NULL
+    , CREATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
-    , USER_UPDATE_TS TIMESTAMP NOT NULL
-        DEFAULT CURRENT_TIMESTAMP
-    , USER_DELETED_FL BOOLEAN NOT NULL
+    , DELETED_FL BOOLEAN NOT NULL
         DEFAULT false
-    , USER_DELETED_TS TIMESTAMP
-        DEFAULT NULL
     
     , PRIMARY KEY ( USER_ID )
-
 );
 
 DROP TABLE IF EXISTS sar.D_USER_ACCESS_CODE;
@@ -263,8 +244,7 @@ CREATE TABLE sar.D_USER_ACCESS_CODE (
         DEFAULT false
 
     , PRIMARY KEY ( USER_ID )
-
-)
+);
 
 DROP TABLE IF EXISTS sar.F_USER_ACTIVITY;
 CREATE TABLE sar.F_USER_ACTIVITY (
@@ -278,10 +258,13 @@ CREATE TABLE sar.F_USER_ACTIVITY (
     , USER_END_AT_TS TIMESTAMP 
 
     -- session data
-    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT NOT NULL
 
-    , PRIMARY KEY ( USER_ID, START_AT_TS )
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
 
+    , PRIMARY KEY ( USER_ID, USER_START_AT_TS )
 );
 
 
@@ -313,11 +296,8 @@ CREATE SEQUENCE sar.F_ACTIVITY_LOG_SEQUENCE
 DROP TABLE IF EXISTS sar.F_ACTIVITY_LOG;
 CREATE TABLE sar.F_ACTIVITY_LOG (
 
-    F_ACTIVITY_LOG_PK INT NOT NULL
+    F_ACTIVITY_LOG_PK BIGINT NOT NULL
         DEFAULT nextval('sar.F_ACTIVITY_LOG_SEQUENCE')
-    
-    , LOG_CREATION_TS TIMESTAMP NOT NULL
-        DEFAULT CURRENT_TIMESTAMP
     
     , LOG_TYPE_DS VARCHAR(120) NOT NULL
         DEFAULT 'success'    
@@ -337,8 +317,11 @@ CREATE TABLE sar.F_ACTIVITY_LOG (
     , LOG_SECURITY_FAULT_FL BOOLEAN
         DEFAULT false
 
-    , PRIMARY KEY ( F_ACTIVITY_LOG_PK )
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
 
+    , PRIMARY KEY ( F_ACTIVITY_LOG_PK )
 );
 
 
@@ -495,10 +478,10 @@ CREATE TABLE sar.D_DEVICE (
     , AUTH_UPDATE_DEVICE_FL BOOLEAN NOT NULL
         DEFAULT false
 
-    -- device metadata
-    , DEVICE_CREATION_TS TIMESTAMP NOT NULL
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
-    , DEVICE_DELETED_FL BOOL NOT NULL
+    , DELETED_FL BOOLEAN NOT NULL
         DEFAULT false
 
     , PRIMARY KEY ( DEVICE_ID )
@@ -514,18 +497,18 @@ CREATE SEQUENCE sar.L_DEVICE_USER_SEQUENCE
 DROP TABLE IF EXISTS sar.L_DEVICE_USER;
 CREATE TABLE sar.L_DEVICE_USER (
 
-    L_DEVICE_USER_PK CHAR(8) NOT NULL
-        DEFAULT LPAD(CAST(nextval('sar.L_DEVICE_USER_SEQUENCE') AS TEXT), 8, '0')
+    L_DEVICE_USER_PK BIGINT NOT NULL
+        DEFAULT nextval('sar.L_DEVICE_USER_SEQUENCE')
 
     , DEVICE_ID CHAR(24) NOT NULL
     , USER_ID CHAR(24) NOT NULL
 
-    -- relation metadata
-    , CREATED_TS TIMESTAMP NOT NULL
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
     , DELETED_FL BOOLEAN NOT NULL
         DEFAULT false
-
+    
     , PRIMARY KEY ( L_DEVICE_USER_PK )
 );
 
@@ -533,15 +516,18 @@ DROP TABLE IF EXISTS sar.F_DEVICE_ACTIVITY;
 CREATE TABLE sar.F_DEVICE_ACTIVITY (
 
     DEVICE_ID CHAR(24) NOT NULL
-    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT NOT NULL
     
     -- operation timestamps
     , DEVICE_ON_AT_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
     , DEVICE_OFF_AT_TS TIMESTAMP 
 
-    , PRIMARY KEY ( DEVICE_ID, USER_ACCESS_TOKEN_ID )
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
 
+    , PRIMARY KEY ( DEVICE_ID, USER_SESSION_TOKEN_ID )
 );
 
 
@@ -618,7 +604,7 @@ DROP TABLE IF EXISTS sar.F_HL2_STAGING_WAYPOINTS;
 CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
 
     DEVICE_ID CHAR(24) NOT NULL
-    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT NOT NULL
 
     -- area center
     , REFERENCE_POSITION_ID TEXT NOT NULL
@@ -637,7 +623,7 @@ CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
     , LOCAL_POSITION_ID INT NOT NULL
     , LOCAL_AREA_INDEX_ID INT NOT NULL
     , AREA_RADIUS_VL FLOAT(4) NOT NULL
-        DEFAUL 0.5
+        DEFAULT 0.5
     
     -- metadata
     , CREATED_TS TIMESTAMP NOT NULL
@@ -658,8 +644,8 @@ DROP TABLE IF EXISTS sar.F_HL2_QUALITY_WAYPOINTS;
 */
 CREATE TABLE sar.F_HL2_QUALITY_WAYPOINTS (
 
-    F_HL2_QUALITY_WAYPOINTS_PK INT NOT NULL
-        DEFAULT nextval('F_HL2_QUALITY_WAYPOINTS_SEQUENCE')
+    F_HL2_QUALITY_WAYPOINTS_PK BIGINT NOT NULL
+        DEFAULT nextval('sar.F_HL2_QUALITY_WAYPOINTS_SEQUENCE')
 
     -- SOURCE : the first user/device which found the position
     , SOURCE_USER_ID CHAR(24) NOT NULL
@@ -685,15 +671,20 @@ CREATE TABLE sar.F_HL2_QUALITY_WAYPOINTS (
     , G_LON FLOAT(15) NOT NULL
     , G_ALT FLOAT(15) NOT NULL
     
-    , CREATED_TS TIMESTAMP NOT NULL
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
+    , DELETED_FL BOOLEAN NOT NULL
+        DEFAULT false
+    
+    , PRIMARY KEY ( F_HL2_QUALITY_WAYPOINTS_PK )
 );
 
 DROP TABLE IF EXISTS sar.F_HL2_STAGING_PATHS;
 CREATE TABLE sar.F_HL2_STAGING_PATHS (
     
     DEVICE_ID CHAR(24) NOT NULL
-    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT NOT NULL
 
     , LOCAL_WAYPOINT_1_ID INT NOT NULL
     , LOCAL_WAYPOINT_2_ID INT NOT NULL
@@ -713,18 +704,20 @@ CREATE SEQUENCE sar.F_HL2_QUALITY_PATHS_SEQUENCE
 ;
 
 DROP TABLE IF EXISTS sar.F_HL2_QUALITY_PATHS;
-CREATE PATH sar.F_HL2_QUALITY_PATHS (
+CREATE TABLE sar.F_HL2_QUALITY_PATHS (
 
-    F_HL2_QUALITY_WAYPOINTS_PK INT NOT NULL
-        DEFAULT nextval('F_HL2_QUALITY_PATHS_SEQUENCE')
+    F_HL2_QUALITY_WAYPOINTS_PK BIGINT NOT NULL
+        DEFAULT nextval('sar.F_HL2_QUALITY_PATHS_SEQUENCE')
 
     -- SOURCE : the first user/device which found the position
     , SOURCE_USER_ID CHAR(24) NOT NULL
     , SOURCE_DEVICE_ID CHAR(24) NOT NULL
 
     -- metadata
-    , CREATED_TS TIMESTAMP NOT NULL
+    , CREATED_DT TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
+    , DELETED_FL BOOLEAN NOT NULL
+        DEFAULT false
     
     , PRIMARY KEY ( F_HL2_QUALITY_WAYPOINTS_PK )
 );
@@ -809,15 +802,19 @@ DROP TABLE IF EXISTS sar.F_HL2_SERVICE_STATUS;
 CREATE TABLE sar.F_HL2_SERVICE_STATUS (
 
     DEVICE_ID CHAR(24) NOT NULL
-    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT NOT NULL
     
     -- device status
     , DEVICE_STATUS_DS VARCHAR(100) 
         DEFAULT NULL
     , DEVICE_STATUS_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
+
+    -- metadata
+    , CREATED_DT TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
     
-    PRIMARY KEY ( DEVICE_ID, USER_ACCESS_TOKEN_ID, DEVICE_STATUS_TS )
+    , PRIMARY KEY ( DEVICE_ID, USER_SESSION_TOKEN_ID, DEVICE_STATUS_TS )
 );
 
 
@@ -847,7 +844,7 @@ DROP TABLE IF EXISTS sar.F_IOT_MEASUREMENTS;
 CREATE TABLE sar.F_IOT_MEASUREMENTS (
 
     DEVICE_ID CHAR(24) NOT NULL
-    , USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT NOT NULL
 
     -- geolocation
     , GEO_LAT_VL FLOAT(15)
@@ -874,7 +871,7 @@ CREATE TABLE sar.F_IOT_MEASUREMENTS (
         DEFAULT null
 
     -- metadata
-    , DEVICE_STATUS_TS TIMESTAMP NOT NULL
+    , CREATED_DT TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -899,7 +896,7 @@ Key Entities Definition:
     - USER_ID CHAR(24) NOT NULL
     - USER_ACCESS_CODE_ID TEXT NOT NULL
         - hashed
-    - USER_ACCESS_TOKEN_ID TEXT NOT NULL
+    - USER_SESSION_TOKEN_ID TEXT NOT NULL
         - hashed
 
 Metadata:
@@ -907,23 +904,12 @@ Metadata:
 - CREATED_DT TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 - DELETED_FL BOOLEAN NOT NULL DEFAULT false
 
-User Metadata:
-
-- USER_CREATION_TS TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    - the time the record is created for the first time
-- USER_UPDATE_TS TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    - the time the record as been created / updated (never null)
-- USER_DELETED_FL BOOLEAN NOT NULL DEFAULT false
-    - if the record has been deleted or not
-- USER_DELETED_TS TIMESTAMP DEFAULT NULL
-    - when the user has been deleted
-
-Final reviews:
-
-- BOOL instead of BOOLEAN
-- numerical precision adn suffixes
-- sequences always used as common INT fields
-- level out all the metadata (classify tables and SCD techniques)
-- final list of transactions and sources
+```sql
+-- metadata
+, CREATED_DT TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP
+, DELETED_FL BOOLEAN NOT NULL
+    DEFAULT false
+```
 
 ====================================================== */
