@@ -9,7 +9,7 @@ API: api/user/login
         - approver id
         - access token
     - RESPONSE:
-        - status : OK
+        - status : OK|KO
         - status details : success
         - session_token : ...hash...
 

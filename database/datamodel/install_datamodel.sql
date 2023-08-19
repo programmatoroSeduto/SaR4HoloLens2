@@ -125,66 +125,6 @@ Here are some use cases and scenarios:
 The more infos you have about how a user can and cannot do, the more
 the system can react to a malicious scenario if any. 
 
-## TRANSACTION (login) : USER activity begins
-
-API: api/access/login
-    - REQUEST:
-        - user id
-        - approver id
-        - access token
-    - RESPONSE:
-        - OK or not OK ...?
-
-if the user is not approver, the check also involves the 
-actvity status of the approver user. Admins are distinguished
-by common users since user_id and user_approver_id are the same. 
-It enables for example to know when a malicious user tries to send
-a request pretending to be a admin: if the flag admin is false, or
-the admin account is already active, there's something potentially
-bad thst it is happening. 
-
-(when I write "if ... is ...", just take into account that if that 
-condition is not satisfied, it will be taken a action to deal with 
-the problem)
-
-- CHECK if users codes are the same, 
-    - (D_USER) if the user exists
-    - (D_USER) if the user is really admin
-    - (F_USER_ACTIVITY) if the user is not already active
-    - (D_USER_ACCESS_CODE) if the access hash of the access code is correct
-- CHECK otherwise
-    - (D_USER) if the approver exists
-    - (F_USER_ACTIVITY) if the approver is active
-    - (D_USER) if the user exists
-    - (D_USER_ACCESS_CODE) if the access hash of the user is correct
-    - (F_USER_ACTIVITY) if the user is currently active
-- INSERT user starts activity 
-    - (F_USER_ACTIVITY) create activity
-    - (F_USER_ACTIVITY) assign session token
-    - (F_ACTIVITY_LOG) log success
-- and send back to the user
-
-## TRANSACTION (logout) : USER activity ends
-
-API:
-    api/access/logout
-    - REQUEST:
-        - user id
-        - session token
-    - RESPONSE:
-        - empty
-
-the request is sent by the control unit. Only the name of the user is
-required here. 
-
-- CHECK 
-    - (D_USER) the user code exists
-    - (F_USER_ACTIVITY) the token is correct
-- UPDATE logout
-    - (F_USER_ACTIVITY) close the row
-    - (F_ACTIVITY_LOG) log transaction
-    - check and close devices associated to the user
-
 ====================================================== */
 
 DROP TABLE IF EXISTS sar.D_USER;
@@ -437,42 +377,6 @@ here are the capabilities a device can have in this data model:
 ### Hold a device
 
 it is sufficient to have a active user session to hold a device with a given ID. 
-
-## TRANSACTION (access) : DEVICE assign to user
-
-API: api/device/login
-    - REQUEST:
-        - user id
-        - device id
-        - user session token
-    - RESPONSE:
-        - OK or not OK ...?
-
-The request is performed directly by the user, once enabled a
-session token. Here are the steps:
-
-- (CHECK) user
-    - (D_USER) if the user exists
-    - (F_USER_ACTIVITY) if the user is active
-    - (F_USER_ACTIVITY) if the session ID is still valid
-- (CHECK) device
-    - (D_DEVICE) if the device exists
-    - (D_DEVICE) if the device is holdable -> DEVICE_IS_HOLDABLE_FL
-    - (L_DEVICE_USER) if the user is allowed to hold the device
-    - (F_DEVICE_ACTIVITY) if the device is not hold by another user
-- (UPDATE) device session data
-    - (F_DEVICE_ACTIVITY) open a new row with the session ID
-    - (F_ACTIVITY_LOG) register the activity
-
-## TRANSACTION (release) : DEVICE release
-
-API: api/device/logout
-    - REQUEST:
-        - user id
-        - device id
-        - user session token
-    - RESPONSE:
-        - OK or not OK ...?
 
 ====================================================== */
 
