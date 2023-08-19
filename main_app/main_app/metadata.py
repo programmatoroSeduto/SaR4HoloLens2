@@ -1,8 +1,8 @@
 
-from enum import Enum
-
-class api_tags(Enum):
+class api_tags:
     root = "root"
-    login = "login"
-    op_import = "import"
-    op_export = "export"
+    api_root = "api_root"
+    api_user_login = "user login"
+    api_user_logout = "user logout"
+    api_device_login = "device login"
+    api_device_logout = "device logout"

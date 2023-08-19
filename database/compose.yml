@@ -14,8 +14,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      DB_STARTUP_MODE: check
-      DB_SAMPLES_FILE: none
+      DB_STARTUP_MODE: install
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres

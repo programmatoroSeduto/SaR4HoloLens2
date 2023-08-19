@@ -73,16 +73,33 @@ log.info("creating environment ... OK", src="main")
     "/",
     tags = [ metadata.api_tags.root ],
     response_model=api_models.api_base_response,
+    status_code = status.HTTP_400_BAD_REQUEST
+)
+async def root(
+    request_body: Annotated[api_models.api_base_request, Body()] = api_models.api_base_request()
+) -> api_models.api_base_response:
+    global config, env
+    log.info_api( "/", src=metadata.api_tags.root )
+
+    return api_models.api_base_response(
+        timestamp_received=request_body.timestamp,
+        status=status.HTTP_400_BAD_REQUEST, 
+        status_detail=""
+        )
+
+
+
+@api.get(
+    "/api",
+    tags = [ metadata.api_tags.api_root ],
+    response_model=api_models.api_base_response,
     status_code = status.HTTP_200_OK
 )
 async def api_root(
     request_body: Annotated[api_models.api_base_request, Body()] = api_models.api_base_request()
 ) -> api_models.api_base_response:
     global config, env
-    log.info("CALL: api_root", src="/")
-
-    env.db.get_cursor()
-    env.log.info(f"Debug Mode is set : {config.debug_mode}", src="/")
+    log.info_api( "/api", src=metadata.api_tags.api_root )
 
     return api_models.api_base_response(
         timestamp_received=request_body.timestamp,
@@ -91,3 +108,23 @@ async def api_root(
         )
 
 log.info("Application is running now...", src="main")
+
+'''
+ROOT NOT DEFINED
+    /
+
+SERVICE STATUS
+    /api
+
+USER LOGIN
+    /api/user/login
+
+USER LOGOUT
+    /api/user/logout
+
+DEVICE LOGIN
+    /api/device/login
+    
+DEVICE LOGOUT
+    /api/device/logout
+'''
