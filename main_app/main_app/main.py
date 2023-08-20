@@ -173,6 +173,60 @@ async def api_user_login(
 
 
 
+from api_transactions.transaction_device_login import api_transaction_device_login
+@api.post(
+    "/api/device/login",
+    tags=[ metadata.api_tags.api_device_login ],
+    response_model=api_models.api_device_login_response,
+)
+async def api_device_login(
+    request_body: Annotated[api_models.api_device_login_request, Body()]
+) -> api_models.api_device_login_response:
+    ''' Device Login
+    
+    This API call allows a user to acquire a holdable device
+    '''
+    global config, env
+    log.info_api( "/api/device/login", src=metadata.api_tags.api_device_login )
+
+    tr = api_transaction_device_login(env, request_body)
+    tr.check()
+    tr.execute()
+
+    return utils.set_response_timestamp(
+        request_body,
+        tr.response
+    )
+
+
+
+from api_transactions.transaction_device_logout import api_transaction_device_logout
+@api.post(
+    "/api/device/logout",
+    tags=[ metadata.api_tags.api_device_logout ],
+    response_model=api_models.api_device_logout_response,
+)
+async def api_device_login(
+    request_body: Annotated[api_models.api_device_logout_request, Body()]
+) -> api_models.api_device_logout_response:
+    ''' Device Logout
+    
+    This API call allows a user to release a holding device. 
+    '''
+    global config, env
+    log.info_api( "/api/device/logout", src=metadata.api_tags.api_device_logout )
+
+    tr = api_transaction_device_logout(env, request_body)
+    tr.check()
+    tr.execute()
+
+    return utils.set_response_timestamp(
+        request_body,
+        tr.response
+    )
+
+
+
 
 
 

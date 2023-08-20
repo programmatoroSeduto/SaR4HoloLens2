@@ -69,8 +69,19 @@ api_<...>_sql_check= """
 
 
 
-api_<...>_sql_exec_<...> = """
-
+api_<...>_sql_exec_log = """
+INSERT INTO sar.F_ACTIVITY_LOG (
+    LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL,
+    LOG_SOURCE_ID,
+    LOG_DETAILS_DS,
+    LOG_DATA
+)
+VALUES (
+    %(LOG_TYPE_DS)s, %(LOG_TYPE_ACCESS_FL)s, %(LOG_SUCCESS_FL)s, %(LOG_WARNING_FL)s, false, %(LOG_SECURITY_FAULT_FL)s,
+    'api',
+    %(LOG_DETAILS_DS)s,
+    %(LOG_DATA)s
+)
 """
 
 
@@ -84,7 +95,7 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
     '''
 
     def __init__(self, env: environment, request) -> None:
-        ''' Creae the transaction
+        ''' Create the transaction
         
         '''
         super().__init__(env)
@@ -100,9 +111,9 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         self.__res_schema:list = None
 
         # logging
-        self.__log_detail_ds = ""
+        self.__log_detail_ds:str = ""
         self.__log_error:bool = False
-        self.__log_unsecure_request = False
+        self.__log_unsecure_request:bool = False
 
         # transaction custom data
         pass
@@ -152,10 +163,14 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         if not self.__check_done:
             raise Exception("Missing CHECK step")
         
-        if self.__log_error:
-            self.__exec_fail()
-        else:
-            self.__exec_success()
+        try:
+            if self.__log_error:
+                self.__exec_fail()
+            else:
+                self.__exec_success()
+        except Exception as e:
+            self.log.err("Execution error during EXEC phase! {e}", src="aaaaaa")
+            self.db.execute("ROLLBACK TRANSACTION;")
     
 
     def __exec_success( self ):
@@ -175,7 +190,18 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         cur = self.db.get_cursor()
         cur.execute("BEGIN TRANSACTION;")
 
-        # ... transaction : failure ...
+        cur.execute(
+            api_transaction_device_login_sql_exec_log,
+            {
+                'LOG_TYPE_DS' : 'aaa',
+                'LOG_TYPE_ACCESS_FL' : True,
+                'LOG_SUCCESS_FL' : False,
+                'LOG_WARNING_FL' : False,
+                'LOG_SECURITY_FAULT_FL' :  self.__log_unsecure_request,
+                'LOG_DETAILS_DS' : self.__log_detail_ds,
+                'LOG_DATA' : self.dict_to_field(dict(self.request)),
+            }
+        )
 
         cur.execute("COMMIT TRANSACTION;")
 

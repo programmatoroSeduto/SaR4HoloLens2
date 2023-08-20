@@ -74,7 +74,6 @@ END AS USER_CAN_HOLD_DEVICE_FL
 
 -- l'utente è autirzzato ad avere quel device?
 , CASE 
-    WHEN user_data.USER_ID IS NULL
     WHEN device_assignment.USER_ID IS NULL THEN false
     ELSE true
 END AS USER_CAN_HOLD_GIVEN_DEVICE_FL
@@ -158,7 +157,7 @@ LEFT JOIN ( -- user opened session check
 SELECT
 
 USER_ID,
-USER_USER_SESSION_TOKEN_ID
+USER_SESSION_TOKEN_ID
 
 FROM sar.F_USER_ACTIVITY
 WHERE 1=1
@@ -251,7 +250,7 @@ END
 
 IF not USER_CAN_HOLD_GIVEN_DEVICE_FL
     -> RETURN : 401 access denied
-    -> LOG : user is not allowed to hold the requested devce
+    -> LOG : user is not allowed to hold the requested device
 END
 
 IF DEVICE_CAN_WRITE_FL AND not USER_DEVICE_AUTH_WRITE_FL

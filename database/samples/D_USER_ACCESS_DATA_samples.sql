@@ -28,7 +28,7 @@ INSERT INTO sar.D_USER_ACCESS_DATA (
         admin user with full access
 */
 (
-    'Francesco Ganci',
+    CONCAT('SARHL2_ID', '8849249249', '_USER' ),
     MD5('anoth3rBr3akabl3P0sswArd')
 )
 /* USER

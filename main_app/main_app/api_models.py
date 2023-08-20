@@ -112,3 +112,45 @@ class api_user_logout_response(api_base_response):
         default=list(),
         description="When a user logs out, the server also releases all the devices associated with it"
     )
+
+
+
+## ===== DEVICE LOGIN ===== ##
+
+class api_device_login_request(api_base_request):
+    user_id:str = Field(
+        description="the user that is requiring to access the service",
+        pattern=user_id_pattern
+    )
+    device_id:str = Field(
+        description="the device the user is trying to acquire",
+        pattern=device_id_pattern
+    )
+    session_token:str = Field(
+        description="the session token identifying the user session",
+        pattern=".+"
+    )
+
+class api_device_login_response(api_base_response):
+    pass
+
+
+
+## ===== DEVICE LOGOUT ===== ##
+
+class api_device_logout_request(api_base_request):
+    user_id:str = Field(
+        description="the user that is requiring to access the service",
+        pattern=user_id_pattern
+    )
+    device_id:str = Field(
+        description="the device the user is trying to release",
+        pattern=device_id_pattern
+    )
+    session_token:str = Field(
+        description="the session token identifying the user session",
+        pattern=".+"
+    )
+
+class api_device_logout_response(api_base_response):
+    pass

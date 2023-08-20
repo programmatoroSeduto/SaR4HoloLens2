@@ -317,10 +317,14 @@ class api_transaction_user_login(api_transaction_base):
         if not self.__check_done:
             raise Exception("Missing CHECK step")
         
-        if self.__log_error:
-            self.__exec_fail()
-        else:
-            self.__exec_success()
+        try:
+            if self.__log_error:
+                self.__exec_fail()
+            else:
+                self.__exec_success()
+        except Exception as e:
+            self.log.err(f"Execution error during EXEC phase! {e}", src="transaction_user_login")
+            self.db.execute("ROLLBACK TRANSACTION;")
 
     def __exec_success( self ):
         global api_transaction_user_login_sql_exec_open_session

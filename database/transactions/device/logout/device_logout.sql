@@ -114,6 +114,20 @@ AND USER_ID = %(user_id)s -- REQUEST (user_id)
 ) AS user_data
 ON ( 1=1 )
 
+LEFT JOIN ( -- user opened session check
+SELECT
+
+USER_ID,
+USER_SESSION_TOKEN_ID
+
+FROM sar.F_USER_ACTIVITY
+WHERE 1=1
+AND USER_END_AT_TS IS NULL
+AND USER_ID = %(user_id)s -- REQUEST (user_id)
+AND USER_SESSION_TOKEN_ID = %(session_token)s -- REQUEST (session_token)
+) AS user_session
+ON ( 1=1 )
+
 LEFT JOIN ( -- device status
 SELECT
 
@@ -154,6 +168,8 @@ DEVICE_IS_HOLD_BY_DIFFERENT_USER
 check pseudocode:
 
 ```
+-- same as login -- 
+
 IF not USER_EXISTS_FL
     -> RETURN : 404 incorrect user, device or token
     -> LOG : unknown user id
@@ -178,6 +194,8 @@ IF not DEVICE_IS_HOLDABLE_FL
     -> RETURN : 404 incorrect user, device or token
     -> LOG : device cannot be assigned since it is not holdable
 END
+
+-- logout only --
 
 IF not DEVICE_IS_ALREADY_HOLD_FL
     -> RETURN : 404 incorrect user, device or token
@@ -215,7 +233,10 @@ BEGIN;
 UPDATE sar.F_DEVICE_ACTIVITY
 SET 
     DEVICE_OFF_AT_TS = CURRENT_TIMESTAMP
-WHERE USER_SESSION_TOKEN_ID = %(session_token)s
+WHERE 1=1
+    AND USER_SESSION_TOKEN_ID = %(session_token)s
+    AND DEVICE_ID = %(device_id)s
+    AND DEVICE_OFF_AT_TS IS NULL
 ;
 
 INSERT INTO sar.F_ACTIVITY_LOG (

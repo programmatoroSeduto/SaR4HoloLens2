@@ -86,7 +86,9 @@ api_transaction_user_logout_sql_exec_close_devices_sessions = """
 UPDATE sar.F_DEVICE_ACTIVITY
 SET 
     DEVICE_OFF_AT_TS = CURRENT_TIMESTAMP
-WHERE USER_SESSION_TOKEN_ID = %(session_token)s
+WHERE 1=1
+    AND USER_SESSION_TOKEN_ID = %(session_token)s
+    AND DEVICE_OFF_AT_TS IS NULL
 RETURNING 
     DEVICE_ID
 ;
@@ -220,10 +222,14 @@ class api_transaction_user_logout(api_transaction_base):
         if not self.__check_done:
             raise Exception("Missing CHECK step")
         
-        if self.__log_error:
-            self.__exec_fail()
-        else:
-            self.__exec_success()
+        try:
+            if self.__log_error:
+                self.__exec_fail()
+            else:
+                self.__exec_success()
+        except Exception as e:
+            self.log.err(f"Execution error during EXEC phase! {e}", src="transaction_user_logout")
+            self.db.execute("ROLLBACK TRANSACTION;")
     
 
     def __exec_success( self ):
@@ -252,6 +258,7 @@ class api_transaction_user_logout(api_transaction_base):
 
         self.request.session_token = "..."
         if self.user_has_auth_devices and len(self.logged_out_devices) > 0:
+            logout_list = list()
             for device in self.logged_out_devices:
                 cur.execute(
                     api_transaction_user_logout_sql_exec_log,
@@ -261,11 +268,12 @@ class api_transaction_user_logout(api_transaction_base):
                         'LOG_SUCCESS_FL' : True,
                         'LOG_WARNING_FL' : False,
                         'LOG_SECURITY_FAULT_FL' : False,
-                        'LOG_DETAILS_DS' :"device '{}' logout success".format(device),
+                        'LOG_DETAILS_DS' :"device {} logout success".format(device[0]),
                         'LOG_DATA' : self.dict_to_field(dict(self.request)),
                     }
                 )
-            self.response.logged_out_devices = self.logged_out_devices
+                logout_list.append(device[0])
+            self.response.logged_out_devices = logout_list
         
         cur.execute(
             api_transaction_user_logout_sql_exec_log,
