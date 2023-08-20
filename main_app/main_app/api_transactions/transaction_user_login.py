@@ -156,7 +156,10 @@ VALUES (
         %(approver_id)s, 
         FLOOR(RANDOM() * 1000000)
     ) )
-);
+)
+RETURNING
+    USER_SESSION_TOKEN_ID
+;
 """
 
 
@@ -228,73 +231,80 @@ class api_transaction_user_login(api_transaction_base):
         self.__res_count = cur.rowcount
 
         if self.__res_count == 0:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='not found user from request'
             )
+            return
         
         record = self.to_dict(self.__res_schema, self.__res[0])
         self.log.debug_detail(record, src="transaction_user_login")
         if self.request.user_id == self.request.approver_id and not record['USER_IS_ADMIN_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='trying to access as admin without admin flag'
             )
         elif self.request.user_id == self.request.approver_id and record['USER_IS_EXTERNAL_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='a external user can\'t access as admin',
                 unsecure_request=True
             )
         elif not record['ADMIN_FOUND_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='not found admin from request'
             )
         elif not record['ADMIN_IS_ADMIN_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='trying to use admin code referred to non-admin user'
             )
         elif record['ADMIN_EXTERNAL_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='trying to use a external account as admin for a login operation'
             )
         elif not record['USER_STATUS_PASS_CHECK_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='wrong password'
             )
         elif not record['ADMIN_CAN_ACCESS_USER_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_401_UNAUTHORIZED,
                 res_status_description="incorrect user, admin or pass key",
                 log_detail='trying to access with a admin which is not auhorized to read user data'
             )
         elif record['USER_STATUS_IS_ACTIVE_FL']:
             if record['USER_STATUS_APPROVED_BY_ID'] != self.request.approver_id:
-                return self.__build_response(
+                self.__build_response(
                     res_status=status.HTTP_403_FORBIDDEN,
                     res_status_description="access denied",
                     log_detail='session active with one approver, but required the access with another approver',
                     unsecure_request=True
                 )
             else:
-                return self.__build_response(
+                self.__build_response(
                     res_status=status.HTTP_403_FORBIDDEN,
                     res_status_description="nothing to do",
                     log_detail='trying to access a user already logged in'
                 )
+        elif not record['USER_IS_ADMIN_FL'] and not record['ADMIN_STATUS_IS_ACTIVE_FL']:
+            self.__build_response(
+                res_status=status.HTTP_401_UNAUTHORIZED,
+                res_status_description="access denied",
+                log_detail='supervisor not logged in'
+            )
         else:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_200_OK,
                 res_status_description="user successfully logged in",
                 log_detail='user successfully logged in'
@@ -327,13 +337,14 @@ class api_transaction_user_login(api_transaction_base):
                 'approver_id' : self.request.approver_id,
             }
         )
+        self.response.session_token = cur.fetchall()[0][0]
 
         # record on log
         self.request.access_key = "..."
         cur.execute(
             api_transaction_user_login_sql_exec_set_log,
             {
-                'log_type_ds' : 'login success',
+                'log_type_ds' : 'user login',
                 'log_success_fl' : 'true',
                 'log_security_fault_fl' : 'false',
                 'log_detail_ds' : self.__log_detail_ds,
@@ -353,7 +364,7 @@ class api_transaction_user_login(api_transaction_base):
         cur.execute(
             api_transaction_user_login_sql_exec_set_log,
             {
-                'log_type_ds' : 'login fail',
+                'log_type_ds' : 'user login',
                 'log_success_fl' : 'false',
                 'log_security_fault_fl' : self.__log_unsecure_request,
                 'log_detail_ds' : self.__log_detail_ds,

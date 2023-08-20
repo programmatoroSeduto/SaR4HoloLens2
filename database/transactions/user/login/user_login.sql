@@ -281,8 +281,8 @@ IF user currently active
     END IF
 END IF
 
-IF admin currently not active
-    -> RETURN : access denied
+IF (not admin) AND (admin currently not active)
+    -> RETURN : 401 access denied
     -> LOG : supervisor not logged in
 END IF
 
@@ -329,7 +329,10 @@ VALUES (
         %(approver_id)s, 
         FLOOR(RANDOM() * 1000000)
     ) )
-);
+)
+RETURNING
+    USER_SESSION_TOKEN_ID
+;
 
 INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL,

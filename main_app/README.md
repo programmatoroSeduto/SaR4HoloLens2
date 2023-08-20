@@ -131,6 +131,7 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
                 res_status_description="...",
                 log_detail='...'
             )
+            return
         
         record = self.to_dict(self.__res_schema, self.__res[0])
         self.log.debug_detail(record, src="...")
@@ -218,6 +219,48 @@ Here's a general approach you can use to implement the code of a transaction:
 7. implement the function `__exec_fail()`
 8. everythin's almost done: write the API callback
 
+### Transaction LOg Management
+
+Currently there's no standard approach to manage the transaction log. You can get inspired by this example:
+
+```py
+api_<...>_sql_exec_log = """
+INSERT INTO sar.F_ACTIVITY_LOG (
+    LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL,
+    LOG_SOURCE_ID,
+    LOG_DETAILS_DS,
+    LOG_DATA
+)
+VALUES (
+    %(LOG_TYPE_DS)s, %(LOG_TYPE_ACCESS_FL)s, %(LOG_SUCCESS_FL)s, %(LOG_WARNING_FL)s, false, %(LOG_SECURITY_FAULT_FL)s,
+    'api',
+    %(LOG_DETAILS_DS)s,
+    %(LOG_DATA)s
+)
+"""
+
+def __exec_fail( self ):
+    global api_<...>_sql_exec_log
+    
+    cur = self.db.get_cursor()
+    cur.execute("BEGIN TRANSACTION;")
+
+    cur.execute(
+        api_<...>_sql_exec_log,
+        {
+            'LOG_TYPE_DS' : '...',
+            'LOG_TYPE_ACCESS_FL' : True,
+            'LOG_SUCCESS_FL' : False,
+            'LOG_WARNING_FL' : False,
+            'LOG_SECURITY_FAULT_FL' : self.__log_unsecure_request,
+            'LOG_DETAILS_DS' : self.__log_detail_ds,
+            'LOG_DATA' : self.dict_to_field(dict(self.request)),
+        }
+    )
+
+    cur.execute("COMMIT TRANSACTION;")
+```
+
 ### Importing and using a transacion
 
 inside the `main.py` file, you can import a transaction by importing its main class, for instance:
@@ -239,6 +282,7 @@ About coding:
 
 - **DON'T REUSE TRANSACTION CLASSES!** There's the risk to do a operation with a dirty environment, which is dangerous: it lets to unpredictable situations and bugs very difficult to understand. 
 - I strongly suggest to make explicit type checking on the function parameters, since it is more easy to write code with autocompletion... by the way
+- informations about sessions, statuses and other things should be returned as last step into the function `__exec_success()`. In particular, the postgres SQL statement `RETURNING` can help to reduce the amount of queries during the transaction. 
 
 About performances: 
 

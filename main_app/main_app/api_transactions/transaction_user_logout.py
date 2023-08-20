@@ -181,6 +181,7 @@ class api_transaction_user_logout(api_transaction_base):
                 res_status_description="invalid user or token",
                 log_detail='wrong user in logout request'
             )
+            return
         
         record = self.to_dict(self.__res_schema, self.__res[0])
         self.log.debug_detail(record, src="transaction_user_logout")
