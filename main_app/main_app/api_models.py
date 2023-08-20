@@ -14,36 +14,6 @@ refpos_id_pattern = "SARHL2_ID[0-9]{10}_REFP"
 
 
 
-## ===== SUPPORT MODELS ===== ##
-
-class table_base(BaseModel):
-    status: bool = Field(
-        default = True,
-        description = "either the query succeeded or not"
-    )
-    status_detail: str = Field(
-        default="",
-        description="details about the status"
-    )
-    query: str = Field(
-        default="",
-        description="the query used to extract results"
-    )
-    table_schema: list[str] = Field(
-        default=[],
-        description="the schema of the able, aligned with the database results"
-    )
-    table_size: int = Field(
-        default = 0,
-        description="how many rows inside the table"
-    )
-    table_values:list[tuple] = Field(
-        default=[],
-        description="the values from the table"
-    )
-
-
-
 ## ===== BASE REQUEST RESPONSE ===== ##
 
 class api_base_request(BaseModel):

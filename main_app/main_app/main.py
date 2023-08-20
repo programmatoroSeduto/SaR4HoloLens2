@@ -106,7 +106,7 @@ async def api_root(
 ) -> api_models.api_base_response:
     ''' API Status
     
-    No coffee for ya I'm a goddam teapot. 
+    No coffee for ya, I'm a goddam teapot. 
     '''
     global config, env
     log.info_api( "/api", src=metadata.api_tags.api_root )
