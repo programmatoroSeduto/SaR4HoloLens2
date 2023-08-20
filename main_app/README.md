@@ -108,7 +108,7 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         pass
     
 
-    def check( self ): # inherited
+    def check( self ) -> None:
         ''' transaction check phase
         
         '''
@@ -126,15 +126,18 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         self.__res_count = cur.rowcount
 
         if self.__res_count == 0:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="...",
                 log_detail='...'
             )
         
+        record = self.to_dict(self.__res_schema, self.__res[0])
+        self.log.debug_detail(record, src="...")
+        
         # ... checkings ... 
 
-        return self.__build_response(
+        self.__build_response(
             res_status=status.HTTP_200_OK,
             res_status_description="success",
             log_detail=''
@@ -232,8 +235,22 @@ Since the 90% of the functionality is enclosed inside the class, you have just t
 
 ### Transaction Implementation Guidelines
 
+About coding: 
+
 - **DON'T REUSE TRANSACTION CLASSES!** There's the risk to do a operation with a dirty environment, which is dangerous: it lets to unpredictable situations and bugs very difficult to understand. 
-- *check phase as single query.* To not overload the DBMS, it is suggested to try to implement all the checkings in only one query instead of using one query for each check. Of course, you can divide, but first try to create one query
 - I strongly suggest to make explicit type checking on the function parameters, since it is more easy to write code with autocompletion... by the way
+
+About performances: 
+
+- *check phase as single query.* To not overload the DBMS, it is suggested to try to implement all the checkings in only one query instead of using one query for each check. Of course, you can divide, but first try to create one query
+- it's better to implement each check as a boolean directly in the check query. Using this approach, you can create a long list of `if ... elif: ... elif: ... else: ...` instead of writing complex Python code
+
+**_About security:_**
+
+- **DON'T LOG CLEARLY-READABLE CREDENTIALS!** A common mistake is to design a API which prints confidential data *inside the log files*. Please try to follow these guidelines:
+  - in keys checks, try to avoid to make a query explicitly returning that code: it's a requirement of the query to check if the key is correct or not
+  - before writing into the transaction log, please replace the passcode or anything similar with something like this: `...`
+  - in any case, don't print the `self.request` using the log handle or other kinds of prints, since it could contain sensible informations about the user
+- in managing HTTP status codes, **don't allow anyone to infer if the password is correct or not by he response from the server**. A example: the service return 404 before checking the key in case of error, and it returns 401 when the key is correct but any other error occurred; this is a wrong, dangerous, use of HTTP status code! There must not be dependency between the sensible information and the return code from the server or any other information from the server. If you need more infos about the error, please use the transaction log, hiding sensitive informations before storing the log as said before. In the case of that scenario, a brute force analysis could reveal the behaviour of the server, something that a potential attacker could use to damage the service. 
 
 ---

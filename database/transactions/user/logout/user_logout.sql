@@ -68,7 +68,7 @@ user_data.USER_ADMIN_FL AS USER_ADMIN_FL,
 CASE 
     WHEN user_data.USER_ADMIN_FL THEN online_users_count.COUNT_APPROVED_USERS_VL 
     ELSE NULL
-AS COUNT_APPROVED_USERS_VL,
+END AS COUNT_APPROVED_USERS_VL,
 -- session is opened
 CASE
     WHEN user_status.USER_SESSION_TOKEN_ID IS NOT NULL THEN true
@@ -168,7 +168,7 @@ IF NOT token correct
 END IF
 
 IF ( user is admin ) AND ( online users approved by this admin )
-    -> RETURN can't log out
+    -> RETURN 401 can't log out
     -> LOG : there are still {} logged user depending to this admin; can't accomplish request
 END IF
 
@@ -204,7 +204,7 @@ parameters:
 BEGIN;
 
 -- close device sessions
-UPDATE TABLE sar.F_DEVICE_ACTIVITY
+UPDATE sar.F_DEVICE_ACTIVITY
 SET 
     DEVICE_OFF_AT_TS = CURRENT_TIMESTAMP
 WHERE USER_SESSION_TOKEN_ID = %(session_token)s
@@ -227,7 +227,7 @@ VALUES (
     '...the JSON packet request...'
 )
 
-UPDATE TABLE sar.F_USER_ACTIVITY
+UPDATE sar.F_USER_ACTIVITY
 SET
     USER_END_AT_TS = CURRENT_TIMESTAMP
 WHERE USER_SESSION_TOKEN_ID = %(session_token)s

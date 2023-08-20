@@ -329,6 +329,7 @@ class api_transaction_user_login(api_transaction_base):
         )
 
         # record on log
+        self.request.access_key = "..."
         cur.execute(
             api_transaction_user_login_sql_exec_set_log,
             {
@@ -348,6 +349,7 @@ class api_transaction_user_login(api_transaction_base):
 
         # record on log
         cur.execute("BEGIN TRANSACTION;")
+        self.request.access_key = "..."
         cur.execute(
             api_transaction_user_login_sql_exec_set_log,
             {

@@ -3,4 +3,17 @@ FROM postgres:15-alpine
 
 EXPOSE 5432
 
-COPY ./datamodel/setup_datamodel.sql /docker-entrypoint-initdb.d/setup_datamodel.sql
+RUN mkdir /app && \
+    mkdir /app/datamodel && \
+    mkdir /app/samples
+
+COPY ./datamodel/setup_datamodel.sql /app/datamodel/setup_datamodel.sql
+COPY ./samples/D_USER_ACCESS_DATA_samples.sql /app/samples/D_USER_ACCESS_DATA_samples.sql
+COPY ./samples/D_USER_samples.sql /app/samples/D_USER_samples.sql
+
+ENV APP_SETUP_PATH=/app/datamodel
+ENV APP_SETUP_FILE=/app/datamodel/setup_datamodel.sql
+ENV APP_SAMPLES_PATH=/app/samples
+ENV APP_TESTING_MODE=false
+
+COPY ./datamodel/setup.sh /docker-entrypoint-initdb.d/setup.sh

@@ -19,7 +19,7 @@ user_data.USER_ADMIN_FL AS USER_ADMIN_FL,
 CASE 
     WHEN user_data.USER_ADMIN_FL THEN online_users_count.COUNT_APPROVED_USERS_VL 
     ELSE NULL
-AS COUNT_APPROVED_USERS_VL,
+END AS COUNT_APPROVED_USERS_VL,
 -- session is opened
 CASE
     WHEN user_status.USER_SESSION_TOKEN_ID IS NOT NULL THEN true
@@ -83,7 +83,7 @@ ON ( 1=1 )
 
 
 api_transaction_user_logout_sql_exec_close_devices_sessions = """
-UPDATE TABLE sar.F_DEVICE_ACTIVITY
+UPDATE sar.F_DEVICE_ACTIVITY
 SET 
     DEVICE_OFF_AT_TS = CURRENT_TIMESTAMP
 WHERE USER_SESSION_TOKEN_ID = %(session_token)s
@@ -96,7 +96,7 @@ RETURNING
 
 
 api_transaction_user_logout_sql_exec_close_user_session = """
-UPDATE TABLE sar.F_USER_ACTIVITY
+UPDATE sar.F_USER_ACTIVITY
 SET
     USER_END_AT_TS = CURRENT_TIMESTAMP
 WHERE USER_SESSION_TOKEN_ID = %(session_token)s
@@ -114,10 +114,10 @@ INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_DATA
 )
 VALUES (
-    '%(LOG_TYPE_DS)s', %(LOG_TYPE_ACCESS_FL)s, %(LOG_SUCCESS_FL)s, %(LOG_WARNING_FL)s, false, %(LOG_SECURITY_FAULT_FL)s,
+    %(LOG_TYPE_DS)s, %(LOG_TYPE_ACCESS_FL)s, %(LOG_SUCCESS_FL)s, %(LOG_WARNING_FL)s, false, %(LOG_SECURITY_FAULT_FL)s,
     'api',
-    '%(LOG_DETAILS_DS)s',
-    '%(LOG_DATA)s'
+    %(LOG_DETAILS_DS)s,
+    %(LOG_DATA)s
 )
 """
 
@@ -176,40 +176,40 @@ class api_transaction_user_logout(api_transaction_base):
         self.__res_count = cur.rowcount
 
         if self.__res_count == 0:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_404_NOT_FOUND,
                 res_status_description="invalid user or token",
                 log_detail='wrong user in logout request'
             )
         
-        record = self.__res[0]
-        self.log.debug_detail(record, src="transaction_user_login")
+        record = self.to_dict(self.__res_schema, self.__res[0])
+        self.log.debug_detail(record, src="transaction_user_logout")
         self.user_has_auth_devices = record['AUTH_HOLD_DEVICE_FL']
 
         if not record['USER_HAS_SESSION_OPENED_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_401_UNAUTHORIZED,
                 res_status_description="invalid user or token",
                 log_detail='missing session'
             )
         elif not record['USER_SESSION_TOKEN_VALID_FL']:
-            return self.__build_response(
+            self.__build_response(
                 res_status=status.HTTP_401_UNAUTHORIZED,
                 res_status_description="invalid user or token",
                 log_detail='unvalid session token'
             )
         elif record['USER_ADMIN_FL'] and record['COUNT_APPROVED_USERS_VL'] > 0:
-            return self.__build_response(
-                res_status=status.HTTP_4,
-                res_status_description="invalid user or token",
+            self.__build_response(
+                res_status=status.HTTP_401_UNAUTHORIZED,
+                res_status_description="can't log out",
                 log_detail='there are still {} logged user depending to this admin; can\'t accomplish request'.format(record['COUNT_APPROVED_USERS_VL'])
             )
-
-        return self.__build_response(
-            res_status=status.HTTP_200_OK,
-            res_status_description="success",
-            log_detail='successfully logged out'
-        )
+        else:
+            self.__build_response(
+                res_status=status.HTTP_200_OK,
+                res_status_description="success",
+                log_detail='successfully logged out'
+            )
 
 
     def execute( self ):
@@ -241,20 +241,6 @@ class api_transaction_user_logout(api_transaction_base):
                 }
             )
             self.logged_out_devices = cur.fetchall()
-            if len(self.logged_out_devices) > 0:
-                for device in self.logged_out_devices:
-                    cur.execute(
-                        api_transaction_user_logout_sql_exec_log,
-                        {
-                            'LOG_TYPE_DS' : 'device logout',
-                            'LOG_TYPE_ACCESS_FL' : True,
-                            'LOG_SUCCESS_FL' : True,
-                            'LOG_WARNING_FL' : False,
-                            'LOG_SECURITY_FAULT_FL' : False,
-                            'LOG_DETAILS_DS' :"device '{}' logout success".format(device),
-                            'LOG_DATA' : self.dict_to_field(self.request),
-                        }
-                    )
         
         cur.execute(
             api_transaction_user_logout_sql_exec_close_user_session,
@@ -262,6 +248,24 @@ class api_transaction_user_logout(api_transaction_base):
                 'session_token' : self.request.session_token
             }
         )
+
+        self.request.session_token = "..."
+        if self.user_has_auth_devices and len(self.logged_out_devices) > 0:
+            for device in self.logged_out_devices:
+                cur.execute(
+                    api_transaction_user_logout_sql_exec_log,
+                    {
+                        'LOG_TYPE_DS' : 'device logout',
+                        'LOG_TYPE_ACCESS_FL' : True,
+                        'LOG_SUCCESS_FL' : True,
+                        'LOG_WARNING_FL' : False,
+                        'LOG_SECURITY_FAULT_FL' : False,
+                        'LOG_DETAILS_DS' :"device '{}' logout success".format(device),
+                        'LOG_DATA' : self.dict_to_field(dict(self.request)),
+                    }
+                )
+            self.response.logged_out_devices = self.logged_out_devices
+        
         cur.execute(
             api_transaction_user_logout_sql_exec_log,
             {
@@ -271,7 +275,7 @@ class api_transaction_user_logout(api_transaction_base):
                 'LOG_WARNING_FL' : False,
                 'LOG_SECURITY_FAULT_FL' : False,
                 'LOG_DETAILS_DS' :"user successfully logged out",
-                'LOG_DATA' : self.dict_to_field(self.request),
+                'LOG_DATA' : self.dict_to_field(dict(self.request)),
             }
         )
 
@@ -293,7 +297,7 @@ class api_transaction_user_logout(api_transaction_base):
                 'LOG_WARNING_FL' : False,
                 'LOG_SECURITY_FAULT_FL' : self.__log_unsecure_request,
                 'LOG_DETAILS_DS' : self.__log_detail_ds,
-                'LOG_DATA' : self.dict_to_field(self.request),
+                'LOG_DATA' : self.dict_to_field(dict(self.request)),
             }
         )
 
@@ -315,7 +319,8 @@ class api_transaction_user_logout(api_transaction_base):
         self.__log_error = ( res_status not in ( 
             status.HTTP_200_OK, 
             status.HTTP_202_ACCEPTED, 
-            status.HTTP_100_CONTINUE 
+            status.HTTP_100_CONTINUE,
+            status.HTTP_418_IM_A_TEAPOT,
             ) )
         self.__log_unsecure_request = unsecure_request
 

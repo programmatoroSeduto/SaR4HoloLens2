@@ -83,7 +83,8 @@ class api_user_login_request(api_base_request):
         pattern=user_id_pattern
     )
     access_key:str = Field(
-        description="the access key used for accessing the resource"
+        description="the access key used for accessing the resource",
+        pattern=".+"
     )
 
 class api_user_login_response(api_base_response):
@@ -102,11 +103,12 @@ class api_user_logout_request(api_base_request):
         pattern=user_id_pattern
     )
     session_token:str = Field(
-        description="the session token identifying the user session"
+        description="the session token identifying the user session",
+        pattern=".+"
     )
 
 class api_user_logout_response(api_base_response):
-    logged_out_devices:list['str'] = Field(
+    logged_out_devices:list[str] = Field(
         default=list(),
         description="When a user logs out, the server also releases all the devices associated with it"
     )
