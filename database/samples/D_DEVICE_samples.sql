@@ -228,3 +228,4 @@ VALUES
     false, true -- user write, dev write
 )
 ;
+SELECT * FROM sar.D_DEVICE;

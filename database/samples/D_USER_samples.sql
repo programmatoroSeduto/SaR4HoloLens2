@@ -26,7 +26,7 @@
     true, true, true, true -- r_user, r_dev, w_user, w_dev
 )
 */
-delete from sar.D_USER;
+DELETE FROM sar.D_USER;
 INSERT INTO sar.D_USER (
     USER_ID,
     USER_APPROVED_BY_ID,
@@ -160,7 +160,7 @@ INSERT INTO sar.D_USER (
 , (
     CONCAT('SARHL2_ID', '4243264423', '_USER' ),
     CONCAT('SARHL2_ID', '8849249249', '_USER' ), -- approver
-    'Affiano Toscano', -- name
+    'Lorenzo Terranova', -- name
     false, false, -- admin, external
     true, -- can have device
     false, true, false, true -- r_user, r_dev, w_user, w_dev
@@ -248,9 +248,10 @@ INSERT INTO sar.D_USER (
 , (
     CONCAT('SARHL2_ID', '9782446036', '_USER' ),
     CONCAT('SARHL2_ID', '8849249249', '_USER' ), -- approver
-    'Valentina Gallo', -- name
+    'Filiberto Esposito', -- name
     false, false, -- admin, external
     true, -- can have device
     false, true, false, false -- r_user, r_dev, w_user, w_dev
 )
 ;
+SELECT * FROM sar.D_USER;

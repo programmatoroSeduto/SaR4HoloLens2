@@ -8,8 +8,7 @@ RUN mkdir /app && \
     mkdir /app/samples
 
 COPY ./datamodel/setup_datamodel.sql /app/datamodel/setup_datamodel.sql
-COPY ./samples/D_USER_ACCESS_DATA_samples.sql /app/samples/D_USER_ACCESS_DATA_samples.sql
-COPY ./samples/D_USER_samples.sql /app/samples/D_USER_samples.sql
+COPY ./samples/* /app/samples
 
 ENV APP_SETUP_PATH=/app/datamodel
 ENV APP_SETUP_FILE=/app/datamodel/setup_datamodel.sql
