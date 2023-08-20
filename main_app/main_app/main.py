@@ -100,22 +100,22 @@ async def root(
     "/api",
     tags = [ metadata.api_tags.api_root ],
     response_model=api_models.api_base_response,
-    status_code = status.HTTP_200_OK
+    status_code = status.HTTP_418_IM_A_TEAPOT
 )
 async def api_root(
     request_body: Annotated[api_models.api_base_request, Body()] = api_models.api_base_request()
 ) -> api_models.api_base_response:
     ''' API Status
     
-    API Call used just to check if the API is online. 
+    No coffee for ya I'm a goddam teapot. 
     '''
     global config, env
     log.info_api( "/api", src=metadata.api_tags.api_root )
 
     return api_models.api_base_response(
         timestamp_received=request_body.timestamp,
-        status=status.HTTP_200_OK, 
-        status_detail="service is online"
+        status=status.HTTP_418_IM_A_TEAPOT, 
+        status_detail=""
         )
 
 

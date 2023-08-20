@@ -8,6 +8,10 @@ from typing import (
     Union,
 )
 
+user_id_pattern = "SARHL2_ID[0-9]{10}_USER"
+device_id_pattern = "SARHL2_ID[0-9]{10}_DEVC"
+refpos_id_pattern = "SARHL2_ID[0-9]{10}_REFP"
+
 
 
 ## ===== SUPPORT MODELS ===== ##
@@ -72,11 +76,11 @@ class api_base_response(BaseModel):
 class api_user_login_request(api_base_request):
     user_id:str = Field(
         description="the user that is requiring to access the service",
-        pattern="SARHL2_ID[0-9]{10}_USER"
+        pattern=user_id_pattern
     )
     approver_id:str = Field(
         description="the user which should approve the request (euqlas to user_id if admin access mode)",
-        pattern="SARHL2_ID[0-9]{10}_USER"
+        pattern=user_id_pattern
     )
     access_key:str = Field(
         description="the access key used for accessing the resource"
@@ -86,4 +90,23 @@ class api_user_login_response(api_base_response):
     session_token:str = Field(
         default="",
         description="It is a has code generated directly from the server. It must be attached to any following requests from the user."
+    )
+
+
+
+## ===== USER LOGOUT ===== ##
+
+class api_user_logout_request(api_base_request):
+    user_id:str = Field(
+        description="the user that is requiring to access the service",
+        pattern=user_id_pattern
+    )
+    session_token:str = Field(
+        description="the session token identifying the user session"
+    )
+
+class api_user_logout_response(api_base_response):
+    logged_out_devices:list['str'] = Field(
+        default=list(),
+        description="When a user logs out, the server also releases all the devices associated with it"
     )

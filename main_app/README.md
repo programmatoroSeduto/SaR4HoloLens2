@@ -77,7 +77,7 @@ api_<...>_sql_exec_<...> = """
 
 
 
-class api_transaction_user_login(api_transaction_base):
+class api_transaction_<topic>_<operation>(api_transaction_base):
     ''' A app transaction. 
 
     Description of the transaction. 
@@ -89,7 +89,7 @@ class api_transaction_user_login(api_transaction_base):
         '''
         super().__init__(env)
         
-        # request is got from the API
+        # request comes from the API
         self.request = request
         # response is built during check phase
         self.response = None

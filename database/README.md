@@ -21,6 +21,14 @@ docker volume rm <postgres volume storage>
 docker compose up ...
 ```
 
+also this works:
+
+```sh
+docker compose down ...
+docker volume prune --all
+docker compose up ...
+```
+
 samples cannot be loaded if init is not forced: Postgres will skip the initialization when a volume is found. 
 
 ---
