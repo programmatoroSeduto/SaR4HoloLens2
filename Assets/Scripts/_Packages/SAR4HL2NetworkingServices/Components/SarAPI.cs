@@ -71,6 +71,27 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
                 yield break;
             }
 
+            string requestURL = GetAPIUrl("/api");
+            yield return BSCOR_PerformRequestGet(requestURL, timeout);
+            
+            StaticLogger.Info("SarAPI", "from server:" + result, logLayer: 4);
+            StaticLogger.Info("SarAPI", "server returned code:" + resultCode, logLayer: 4);
+            api_base_response resultJson = JsonUtility.FromJson<api_base_response>(result);
+            StaticLogger.Info("SarAPI", "test json timestamp_received: " + resultJson.timestamp_received, logLayer: 4);
+            StaticLogger.Info("SarAPI", "test json timestamp_sent: " + resultJson.timestamp_sent, logLayer: 4);
+            StaticLogger.Info("SarAPI", "test json timestamp_received: " + resultJson.status, logLayer: 4);
+            StaticLogger.Info("SarAPI", "test json timestamp_sent: " + resultJson.status_detail, logLayer: 4);
+        }
+
+        private static string GetAPIUrl(string apiPath = "/")
+        {
+            return $"http://{ApiURL}:{ApiPort}{apiPath}";
+        }
+
+        private static IEnumerator BSCOR_PerformRequestGet(string requestURL, int timeout = -1)
+        {
+            yield return null;
+
             inProgress = true;
             completed = false;
             success = false;
@@ -80,13 +101,13 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             www.downloadHandler = new DownloadHandlerBuffer();
 
             www.method = UnityWebRequest.kHttpVerbGET;
-            www.url = GetAPIUrl("/api"); ;
+            www.url = requestURL;
             if (timeout > 0)
                 www.timeout = timeout;
 
             yield return www.SendWebRequest();
             resultCode = www.responseCode;
-            
+
             switch (www.result)
             {
                 case UnityWebRequest.Result.ConnectionError:
@@ -102,7 +123,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
                     www = null;
                     yield break;
                 case UnityWebRequest.Result.ProtocolError:
-                    if(resultCode != 418)
+                    if (resultCode != 418)
                     {
                         StaticLogger.Err("SarAPI", "ProtocolError: " + www.error);
                         completed = true;
@@ -121,17 +142,11 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             }
 
             result = www.downloadHandler.text;
-            StaticLogger.Info("SarAPI", "from server:" + result, logLayer: 4);
-            StaticLogger.Info("SarAPI", "server returned code:" + resultCode, logLayer: 4);
+
             success = true;
             completed = true;
             inProgress = false;
             www = null;
-        }
-
-        private static string GetAPIUrl(string apiPath = "/")
-        {
-            return $"http://{ApiURL}:{ApiPort}{apiPath}";
         }
     }
 }
