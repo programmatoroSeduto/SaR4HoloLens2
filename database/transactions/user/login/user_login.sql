@@ -341,11 +341,11 @@ INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_DATA
 )
 VALUES (
-    'login success', true, true, false, false, false,
+    'user login', true, true, false, false, false,
     'api',
     'user successfully logged in',
-    '...the JSON packet request...'
-)
+    %(LOG_DATA)s
+);
 
 COMMIT;
 
@@ -375,10 +375,10 @@ INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_DATA
 )
 VALUES (
-    'login fail', true, false, false, false, false|true,
+    'user logout', true, false, false, false, false|true,
     'api',
-    '...error message...',
-    '...the JSON packet request...'
+    %(LOG_DETAILS_DS)s,
+    %(LOG_DATA)s
 )
 
 COMMIT;

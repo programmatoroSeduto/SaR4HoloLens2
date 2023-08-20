@@ -173,7 +173,7 @@ CREATE TABLE sar.D_USER (
     , ANNOTATIONS_DS VARCHAR(500) 
         DEFAULT NULL
     
-    , PRIMARY KEY ( USER_ID )
+    , PRIMARY KEY ( USER_ID, CREATED_DT, DELETED_FL )
 );
 COMMENT 
     ON COLUMN sar.D_USER.USER_APPROVED_BY_ID 
@@ -329,9 +329,9 @@ is holding the resource.
 
 devices follow this naming convention:
 
-- SARHL2_ID00000000_DEV
-- prefix: SARHL2
-- ID followed by a 8-digit identifier
+- SARHL2_ID0000000000_DEVC
+- prefix: SARHL2_
+- ID followed by a 10-digit identifier
 - postfix: _DEV
 
 ### Device Capabilities
@@ -430,9 +430,24 @@ CREATE TABLE sar.D_DEVICE (
         DEFAULT CURRENT_TIMESTAMP
     , DELETED_FL BOOLEAN NOT NULL
         DEFAULT false
+    , ANNOTATIONS_DS VARCHAR(500) 
+        DEFAULT NULL
 
-    , PRIMARY KEY ( DEVICE_ID )
+    , PRIMARY KEY ( DEVICE_ID, CREATED_DT, DELETED_FL )
 );
+COMMENT 
+    ON COLUMN sar.D_DEVICE.CAP_EXCHANGE_SEND_FL 
+    IS 'The device has the capability to write some data to the DB (but not necessarly access to the DB)';
+COMMENT 
+    ON COLUMN sar.D_DEVICE.AUTH_UPDATE_DEVICE_FL 
+    IS 'The device has the authorization to write some data to the DB (this includes its self status)';
+COMMENT 
+    ON COLUMN sar.D_DEVICE.CAP_EXCHANGE_RECEIVE_FL 
+    IS 'The device has the capability to read data from the DB  (but not necessarly access to the DB)';
+COMMENT 
+    ON COLUMN sar.D_DEVICE.AUTH_ACCESS_DEVICE_FL 
+    IS 'The device has the authorization to read data from the DB (this includes its self status)';
+
 
 DROP SEQUENCE IF EXISTS sar.L_DEVICE_USER_SEQUENCE;
 CREATE SEQUENCE sar.L_DEVICE_USER_SEQUENCE
