@@ -103,6 +103,9 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         self.__log_detail_ds = ""
         self.__log_error:bool = False
         self.__log_unsecure_request = False
+
+        # transaction custom data
+        pass
     
 
     def check( self ): # inherited

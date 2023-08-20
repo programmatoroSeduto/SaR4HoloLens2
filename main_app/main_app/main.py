@@ -27,7 +27,6 @@ from api_logging.setup_log import setup_log
 from api_logging.log_layer import log_layer
 from api_logging.log_type import log_type
 from api_transactions.transaction_base import api_transaction_base
-from api_transactions.transaction_user_login import api_transaction_user_login
 
 
 
@@ -120,6 +119,7 @@ async def api_root(
 
 
 
+from api_transactions.transaction_user_login import api_transaction_user_login
 @api.post(
     "/api/user/login",
     tags=[ metadata.api_tags.api_user_login ],
@@ -136,6 +136,33 @@ async def api_user_login(
     log.info_api( "/api/user/login", src=metadata.api_tags.api_user_login )
 
     tr = api_transaction_user_login(env, request_body)
+    tr.check()
+    tr.execute()
+
+    return utils.set_response_timestamp(
+        request_body,
+        tr.response
+    )
+
+
+
+from api_transactions.transaction_user_logout import api_transaction_user_logout
+@api.post(
+    "/api/user/logout",
+    tags=[ metadata.api_tags.api_user_logout ],
+    response_model=api_models.api_user_logout_response,
+)
+async def api_user_login(
+    request_body: Annotated[api_models.api_user_logout_request, Body()]
+) -> api_models.api_user_logout_response:
+    ''' User Logout
+    
+    This request is used for releasing user
+    '''
+    global config, env
+    log.info_api( "/api/user/logout", src=metadata.api_tags.api_user_logout )
+
+    tr = api_transaction_user_logout(env, request_body)
     tr.check()
     tr.execute()
 
