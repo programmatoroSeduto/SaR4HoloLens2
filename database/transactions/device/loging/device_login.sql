@@ -62,7 +62,7 @@ END AS USER_EXISTS_FL
 END AS DEVICE_EXISTS_FL
 
 ,CASE
-    WHEN user_access.USER_ID IS NOT NULL THEN true
+    WHEN user_session.USER_ID IS NOT NULL THEN true
     ELSE false
 END AS USER_IS_LOGGED_ID_FL
 
@@ -200,8 +200,8 @@ check query structure (in order of use):
 USER_EXISTS_FL
 DEVICE_EXISTS_FL
 USER_IS_LOGGED_ID_FL
-DEVICE_IS_HOLDABLE_FL
 USER_CAN_HOLD_DEVICE_FL
+DEVICE_IS_HOLDABLE_FL
 USER_CAN_HOLD_GIVEN_DEVICE_FL
 DEVICE_CAN_WRITE_FL
 USER_DEVICE_AUTH_WRITE_FL
@@ -296,8 +296,6 @@ implicit into the check 'USER_IS_LOGGED_ID_FL'
 /* ====================================================== 
 
 ## SUCCESS -- TRANSACTION
-
-- ...
 
 ====================================================== */
 
