@@ -27,6 +27,7 @@ from api_logging.setup_log import setup_log
 from api_logging.log_layer import log_layer
 from api_logging.log_type import log_type
 from api_transactions.transaction_base import api_transaction_base
+import time
 
 
 
@@ -46,6 +47,9 @@ if log is None:
 log.info("trying to connect to the database ... ", src="main")
 db = interfaces.db_interface()
 try:
+    log.debug(f"waiting 10s ...", src="main")
+    time.sleep(10)
+    log.debug(f"waiting 10s ... OK", src="main")
     log.debug(f"Connecting to: \n\tDB Address: {db_access_data['host']}:{db_access_data['port']}\n\tDB name: {db_access_data['dbname']}", src="main")
     db.connect( db_access_data )
     log.info("trying to connect to the database ... OK", src="main")
