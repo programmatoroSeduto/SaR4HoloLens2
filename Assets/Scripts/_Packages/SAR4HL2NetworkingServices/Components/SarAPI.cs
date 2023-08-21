@@ -1,4 +1,6 @@
 using System;
+using System.Net.Http;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -11,29 +13,55 @@ using Packages.SAR4HL2NetworkingSettings.Utils;
 
 namespace Packages.SAR4HL2NetworkingSettings.Utils
 {
+    /// <summary>
+    /// This static class allows to communicate with the server. 
+    /// It is meant to be unique for each HoloLens2 client
+    /// </summary>
     public static class SarAPI
     {
+        // ===== PUBLIC ===== //
+
+        /// <summary>
+        /// The URL of the server
+        /// </summary>
         public static string ApiURL = "127.0.0.1";
+
+        /// <summary>
+        /// the Port Number of the server
+        /// </summary>
         public static int ApiPort = 5000;
 
+        /// <summary>
+        /// Use this to check if a request is already in action
+        /// </summary>
         public static bool InProgress
         {
             get => inProgress;
         }
         private static bool inProgress = false;
 
+        /// <summary>
+        /// Use this to check if the request has been completed.
+        /// NOTE WELL: check this before checking the 'success' variable
+        /// </summary>
         public static bool Completed
         {
             get => completed;
         }
         private static bool completed = true;
 
+        /// <summary>
+        /// Use this to check if the request completed successfully. 
+        /// </summary>
         public static bool Success
         {
             get => success;
         }
         private static bool success = true;
 
+        /// <summary>
+        /// the URL used by the API object to contact the server in the last request
+        /// </summary>
         public static string url
         {
             get
@@ -46,6 +74,9 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         }
         private static UnityWebRequest www = null;
 
+        /// <summary>
+        /// This field contains the data from the server obtained in the last request. 
+        /// </summary>
         public static string ResultFromServer
         {
             get
@@ -55,41 +86,401 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         }
         private static string result = "";
 
+        /// <summary>
+        /// This field contains the result code from the server obtained in the last request. 
+        /// </summary>
+
         public static int HTTPCode
         {
-            get => (int)resultCode;
+            get => resultCode;
         }
-        private static long resultCode = 200;
+        private static int resultCode = 200;
 
-        public static IEnumerator ServiceStatus(int timeout = -1)
+        /// <summary>
+        /// Flag used to check if a InternalServerError occurred for a request.
+        /// </summary>
+        public static bool InternalServerError
         {
-            yield return null;
+            get => internalServerError;
+        }
 
+
+
+        // ===== PUBLIC : API ADDRESSES ===== //
+
+        /// <summary>
+        /// path of the service status call. If the service is online, it returns 418. 
+        /// </summary>
+        public static readonly string ApiAddress_ServerStatus = "/api";
+
+        /// <summary>
+        /// User Login API address. 
+        /// </summary>
+        public static readonly string ApiAddress_UserLogin = "/api/user/login";
+
+        /// <summary>
+        /// User logout API address. 
+        /// </summary>
+        public static readonly string ApiAddress_UserLogout = "/api/user/logout";
+
+        /// <summary>
+        /// device Login API address. 
+        /// </summary>
+        public static readonly string ApiAddress_DeviceLogin = "/api/device/login";
+
+        /// <summary>
+        /// device logout API address. 
+        /// </summary>
+        public static readonly string ApiAddress_DeviceLogout = "/api/device/logout";
+
+
+
+        // ===== PRIVATE ===== //
+
+        // a special check to detect internal server error
+        private static bool internalServerError = false;
+        // service status
+        private static bool serviceStatusCheck = false;
+        // response from server for call service status
+        private static api_base_response serviceStatusResponsePack = null;
+        // user logged in?
+        private static bool userLoggedIn = false;
+        // user id
+        private static string userID = "";
+        // user session token
+        private static string userSessionToken = "";
+        // device logged in?
+        private static bool deviceLoggedIn = false;
+        // user login response
+        private static api_user_login_response userLoginResponsePack = null;
+        // device login response pack
+        private static api_device_login_response deviceLoginResponsePack = null;
+               
+
+
+        // ===== API CALLS : SERVICE STATUS ===== //
+
+        /// <summary>
+        /// It returns the status of the service. It is false by default if ApiCall_ServiceStatus() is not called. 
+        /// </summary>
+        public static bool ServiceStatus
+        {
+            get => serviceStatusCheck;
+        }
+
+        /// <summary>
+        /// It returns the class representation of the response from server for the ServiceStatus API call.
+        /// </summary>
+        public static api_base_response ServiceStatusResponse
+        {
+            get => serviceStatusResponsePack;
+        }
+
+        /// <summary>
+        /// Get the status of the service. Check the call ServiceStatus after called this coroutine. 
+        /// </summary>
+        /// <param name="timeout">the number of seconds to wait before considering the request failed. (default: -1, unused)</param>
+        /// <returns> coroutine </returns>
+        /// <example>
+        /// <code>
+        /// StartCoroutine(SarAPI.ApiCall_ServiceStatus(timeout: 10));
+        /// while(SarAPI.InProgress)
+        /// {
+        ///     // ... wait ...
+        /// }
+        /// if(!SarAPI.ServiceStatus)
+        /// {
+        ///     // ... Ops! Something bad happened during the service call ...
+        /// }
+        /// </code>
+        /// </example>
+        public static IEnumerator ApiCall_ServiceStatus(int timeout = -1)
+        {
+            string sourceLog = "SarAPI:ApiCall_ServiceStatus";
+            yield return null;
             if(inProgress)
             {
-                StaticLogger.Err("SarAPI", "can't handle more than one request per time; not allowed", logLayer: 1);
+                StaticLogger.Err(sourceLog, "can't handle more than one request per time; not allowed", logLayer: 1);
                 yield break;
             }
 
-            string requestURL = GetAPIUrl("/api");
-            yield return BSCOR_PerformRequestGet(requestURL, timeout);
-            
-            StaticLogger.Info("SarAPI", "from server:" + result, logLayer: 4);
-            StaticLogger.Info("SarAPI", "server returned code:" + resultCode, logLayer: 4);
-            api_base_response resultJson = JsonUtility.FromJson<api_base_response>(result);
-            StaticLogger.Info("SarAPI", "test json timestamp_received: " + resultJson.timestamp_received, logLayer: 4);
-            StaticLogger.Info("SarAPI", "test json timestamp_sent: " + resultJson.timestamp_sent, logLayer: 4);
-            StaticLogger.Info("SarAPI", "test json timestamp_received: " + resultJson.status, logLayer: 4);
-            StaticLogger.Info("SarAPI", "test json timestamp_sent: " + resultJson.status_detail, logLayer: 4);
+            StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
+            serviceStatusResponsePack = null;
+            inProgress = true;
+            completed = false;
+
+            string requestURL = GetAPIUrl(
+                ApiAddress_ServerStatus
+            );
+            yield return BSCOR_PerformRequestGet(
+                requestURL, 
+                timeout
+            );
+
+            serviceStatusResponsePack = JsonUtility.FromJson<api_base_response>(result);
+            serviceStatusCheck = (resultCode == 418);
+            if (resultCode == 418)
+                resultCode = 200;
+
+            inProgress = false;
+            completed = true;
+            StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
         }
+
+
+
+        // ===== API CALLS : USER LOGIN LOGOUT ===== //
+
+        /// <summary>
+        /// Either the user login succeeded or not. Obtaining true for this GET is required for the next steps. 
+        /// </summary>
+        public static bool UserLoggedIn
+        {
+            get => userLoggedIn;
+        }
+
+        /// <summary>
+        /// user login call. 
+        /// </summary>
+        /// <param name="userID">the user ID code of the user wearing hololens2 now</param>
+        /// <param name="userAccessKey">the access key of the user wearing hololens2 now</param>
+        /// <param name="timeout">the number of seconds to wait before considering the request failed. (default: -1, unused)</param>
+        /// <returns>coroutine</returns>
+        /// <remarks>The API call will fail if the server is not online!</remarks>
+        /// <example>
+        /// <code>
+        /// 
+        /// // check the service status first!
+        /// yield StartCoroutine(SarAPI.ApiCall_ServiceStatus(timeout: 10));
+        /// if(!SarAPI.ServiceStatus)
+        ///     yield break; // server is not online
+        /// 
+        /// // user login request
+        /// string userID = "SARHL2_ID..._USER"; // from settings
+        /// string userAccessKey = "..."; // from settings
+        /// yield StartCoroutine(SarAPI.ApiCall_UserLogin(userID, userAccessKey, timeout:10));
+        /// if(!SarAPI.UserLoggiedIn)
+        ///     yield break; // authentication failed, check UserLoginResponse pack from server
+        /// 
+        /// // ... the next step is to handle the device login request ...
+        /// 
+        /// </code>
+        /// </example>
+        public static IEnumerator ApiCall_UserLogin(string userID = "", string userAccessKey = "", int timeout = -1, bool forceReLogin = false)
+        {
+            string sourceLog = "SarAPI:ApiCall_UserLogin";
+            yield return null;
+            if(!forceReLogin && userLoggedIn && userSessionToken != "")
+            {
+                StaticLogger.Info(sourceLog,
+                    "Trying to login again; user already logged in", logLayer: 2);
+                yield break;
+            }
+            else if(forceReLogin)
+            {
+                StaticLogger.Info(sourceLog,
+                    "forceReLogin option: repeating login", logLayer: 2);
+            }
+            if (inProgress)
+            {
+                StaticLogger.Err(sourceLog, 
+                    "can't handle more than one request per time; not allowed", logLayer: 1);
+                yield break;
+            }
+            else if (!SarAPI.ServiceStatus)
+            {
+                StaticLogger.Err(sourceLog,
+                    "rying to call the server, but the server seems not online", logLayer: 0);
+                StaticLogger.Info(sourceLog,
+                    "Did you check the service status before calling the API?", logLayer: 1);
+                yield break;
+            }
+
+            StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
+            userLoginResponsePack = null;
+            userID = "";
+            userSessionToken = "";
+            inProgress = true;
+            completed = false;
+
+            string requestURL = GetAPIUrl(
+                ApiAddress_UserLogin
+            );
+            api_user_login_request payload = new api_user_login_request();
+            payload.user_id = userID;
+            payload.access_key = userAccessKey;
+
+            yield return BSCOR_PerformRequestPost(
+                requestURL,
+                JsonUtility.ToJson(payload),
+                timeout
+            );
+
+            userLoginResponsePack = JsonUtility.FromJson<api_user_login_response>(result);
+            StaticLogger.Info(sourceLog, $"From Server: {result}", logLayer: 3);
+
+            if(resultCode == 200)
+            {
+                userLoggedIn = true;
+                userID = payload.user_id;
+                userSessionToken = userLoginResponsePack.session_token;
+                StaticLogger.Info(sourceLog, $"OK User Logged in", logLayer: 0);
+            }
+
+            inProgress = false;
+            completed = true;
+            StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
+        }
+
+        /// <summary>
+        /// "Logout" is not a coroutine as the other methods, since to be sure that the device session
+        /// is correctly closed, the request can't be handled on many frames. This method can be used also
+        /// in the OnDestroy methods: that's the main reason why his function is not a coroutine but a oneshot
+        /// call. 
+        /// </summary>
+        /// <remarks>This call also releases the device, since it is associated to the user.</remarks>
+        /// <returns> request success or not </returns>
+        public static bool ApiCall_UserLogout()
+        {
+            string sourceLog = "SarAPI:ApiCall_UserLogout";
+            if(!userLoggedIn || userID == "" || userSessionToken == "")
+            {
+                StaticLogger.Warn(sourceLog,
+                    "Unable to log out: user not logged in", logLayer: 1);
+                return false;
+            }
+
+            StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
+            inProgress = true;
+            completed = false;
+            success = false;
+
+            string logoutUrl = GetAPIUrl(SarAPI.ApiAddress_UserLogout);
+            api_user_logout_request classPayload = new api_user_logout_request();
+            classPayload.user_id = userID;
+            classPayload.session_token = userSessionToken;
+            string jsonPayload = JsonUtility.ToJson(classPayload);
+
+            string textResponse = "";
+            int responseCode = 200;
+
+            // ===== UNITY ONLY??? ===== //
+            HttpClient cl = new HttpClient();
+            StringContent httpPayload = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage res = cl.PostAsync(logoutUrl, httpPayload).GetAwaiter().GetResult();
+            textResponse = res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            responseCode = int.Parse(res.StatusCode.ToString());
+            // ===== UNITY ONLY??? ===== //
+
+            if (!handleRequestResult(responseCode, "POST", url, sourceLog))
+            {
+                StaticLogger.Err(sourceLog, "Cannot log out");
+                StaticLogger.Info(sourceLog, $"server returned pack: {textResponse} with code {responseCode}");
+                return false;
+            }
+            else
+                result = textResponse;
+
+            userID = "";
+            userSessionToken = "";
+            userLoggedIn = false;
+
+            inProgress = false;
+            completed = true;
+            success = true;
+            StaticLogger.Info(sourceLog, "CLOSING REQUEST - logout success", logLayer: 2);
+            return true;
+        }
+
+
+
+        // ===== API CALLS : DEVICE LOGIN ===== //
+
+        public static IEnumerator ApiCall_DeviceLogin(string deviceID = "", int timeout = -1)
+        {
+            string sourceLog = "SarAPI:ApiCall_DeviceLogin";
+            yield return null;
+
+            if(deviceLoggedIn)
+            {
+                StaticLogger.Info(sourceLog,
+                    "already logged in", logLayer: 2);
+            }
+
+            if (inProgress)
+            {
+                StaticLogger.Err(sourceLog,
+                    "can't handle more than one request per time; not allowed", logLayer: 1);
+                yield break;
+            }
+            else if (!userLoggedIn || userSessionToken == "")
+            {
+                StaticLogger.Err(sourceLog,
+                    "Cannot register the device: missing login");
+                yield break;
+            }
+            else if (!SarAPI.ServiceStatus)
+            {
+                StaticLogger.Err(sourceLog,
+                    "rying to call the server, but the server seems not online", logLayer: 0);
+                StaticLogger.Info(sourceLog,
+                    "Did you check the service status before calling the API?", logLayer: 1);
+                yield break;
+            }
+
+            StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
+            deviceLoginResponsePack = null;
+            userID = "";
+            userSessionToken = "";
+            inProgress = true;
+            completed = false;
+
+            string requestURL = GetAPIUrl(
+                ApiAddress_UserLogin
+            );
+            api_device_login_request payload = new api_device_login_request();
+            payload.user_id = userID;
+            payload.device_id = deviceID;
+            payload.session_token = userSessionToken;
+
+            yield return BSCOR_PerformRequestPost(
+                requestURL,
+                JsonUtility.ToJson(payload),
+                timeout
+            );
+
+            deviceLoginResponsePack = JsonUtility.FromJson<api_device_login_response>(result);
+            StaticLogger.Info(sourceLog, $"From Server: {result}", logLayer: 3);
+
+            if (resultCode == 200)
+            {
+                deviceLoggedIn = true;
+                StaticLogger.Info(sourceLog, $"OK User Logged in", logLayer: 0);
+            }
+
+            inProgress = false;
+            completed = true;
+            StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
+        }
+
+
+
+        // ===== UTILITY URL BUILDER ===== //
+
 
         private static string GetAPIUrl(string apiPath = "/")
         {
             return $"http://{ApiURL}:{ApiPort}{apiPath}";
         }
 
+
+
+        // ===== UTILITY REQUEST EXECUTION ===== //
+
         private static IEnumerator BSCOR_PerformRequestGet(string requestURL, int timeout = -1)
         {
+            string sourceLog = $"SarAPI:BSCOR_PerformRequestGet:{requestURL}";
             yield return null;
 
             inProgress = true;
@@ -106,47 +497,114 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
                 www.timeout = timeout;
 
             yield return www.SendWebRequest();
-            resultCode = www.responseCode;
+            resultCode = (int) www.responseCode;
 
-            switch (www.result)
+            if (!handleRequestResult(www, www.result, sourceLog))
+                yield break;
+
+            result = www.downloadHandler.text;
+            
+            inProgress = false;
+            www = null;
+        }
+
+        private static IEnumerator BSCOR_PerformRequestPost(string requestURL, string payload, int timeout = -1)
+        {
+            string sourceLog = $"SarAPI:BSCOR_PerformRequestPost:{requestURL}";
+            yield return null;
+
+            inProgress = true;
+            completed = false;
+            success = false;
+            result = "";
+
+            www = UnityWebRequest.Post(requestURL, payload);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            if (timeout > 0)
+                www.timeout = timeout;
+
+            yield return www.SendWebRequest();
+
+            if (!handleRequestResult(www, www.result, sourceLog))
+                yield break;
+            else
+                result = www.downloadHandler.text;
+
+            inProgress = false;
+            www = null;
+        }
+
+        private static bool handleRequestResult(UnityWebRequest requestHandle, UnityWebRequest.Result result, string sourceLog)
+        {
+            bool reqSuccess = false;
+            resultCode = (int) requestHandle.responseCode;
+
+            switch (result)
             {
                 case UnityWebRequest.Result.ConnectionError:
-                    StaticLogger.Err("SarAPI", "ConnectionError: " + www.error);
-                    completed = true;
+                    StaticLogger.Warn(sourceLog, "ConnectionError: " + www.error, logLayer: 1);
                     inProgress = false;
                     www = null;
-                    yield break;
+                    break;
                 case UnityWebRequest.Result.DataProcessingError:
-                    StaticLogger.Err("SarAPI", "DataProcessingError: " + www.error);
-                    completed = true;
+                    StaticLogger.Warn(sourceLog, "DataProcessingError: " + www.error, logLayer: 1);
                     inProgress = false;
                     www = null;
-                    yield break;
+                    break;
                 case UnityWebRequest.Result.ProtocolError:
                     if (resultCode != 418)
                     {
-                        StaticLogger.Err("SarAPI", "ProtocolError: " + www.error);
-                        completed = true;
+                        StaticLogger.Warn(sourceLog, "ProtocolError: " + www.error, logLayer: 1);
                         inProgress = false;
                         www = null;
-                        yield break;
+                        break;
                     }
                     else
                     {
-                        StaticLogger.Info("SarAPI", "UnityWebRequest.Result.Success (I'm a Teapot)", logLayer: 2);
+                        StaticLogger.Info(sourceLog, "UnityWebRequest.Result.Success (I'm a Teapot)", logLayer: 2);
+                        reqSuccess = true;
+                        break;
                     }
-                    break;
                 case UnityWebRequest.Result.Success:
-                    StaticLogger.Info("SarAPI", "UnityWebRequest.Result.Success", logLayer: 2);
+                    StaticLogger.Info(sourceLog, "UnityWebRequest.Result.Success", logLayer: 2);
+                    reqSuccess = true;
                     break;
             }
 
-            result = www.downloadHandler.text;
+            internalServerError = (requestHandle.responseCode == 500);
+            if (internalServerError)
+            {
+                StaticLogger.Err(sourceLog, $"Internal Server Error for '{requestHandle.method}' request '{requestHandle.url}'");
+            }
 
-            success = true;
-            completed = true;
-            inProgress = false;
-            www = null;
+            success = reqSuccess;
+            return reqSuccess;
+        }
+
+        private static bool handleRequestResult(int httpCode, string httpMethod, string httpUrl, string sourceLog)
+        {
+            bool reqSuccess = false;
+            resultCode = httpCode;
+
+            if(httpCode != 200 && httpCode != 202 && httpCode != 418)
+            { 
+                StaticLogger.Warn(sourceLog, $"Request error! Server returned code {httpCode}", logLayer: 1);
+                inProgress = false;
+            }
+            else
+            {
+                StaticLogger.Info(sourceLog, $"Request Success: server returned status code {httpCode}", logLayer: 2);
+                reqSuccess = true;
+            }
+
+            internalServerError = (resultCode == 500);
+            if (internalServerError)
+            {
+                StaticLogger.Err(sourceLog, $"Internal Server Error for '{httpMethod}' request '{httpUrl}'");
+            }
+
+            success = reqSuccess;
+            return reqSuccess;
         }
     }
 }

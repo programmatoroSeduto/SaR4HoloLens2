@@ -1,5 +1,5 @@
 
-// #define WINDOWS_UWP
+//define WINDOWS_UWP
 
 using System;
 using System.IO;
@@ -233,7 +233,7 @@ namespace Packages.DiskStorageServices.Components
                 while (true)
                 {
                     BSTASK_StorageOutputBackground();
-                    Task.Delay(1000);
+                    Task.Delay(100);
                 }
             });
 #endif
@@ -242,18 +242,23 @@ namespace Packages.DiskStorageServices.Components
         private void BSTASK_StorageOutputBackground()
         {
 #if WINDOWS_UWP
-            while (qlines.Count > 0)
-                lock (MUTEX_qlines)
-                    FileIO.AppendTextAsync(fil, (string)qlines.Dequeue()).AsTask().GetAwaiter().GetResult();
-#else
-            /*
-            while (qlines.Count > 0)
-                lock (MUTEX_qlines)
+            if (qlines.Count > 0)
+            {
+                IRandomAccessStream stream = fil.OpenAsync(FileAccessMode.ReadWrite).AsTask<IRandomAccessStream>().Result;
+                IOutputStream outputStream = stream.GetOutputStreamAt(0);
+                DataWriter wr = new DataWriter(outputStream);
+                while (qlines.Count > 0)
                 {
-                    StorageFile.Write((string)qlines.Dequeue());
-                    StorageFile.Flush();
+                    lock (MUTEX_qlines)
+                    {
+                        wr.WriteString((string)qlines.Dequeue());
+                        _ = wr.FlushAsync().AsTask().Result;
+                    }
                 }
-            */
+                wr.Dispose();
+                outputStream.Dispose();
+                stream.Dispose();
+            }
 #endif
         }
     }
