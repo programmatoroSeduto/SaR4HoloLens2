@@ -21,12 +21,11 @@ EXPOSE 5000
 
 WORKDIR /app/src/main_app
 
-RUN /bin/bash -c '[[ -z "$UVICORN_WEB_CONCURRENCY" ]] && export WEB_CONCURRENCY=10'
-RUN /bin/bash -c '[[ -z "$UVICORN_CMD_OPTIONS" ]] && export UVICORN_CMD_OPTIONS= '
-
-RUN /bin/bash -c '[[ -z "$APP_DEBUG_MODE" ]] && export APP_DEBUG_MODE=false'
-RUN /bin/bash -c '[[ -z "$APP_LOG_PATH" ]] && export APP_LOG_PATH=/app/logs/main_app'
-RUN /bin/bash -c '[[ -z "$APP_LOG_NAME" ]] && export APP_LOG_NAME=main_app'
-RUN /bin/bash -c '[[ -z "$APP_LOG_LAYER" ]] && export APP_LOG_LAYER=main_app'
+ENV UVICORN_WEB_CONCURRENCY=10
+ENV UVICORN_CMD_OPTIONS= 
+ENV APP_DEBUG_MODE=false
+ENV APP_LOG_PATH=/app/logs/main_app
+ENV APP_LOG_NAME=main_app
+ENV APP_LOG_LAYER=9999
 
 CMD uvicorn main_app.main:api --host 0.0.0.0 --port 5000 ${UVICORN_CMD_OPTIONS}
