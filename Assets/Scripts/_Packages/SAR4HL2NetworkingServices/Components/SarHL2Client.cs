@@ -28,6 +28,8 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
         [Header("Login Settings")]
         [Tooltip("User ID")]
         public string UserId = "SARHL2_ID0000000000_USER";
+        [Tooltip("User Approver ID")]
+        public string UserApproverID = "SARHL2_ID0000000000_USER";
         [Tooltip("Device ID")]
         public string DeviceId = "SARHL2_ID0000000000_DEVC";
         [Tooltip("User Access Key")]
@@ -52,6 +54,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
 
         private void Start()
         {
+            StaticLogger.CurrentLogLayer = 9999;
             if (ConnectOnStart)
                 InitConnection();
         }
@@ -108,7 +111,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
 
             // user login
             StaticLogger.Info(sourceLog, "Trying to login user ...", logLayer: 2);
-            yield return SarAPI.ApiCall_UserLogin(UserId, UserAccessKey, ConnectionTimeout);
+            yield return SarAPI.ApiCall_UserLogin(UserId, UserApproverID, UserAccessKey, ConnectionTimeout);
             if(!SarAPI.UserLoggedIn)
             {
                 StaticLogger.Err(sourceLog, "LOGIN REQUEST REFUSED");
@@ -122,7 +125,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
             // device login
             StaticLogger.Info(sourceLog, "Trying to get device resource ...", logLayer: 2);
             yield return SarAPI.ApiCall_DeviceLogin(DeviceId, ConnectionTimeout);
-            if (!SarAPI.UserLoggedIn)
+            if (!SarAPI.DeviceLoggedIn)
             {
                 StaticLogger.Err(sourceLog, "DEVICE REGISTRATION REQUEST REFUSED");
                 runningConnection = false;

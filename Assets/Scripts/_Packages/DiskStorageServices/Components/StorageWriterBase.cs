@@ -233,7 +233,7 @@ namespace Packages.DiskStorageServices.Components
                 while (true)
                 {
                     BSTASK_StorageOutputBackground();
-                    Task.Delay(100);
+                    // Task.Delay(100);
                 }
             });
 #endif

@@ -266,7 +266,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         /// 
         /// </code>
         /// </example>
-        public static IEnumerator ApiCall_UserLogin(string userID = "", string userAccessKey = "", int timeout = -1, bool forceReLogin = false)
+        public static IEnumerator ApiCall_UserLogin(string userID, string userApproverID, string userAccessKey, int timeout = -1, bool forceReLogin = false)
         {
             string sourceLog = "SarAPI:ApiCall_UserLogin";
             yield return null;
@@ -297,9 +297,8 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             }
 
             StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
-            userLoginResponsePack = null;
-            userID = "";
-            userSessionToken = "";
+            SarAPI.userLoginResponsePack = null;
+            SarAPI.userSessionToken = "";
             inProgress = true;
             completed = false;
 
@@ -308,6 +307,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             );
             api_user_login_request payload = new api_user_login_request();
             payload.user_id = userID;
+            payload.approver_id = userApproverID;
             payload.access_key = userAccessKey;
 
             yield return BSCOR_PerformRequestPost(
@@ -317,13 +317,13 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             );
 
             userLoginResponsePack = JsonUtility.FromJson<api_user_login_response>(result);
-            StaticLogger.Info(sourceLog, $"From Server: {result}", logLayer: 3);
+            
 
             if(resultCode == 200)
             {
                 userLoggedIn = true;
-                userID = payload.user_id;
-                userSessionToken = userLoginResponsePack.session_token;
+                SarAPI.userID = payload.user_id;
+                SarAPI.userSessionToken = userLoginResponsePack.session_token;
                 StaticLogger.Info(sourceLog, $"OK User Logged in", logLayer: 0);
             }
 
@@ -357,8 +357,8 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
             string logoutUrl = GetAPIUrl(SarAPI.ApiAddress_UserLogout);
             api_user_logout_request classPayload = new api_user_logout_request();
-            classPayload.user_id = userID;
-            classPayload.session_token = userSessionToken;
+            classPayload.user_id = SarAPI.userID;
+            classPayload.session_token = SarAPI.userSessionToken;
             string jsonPayload = JsonUtility.ToJson(classPayload);
 
             string textResponse = "";
@@ -370,17 +370,16 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
             HttpResponseMessage res = cl.PostAsync(logoutUrl, httpPayload).GetAwaiter().GetResult();
             textResponse = res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            responseCode = int.Parse(res.StatusCode.ToString());
+            responseCode = (int) res.StatusCode;
             // ===== UNITY ONLY??? ===== //
 
+            result = textResponse;
             if (!handleRequestResult(responseCode, "POST", url, sourceLog))
             {
+                StaticLogger.Info(sourceLog, $"server returned pack: \n\t{textResponse} \n\twith code {responseCode}");
                 StaticLogger.Err(sourceLog, "Cannot log out");
-                StaticLogger.Info(sourceLog, $"server returned pack: {textResponse} with code {responseCode}");
                 return false;
             }
-            else
-                result = textResponse;
 
             userID = "";
             userSessionToken = "";
@@ -396,6 +395,11 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
 
         // ===== API CALLS : DEVICE LOGIN ===== //
+
+        public static bool DeviceLoggedIn
+        {
+            get => deviceLoggedIn;
+        }
 
         public static IEnumerator ApiCall_DeviceLogin(string deviceID = "", int timeout = -1)
         {
@@ -422,22 +426,20 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             }
             else if (!SarAPI.ServiceStatus)
             {
-                StaticLogger.Err(sourceLog,
-                    "rying to call the server, but the server seems not online", logLayer: 0);
                 StaticLogger.Info(sourceLog,
                     "Did you check the service status before calling the API?", logLayer: 1);
+                StaticLogger.Err(sourceLog,
+                    "rying to call the server, but the server seems not online", logLayer: 0);
                 yield break;
             }
 
             StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
             deviceLoginResponsePack = null;
-            userID = "";
-            userSessionToken = "";
             inProgress = true;
             completed = false;
 
             string requestURL = GetAPIUrl(
-                ApiAddress_UserLogin
+                ApiAddress_DeviceLogin
             );
             api_device_login_request payload = new api_device_login_request();
             payload.user_id = userID;
@@ -446,17 +448,16 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
             yield return BSCOR_PerformRequestPost(
                 requestURL,
-                JsonUtility.ToJson(payload),
+                JsonUtility.ToJson(payload, true),
                 timeout
             );
 
             deviceLoginResponsePack = JsonUtility.FromJson<api_device_login_response>(result);
-            StaticLogger.Info(sourceLog, $"From Server: {result}", logLayer: 3);
 
             if (resultCode == 200)
             {
                 deviceLoggedIn = true;
-                StaticLogger.Info(sourceLog, $"OK User Logged in", logLayer: 0);
+                StaticLogger.Info(sourceLog, $"OK Device Logged in", logLayer: 0);
             }
 
             inProgress = false;
@@ -517,18 +518,22 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             completed = false;
             success = false;
             result = "";
-
-            www = UnityWebRequest.Post(requestURL, payload);
+            
+            www = new UnityWebRequest(requestURL);
+            www.method = UnityWebRequest.kHttpVerbPOST;
+            www.uploadHandler = new UploadHandlerRaw(Encoding.ASCII.GetBytes(payload));
             www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "application/json");
             if (timeout > 0)
                 www.timeout = timeout;
 
+            StaticLogger.Info(sourceLog, $"Sending to server: \n\tJSON: {payload}\n\t BINARY: {www.uploadedBytes}", logLayer: 4);
             yield return www.SendWebRequest();
+            StaticLogger.Info(sourceLog, $"Response from server: \n\tTEXT: {www.downloadHandler.text}", logLayer: 4);
 
+            result = www.downloadHandler.text;
             if (!handleRequestResult(www, www.result, sourceLog))
                 yield break;
-            else
-                result = www.downloadHandler.text;
 
             inProgress = false;
             www = null;
