@@ -1,5 +1,4 @@
-
-//define WINDOWS_UWP
+// #define WINDOWS_UWP
 
 using System;
 using System.IO;
@@ -106,7 +105,7 @@ namespace Packages.DiskStorageServices.Components
         protected virtual void Update()
         {
 #if UNITY_EDITOR
-            if(qlines.Count > 0)
+            if (qlines.Count > 0)
             {
                 while (qlines.Count > 0)
                 {
@@ -176,7 +175,7 @@ namespace Packages.DiskStorageServices.Components
         private IEnumerator BSCOR_NewFile(string fileName, string fileFormat = "txt")
         {
             yield return null;
-            
+
             DateTime ts = DateTime.Now;
             if (UseTimestamp)
                 fname = $"{fileName}_{ts.Year:0000}{ts.Month:00}{ts.Day:00}_{ts.Hour:00}{ts.Minute:00}{ts.Second:00}.{fileFormat}";
@@ -233,7 +232,7 @@ namespace Packages.DiskStorageServices.Components
                 while (true)
                 {
                     BSTASK_StorageOutputBackground();
-                    // Task.Delay(100);
+                    Task.Delay(1000);
                 }
             });
 #endif
@@ -242,25 +241,19 @@ namespace Packages.DiskStorageServices.Components
         private void BSTASK_StorageOutputBackground()
         {
 #if WINDOWS_UWP
-            if (qlines.Count > 0)
-            {
-                IRandomAccessStream stream = fil.OpenAsync(FileAccessMode.ReadWrite).AsTask<IRandomAccessStream>().Result;
-                IOutputStream outputStream = stream.GetOutputStreamAt(0);
-                DataWriter wr = new DataWriter(outputStream);
-                while (qlines.Count > 0)
+            while (qlines.Count > 0)
+                lock (MUTEX_qlines)
+                    FileIO.AppendTextAsync(fil, (string)qlines.Dequeue()).AsTask().GetAwaiter().GetResult();
+#else
+            /*
+            while (qlines.Count > 0)
+                lock (MUTEX_qlines)
                 {
-                    lock (MUTEX_qlines)
-                    {
-                        wr.WriteString((string)qlines.Dequeue());
-                        _ = wr.FlushAsync().AsTask().Result;
-                    }
+                    StorageFile.Write((string)qlines.Dequeue());
+                    StorageFile.Flush();
                 }
-                wr.Dispose();
-                outputStream.Dispose();
-                stream.Dispose();
-            }
+            */
 #endif
         }
     }
 }
-

@@ -100,3 +100,17 @@ MonoBehaviour:
       id: 0
       description: Select
       axisConstraint: 2
+  - localizationKey: 
+    keyword: Server Login
+    keyCode: 108
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2
+  - localizationKey: 
+    keyword: Server Logout
+    keyCode: 107
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2

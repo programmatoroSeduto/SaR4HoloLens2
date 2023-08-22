@@ -16,11 +16,19 @@ namespace Project.Scripts.Utils
 
 
 
+        // ===== LOG OPTIONS ===== //
+
+        public static bool PrintInfo = true;
+        public static bool PrintWarn = true;
+        public static bool PrintErr = true;
+
+
+
         // ===== LOG INFO ===== //
 
         public static void Info(GameObject refObj, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintInfo) return;
 
             if((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.Log(WrapMessage(refObj, text));
@@ -29,7 +37,7 @@ namespace Project.Scripts.Utils
         }
         public static void Info(MonoBehaviour refObj, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintInfo) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.Log(WrapMessage(refObj, text));
@@ -38,7 +46,7 @@ namespace Project.Scripts.Utils
         }
         public static void Info(string sourcext, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintInfo) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.Log(WrapMessage(sourcext, text));
@@ -52,7 +60,7 @@ namespace Project.Scripts.Utils
 
         public static void Warn(GameObject refObj, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintWarn) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogWarning(WrapMessage(refObj, text));
@@ -61,7 +69,7 @@ namespace Project.Scripts.Utils
         }
         public static void Warn(MonoBehaviour refObj, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintWarn) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogWarning(WrapMessage(refObj, text));
@@ -70,7 +78,7 @@ namespace Project.Scripts.Utils
         }
         public static void Warn(string sourcext, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintWarn) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogWarning(WrapMessage(sourcext, text));
@@ -84,7 +92,7 @@ namespace Project.Scripts.Utils
 
         public static void Err(GameObject refObj, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintErr) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogError(WrapMessage(refObj, text));
@@ -93,7 +101,7 @@ namespace Project.Scripts.Utils
         }
         public static void Err(MonoBehaviour refObj, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintErr) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogError(WrapMessage(refObj, text));
@@ -102,7 +110,7 @@ namespace Project.Scripts.Utils
         }
         public static void Err(string sourcext, string text, bool pause = false, int logLayer = 0, bool SuppressLog = true)
         {
-            if (logLayer > StaticLogger.CurrentLogLayer) return;
+            if (logLayer > StaticLogger.CurrentLogLayer || !PrintErr) return;
 
             if ((SuppressLog && !SuppressedLogs.Contains(text)) || !SuppressLog)
                 Debug.LogError(WrapMessage(sourcext, text));

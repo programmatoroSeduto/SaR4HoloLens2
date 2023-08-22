@@ -7,6 +7,9 @@ using Project.Scripts.Utils;
 using Packages.DiskStorageServices.Components;
 using Packages.PositionDatabase.Components;
 
+using Packages.SAR4HL2NetworkingSettings.Utils;
+using Packages.SAR4HL2NetworkingSettings.Components;
+
 namespace Project.Scripts.Components
 {
     public class AppSettings : MonoBehaviour
@@ -14,16 +17,20 @@ namespace Project.Scripts.Components
         // ===== GUI ===== //
 
         [Header("service settings")]
-        [Tooltip("OperatorUniversalUserID (8 digits)")]
-        public string OperatorUniversalUserID = "SARHL2_ID00000000_USER";
-        [Tooltip("OperatorUniversalDeviceID (8 digits)")]
-        public string OperatorUniversalDeviceID = "SARHL2_ID00000000_DEV";
+        [Tooltip("OperatorUniversalUserID (10 digits)")]
+        public string OperatorUniversalUserID = "SARHL2_ID8849249249_USER";
+        [Tooltip("The access key")]
+        public string UserAccessKey = "anoth3rBr3akabl3P0sswArd";
+        [Tooltip("Approver User ID (10 digits)")]
+        public string ApproverUserID = "SARHL2_ID8849249249_USER";
+        [Tooltip("OperatorUniversalDeviceID (10 digits)")]
+        public string OperatorUniversalDeviceID = "SARHL2_ID8651165355_DEVC";
 
         [Header("Startup Settings")]
         [Tooltip("Entry Point Component")]
         public EntryPoint EntryPointComponent = null;
         [Tooltip("Calibration Position")]
-        public string CalibrationPositionID = "SARHL2_ID00000000_REFPOS";
+        public string CalibrationPositionID = "SARHL2_ID90909091_REFPOS";
         [Tooltip("Startup mode")]
         public StartupModes StartupMode = StartupModes.PcDevelopment;
         [Tooltip("The component in charge to perform the calibration")]
@@ -36,10 +43,12 @@ namespace Project.Scripts.Components
 
         // server connection settings
         [Header("server connection settings")]
-        [Header("Server IP address")]
-        public string ServerIpAddress = "127.0.0.1";
-        [Header("Server IP Port number")]
-        public string ServerPortNo = "5000";
+        [Tooltip("Server IP address")]
+        public string SarServerURL = "http://131.175.204.169/sar/";
+        [Tooltip("Server GameObject Handle")]
+        public SarHL2Client SarServerComponent = null;
+        [Tooltip("Either to execute the connection on start or not (you can use the voice command in case)")]
+        public bool ConnectOnStart = true;
 
         // other settings
         [Header("other Settings")]
@@ -111,16 +120,6 @@ namespace Project.Scripts.Components
         private bool setEnvDone = false;
         // is the component running?
         private bool running = false;
-        // PC dev position ID
-        private readonly string pcDevPosID = "SARHL2_ID90909091_REFPOS";
-        // pc calibration position ID default
-        private readonly string pcDevCalibPosID = "SARHL2_ID06600660_REFPOS";
-        // device calibration pos ID
-        private readonly string deviceCalibPosID = "SARHL2_ID12700385_REFPOS";
-        // device without calibration pos ID
-        private readonly string deviceNoCalibPosID = "SARHL2_66660000_REFPOS";
-        // production refpos (is stands for "ask to the server pls")
-        private readonly string prodDevicePosID = "SARHL2_ID00000000_REFPOS";
 
 
 
@@ -132,25 +131,16 @@ namespace Project.Scripts.Components
             running = true;
             StaticLogger.Info(this, "Starting application ... ");
 
-#if RUNNING_ON_DEVICE
-            switch (StartupMode)
+#if WINDOWS_UWP
+            if( 
+                StartupMode != StartupModes.DeviceDevelopment || 
+                StartupMode != StartupModes.DeviceDevelopmentNoCalibration || 
+                StartupMode != StartupModes.DeviceProduction 
+            )
             {
-                case StartupModes.Undefined:
-                    StartupMode = StartupModes.DeviceDevelopment;
-                    break;
-                case StartupModes.PcDevelopment:
-                    StartupMode = StartupModes.DeviceDevelopment;
-                    break;
-                case StartupModes.DeviceDevelopment:
-                    break;
-                case StartupModes.PcDevelopmentWithCalibration:
-                    StartupMode = StartupModes.DeviceDevelopment;
-                    break;
-                case StartupModes.DeviceDevelopmentNoCalibration:
-                    break;
-                case StartupModes.DeviceProduction:
-                    break;
-            }      
+                StartupMode = StartupModes.DeviceProduction;
+                OnValidate();
+            }
 #endif
 
 
@@ -200,8 +190,7 @@ namespace Project.Scripts.Components
             StaticTransform.CalibrationComponent = CalibrationUnit;
 
             StaticAppSettings.SetOpt("UserHeight", UserHeight.ToString());
-            StaticAppSettings.SetOpt("ServerIpAddress", ServerIpAddress);
-            StaticAppSettings.SetOpt("ServerPortNo", ServerPortNo);
+            SetSarServer();
             SetDebugMode(DebugMode, forceChange: true);
 
             StaticAppSettings.SetObject("StorageHub", StorageHub);
@@ -235,35 +224,60 @@ namespace Project.Scripts.Components
                     break;
                 case StartupModes.PcDevelopment:
                     SetDebugMode(true);
-                    SetCalibrationPositionID(pcDevPosID);
                     EntryPointComponent.enabled = false;
+                    UseLogLayer = true;
+                    SetLogObjet(true, true, true, true); // enable all logs
                     break;
                 case StartupModes.DeviceDevelopment:
-                    SetDebugMode(true);
-                    SetCalibrationPositionID(deviceCalibPosID);
+                    SetDebugMode(false);
                     EntryPointComponent.enabled = true;
+                    UseLogLayer = true;
+                    SetLogObjet(true, false, true, true, 5); // enable all logs except for info
                     break;
                 case StartupModes.PcDevelopmentWithCalibration:
                     SetDebugMode(true);
-                    SetCalibrationPositionID(pcDevCalibPosID);
                     EntryPointComponent.enabled = true;
+                    UseLogLayer = true;
+                    SetLogObjet(true, true, true, true); // enable all logs
                     break;
                 case StartupModes.DeviceDevelopmentNoCalibration:
-                    SetDebugMode(true);
-                    SetCalibrationPositionID(deviceNoCalibPosID);
+                    SetDebugMode(false);
                     EntryPointComponent.enabled = false;
+                    UseLogLayer = true;
+                    SetLogObjet(true, false, true, true, 3); // enable all logs except for info
                     break;
                 case StartupModes.PcProduction:
                     SetDebugMode(false);
-                    SetCalibrationPositionID(pcDevCalibPosID);
                     EntryPointComponent.enabled = true;
+                    UseLogLayer = true;
+                    SetLogObjet(true, false, true, true);
                     break;
                 case StartupModes.DeviceProduction:
                     SetDebugMode(false);
-                    SetCalibrationPositionID(prodDevicePosID);
+                    UseLogLayer = true;
                     EntryPointComponent.enabled = true;
+                    SetLogObjet(true, false, false, false, 1); // only main logging
                     break;
             }
+        }
+
+        public void SetLogObjet(bool lMain=true, bool lInfo = true, bool lWarn=true, bool lError = true, int layer = int.MaxValue)
+        {
+            LoggerMain.gameObject.SetActive(lMain);
+            LoggerInfo.gameObject.SetActive(lInfo);
+            StaticLogger.PrintInfo = ( lMain || lInfo ); 
+
+            LoggerWarning.gameObject.SetActive(lWarn);
+            StaticLogger.PrintWarn = lWarn;
+
+            LoggerError.gameObject.SetActive(lError);
+            StaticLogger.PrintErr = true;
+
+            UseLogLayer = (layer == int.MaxValue);
+            if (UseLogLayer)
+                StaticLogger.CurrentLogLayer = layer;
+            else
+                StaticLogger.CurrentLogLayer = int.MaxValue;
         }
 
         public void SetDebugMode(bool opt, bool forceChange = false)
@@ -287,6 +301,26 @@ namespace Project.Scripts.Components
             CalibrationPositionID = id;
             if (running)
                 StaticAppSettings.SetOpt("CalibrationPositionID", id);
+        }
+
+        public void SetSarServer(string url = "")
+        {
+            if (url == "")
+                url = SarServerURL;
+            else
+                SarServerURL = url;
+
+            StaticAppSettings.SetOpt("SarServerURL", SarServerURL);
+            if(SarServerComponent != null)
+            {
+                SarServerComponent.UserId = this.OperatorUniversalUserID;
+                SarServerComponent.UserApproverID = this.ApproverUserID;
+                SarServerComponent.UserAccessKey = this.UserAccessKey;
+                SarServerComponent.ConnectOnStart = ConnectOnStart;
+                
+                StaticAppSettings.SetObject("SarServerComponent", SarServerComponent);
+                SarAPI.Client = SarServerComponent;
+            }
         }
     }
 }

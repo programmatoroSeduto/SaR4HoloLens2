@@ -16,22 +16,27 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
         // ===== GUI ===== //
 
         [Header("Connection Settings")]
-        [Tooltip("IP Address of the server")]
-        public string ServerIp = "127.0.0.1";
-        [Tooltip("Server Port Number")]
-        public int ServerPortNo = 5000;
+        [HideInInspector]
+        [Tooltip("Web Address of the server")]
+        public string ServerURL = "http://127.0.0.1:80/sar/";
+        [HideInInspector]
         [Tooltip("Connect on start?")]
         public bool ConnectOnStart = false;
+        [HideInInspector]
         [Tooltip("Connection Timeout (-1 if not used)")]
         public int ConnectionTimeout = 10;
 
         [Header("Login Settings")]
+        [HideInInspector]
         [Tooltip("User ID")]
         public string UserId = "SARHL2_ID0000000000_USER";
+        [HideInInspector]
         [Tooltip("User Approver ID")]
         public string UserApproverID = "SARHL2_ID0000000000_USER";
+        [HideInInspector]
         [Tooltip("Device ID")]
         public string DeviceId = "SARHL2_ID0000000000_DEVC";
+        [HideInInspector]
         [Tooltip("User Access Key")]
         public string UserAccessKey = "";
 
@@ -61,17 +66,12 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
 
         private void Update()
         {
-
+            
         }
 
         private void OnDestroy()
         {
-            string sourceLog = $"{classLogSource}:OnDestroy";
-            if (connected)
-            {
-                StaticLogger.Info(sourceLog, "Found a connection; trying to disconnect...", logLayer: 1);
-                Disconnect();
-            }
+            DestroyClass();
         }
 
 
@@ -87,6 +87,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
                 return;
             }
 
+            SarAPI.ApiURL = ServerURL;
             COR_Connecion = StartCoroutine(ORCOR_connect());
         }
 
@@ -142,6 +143,21 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
 
 
         // ===== LOGOUT PROCESS ===== //
+
+        ~SarHL2Client()
+        {
+            DestroyClass();
+        }
+
+        private void DestroyClass()
+        {
+            string sourceLog = $"{classLogSource}:OnDestroy";
+            if (connected)
+            {
+                StaticLogger.Info(sourceLog, "Found a connection; trying to disconnect...", logLayer: 1);
+                Disconnect();
+            }
+        }
 
         public bool Disconnect()
         {

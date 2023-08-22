@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 
 using Project.Scripts.Components;
 using Project.Scripts.Utils;
-using Packages.SAR4HL2NetworkingSettings.Utils;
+using Packages.SAR4HL2NetworkingSettings.Components;
 
 namespace Packages.SAR4HL2NetworkingSettings.Utils
 {
@@ -27,9 +27,9 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         public static string ApiURL = "127.0.0.1";
 
         /// <summary>
-        /// the Port Number of the server
+        /// Variable used only for support (voice command or instance)
         /// </summary>
-        public static int ApiPort = 5000;
+        public static SarHL2Client Client = null;
 
         /// <summary>
         /// Use this to check if a request is already in action
@@ -472,7 +472,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
         private static string GetAPIUrl(string apiPath = "/")
         {
-            return $"http://{ApiURL}:{ApiPort}{apiPath}";
+            return $"{ApiURL}{apiPath}";
         }
 
 
@@ -497,8 +497,10 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             if (timeout > 0)
                 www.timeout = timeout;
 
+            StaticLogger.Info(sourceLog, $"Sending GET request with: \n\tURL: {requestURL}", logLayer: 4);
             yield return www.SendWebRequest();
             resultCode = (int) www.responseCode;
+            StaticLogger.Info(sourceLog, $"Response from server: \n\tTEXT: {www.downloadHandler.text}\n\tSTATUS CODE: {resultCode}", logLayer: 4);
 
             if (!handleRequestResult(www, www.result, sourceLog))
                 yield break;
