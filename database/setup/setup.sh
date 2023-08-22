@@ -6,6 +6,10 @@ echo "===== BEGIN"
 args="-U ${POSTGRES_USER} -d ${POSTGRES_DB} -W ${POSTGRES_PASSWORD}"
 null_output="> /dev/null"
 
+echo "setting up functions and libraries ..."
+psql ${args} -f ${APP_LIB_SETUP_FILE} 
+echo "setting up functions and libraries ... OK"
+
 echo "creating datamodel ..."
 psql ${args} -f ${APP_SETUP_FILE}
 echo "creating datamodel ... OK"

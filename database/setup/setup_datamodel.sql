@@ -876,7 +876,7 @@ CREATE TABLE sar.L_HL2_REFERENCE_TRANSFORMATIONS (
         DEFAULT 0.0
     , Q_Z FLOAT(15) NOT NULL
         DEFAULT 0.0
-    , Q_K FLOAT(15) NOT NULL
+    , Q_W FLOAT(15) NOT NULL
         DEFAULT 0.0
     
     -- metadata
