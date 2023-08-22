@@ -12,7 +12,7 @@ API: api/hl2/{HL2_device}/download
         - full_import
         - reference_pos_id
         - current_pos_vector
-        - data_radous
+        - data_radius
     - RESPONSE:
         - OK|KO
         - ... JSON export to hl2 ...

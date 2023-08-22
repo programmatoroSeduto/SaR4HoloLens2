@@ -559,7 +559,7 @@ CREATE TABLE sar.D_HL2_USER_DEVICE_SETTINGS (
     , CONFIGURATION_PROFILE_ID INT NOT NULL
         DEFAULT 0
     , CONFIGURATION_PROFILE_DS VARCHAR(500)
-        DEAULT ''
+        DEFAULT ''
 
     -- user setting overwrite
     , USER_HEIGHT_VL FLOAT(15) NOT NULL
@@ -595,7 +595,7 @@ CREATE TABLE sar.D_HL2_USER_DEVICE_SETTINGS (
     , UPDATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
 
-    , PRIMARY KEY ( DEVICE_ID, USER_ID, CONFIGURATION_CUSTOM_ID )
+    , PRIMARY KEY ( DEVICE_ID, USER_ID, CONFIGURATION_PROFILE_ID )
 );
 COMMENT 
     ON TABLE sar.D_HL2_USER_DEVICE_SETTINGS 
@@ -684,7 +684,7 @@ CREATE TABLE sar.F_HL2_QUALITY_WAYPOINTS (
     
     -- area index support
     , AREA_INDEX_FK BIGINT NOT NULL
-        DEAULT 0,
+        DEFAULT 0
 
     -- relative
     , U_LEFT_HANDED_REFERENCE_FL BOOLEAN NOT NULL
@@ -783,10 +783,10 @@ COMMENT
     ON TABLE sar.F_HL2_STAGING_AREA_INDEX
     IS 'it contains the area renamings from the device';
 COMMENT 
-    ON COLUMN sar.LOCAL_AREA_INDEX_INIT_ID
+    ON COLUMN sar.F_HL2_STAGING_AREA_INDEX.LOCAL_AREA_INDEX_INIT_ID
     IS 'the first area index assigned to waypoint by the device when a area change is detected';
 COMMENT 
-    ON COLUMN sar.LOCAL_AREA_INDEX_FINAL_ID
+    ON COLUMN sar.F_HL2_STAGING_AREA_INDEX.LOCAL_AREA_INDEX_FINAL_ID
     IS 'the positon database can rename a area with a known index when a lonk between unknown area and known area is detected at runtime';
 
 DROP SEQUENCE IF EXISTS sar.F_HL2_QUALITY_AREA_INDEX_SEQUENCE;
