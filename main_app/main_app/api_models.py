@@ -14,6 +14,13 @@ refpos_id_pattern = "SARHL2_ID[0-9]{10}_REFP"
 
 
 
+## ===== BASE DATA CLASSES ===== ##
+
+class data_base_pack(BaseModel):
+    pass
+
+
+
 ## ===== BASE REQUEST RESPONSE ===== ##
 
 class api_base_request(BaseModel):
@@ -124,3 +131,88 @@ class api_device_logout_request(api_base_request):
 
 class api_device_logout_response(api_base_response):
     pass
+
+
+
+## ===== HL2 GENERIC ===== ##
+
+class api_hl2_base_request(api_base_request):
+    user_id:str = Field(
+        description="the user that is requiring to access the service",
+        pattern=user_id_pattern
+    )
+    device_id:str = Field(
+        description="the device the user is trying to release",
+        pattern=device_id_pattern
+    )
+    session_token:str = Field(
+        description="the session token identifying the user session",
+        pattern=".+"
+    )
+
+class api_hl2_base_response(api_base_response):
+    pass
+
+class data_hl2_waypoint(data_base_pack):
+    local_position_id:int = Field(
+        description="the local ID of the waypoint, assigned by the database"
+    )
+    local_description:str = Field(
+        description="a text description of the waypoint"
+    )
+    server_address_id:str = Field(
+        default="",
+        description="Sometimes the point comes from another session"
+    )
+    area_center:tuple[float, float, float] = Field(
+        description="Area Center of the waypoint wrt the reference position"
+    )
+    first_area_center:tuple[float, float, float] = Field(
+        description="the real first Area Center of the waypoint wrt the reference position"
+    )
+    local_area_index:int = Field(
+        description="local area center, i.e. wrt the local zones division"
+    )
+    area_radius:float = Field(
+        description="spherical radius of the waypoint around its area center"
+    )
+    created_at:datetime = Field(
+        description="the date/time the waypoint has been recorded"
+    )
+    local_paths:list[tuple[int, int]] = Field(
+        description="how the waypoints are connected in this measurements set"
+    )
+
+class data_hl2_path(data_base_pack):
+    local_path_key:str = Field(
+        description="the path key assigned under the scope of the session by HoloLens2"
+    )
+    local_waypoint_ids:tuple[int, int] = Field(
+        description="the link connecs one waypoint to another one; not oriented"
+    )
+    created_at:datetime = Field(
+        description="the date/time the link has been recorded"
+    )
+
+
+
+## ===== HL2 UPLOAD ===== ##
+
+class api_hl2_upload_request(api_hl2_base_request):
+    area_renaming:dict[int, int] = Field(
+        description="Area remapping local, used for describing zones at HL2 level"
+    )
+    reference_id:str = Field(
+        description="Identifier of the reference point used for calibration by HL2",
+        pattern=refpos_id_pattern
+    )
+    waypoints:dict[int, data_hl2_waypoint] = Field(
+        description="set of waypoints measured by the HoloLens2 system"
+    )
+    paths:list[data_hl2_path] = Field(
+        description="list of links locally measured between waypoints"
+    )
+
+class api_hl2_upload_response(api_hl2_base_response):
+    pass
+
