@@ -4,10 +4,6 @@
 # TRANSACTION (???) : ??? 
 
 API: api/<resource>/<operation>
-    - PATH
-        - device_id
-    - QUERY:
-        ... not required ...
     - REQUEST:
         - ...
     - RESPONSE.

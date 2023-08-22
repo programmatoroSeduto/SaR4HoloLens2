@@ -5,6 +5,8 @@
 
 ====================================================== */
 
+DELETE FROM sar.D_DEVICE
+    WHERE 1=1;
 INSERT INTO sar.D_DEVICE (
     DEVICE_ID,
     DEVICE_DS, DEVICE_LOCAL_DS, DEVICE_TYPE_DS,

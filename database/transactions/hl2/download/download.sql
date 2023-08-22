@@ -1,21 +1,29 @@
 
 /* ======================================================
 
-# TRANSACTION (???) : ??? 
+# TRANSACTION (HL2) : Download Positions To Device 
 
-API: api/<resource>/<operation>
+API: api/hl2/{HL2_device}/download
     - PATH
         - device_id
-    - QUERY:
-        ... not required ...
     - REQUEST:
-        - ...
-    - RESPONSE.
-        - ...
+        - user_id
+        - session_token
+        - full_import
+        - reference_pos_id
+        - current_pos_vector
+        - data_radous
+    - RESPONSE:
+        - OK|KO
+        - ... JSON export to hl2 ...
+        - ... support informations for HL2 ...
 
-## Naming Conventions and Formats
+## High-level export procedure
 
-...
+- full import
+    - ... a distance-based import with fixed distance ...
+- not full import
+    - ... based on distance ...
 
 ## Requests examples
 
