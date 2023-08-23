@@ -71,6 +71,18 @@ VALUES
     false, true, -- user read, dev read
     false, true -- user write, dev write
 )
+, (
+    sar_user_id(7864861468),
+    'hololens2', 
+    'laboratorium hololens 2 SAR project implementation v1.9', 
+    'Microsoft HoloLens2',
+    true, -- holdable
+    false, true, -- geo, rel
+    true, true, -- send receive
+    false, true, -- autonomous, wearable
+    false, true, -- user read, dev read
+    false, true -- user write, dev write
+)
 /* DEVICE
     code: 
         CONCAT('SARHL2_ID', '0931557300', '_DEVC' ),

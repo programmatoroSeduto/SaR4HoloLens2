@@ -26,7 +26,7 @@ CREATE EXTENSION vector ;
 -- don't use schemas to install extensions!
 -- https://stackoverflow.com/questions/75904637/how-to-fix-postgres-error-operator-does-not-exist-using-pgvector
 
--- to check if everything went fine with the installation
+-- to check if everything worked fine with the installation
 SELECT * FROM PG_CATALOG.PG_EXTENSION;
 
 
@@ -62,7 +62,6 @@ END $$;
 
 
 
-
 -- extract oe coordinate from vector() object
 CREATE OR REPLACE FUNCTION component_of( v vector(3), compno int )
 	RETURNS float
@@ -85,7 +84,6 @@ $$;
 
 
 
-
 -- cast three values to vector3
 CREATE OR REPLACE FUNCTION to_vector3( Px float, Py float, Pz float )
 	RETURNS vector(3)
@@ -95,3 +93,46 @@ BEGIN
 	RETURN CONCAT('[',Px,',',Py,',',Pz,']')::vector(3);
 END
 $$;
+
+
+
+
+
+/* ======================================================
+
+## UserDefined functions -- Utilities
+
+- 'dist' : distance between two vectors by their coordinates
+- 'component_of' : a component of a vector ype
+- 'to_vector3' : three numbers to  vector3 object
+
+====================================================== */
+
+CREATE OR REPLACE FUNCTION sar_user_id( code bigint )
+	RETURNS CHAR(24)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN CONCAT( 'SARHL2_ID', LPAD(code::TEXT, 10, '0'), '_USER' );
+END $$;
+
+
+
+
+
+CREATE OR REPLACE FUNCTION sar_device_id( code bigint )
+	RETURNS CHAR(24)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN CONCAT( 'SARHL2_ID', LPAD(code::TEXT, 10, '0'), '_DEVC' );
+END $$;
+
+
+
+
+
+CREATE OR REPLACE FUNCTION sar_reference_point_id( code bigint )
+	RETURNS CHAR(24)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN CONCAT( 'SARHL2_ID', LPAD(code::TEXT, 10, '0'), '_REFP' );
+END $$;
