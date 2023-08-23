@@ -80,7 +80,7 @@ DROP TYPE json_schema;
 
 /* ======================================================
 
-## Functions Area
+## Custom Functions Area
 
 ====================================================== */
 
@@ -340,7 +340,7 @@ SELECT * FROM sar.F_HL2_STAGING_WAYPOINTS;
 SELECT 
 (COUNT(*) > 0)::BOOLEAN AS SESSION_DEFINED_IN_STAGING_FL
 FROM sar.F_HL2_STAGING_WAYPOINTS
-WHERE SESSION_TOKEN_ID = '71fe96d81a11a32a39ba410d812181ad';
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' );
 
 -- find data from previously available sessions (query is empty now)
 SELECT DISTINCT 
@@ -371,7 +371,7 @@ INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
 	-- AREA_RADIUS_VL ???
 ) VALUES (
 	'SARHL2_ID0931557300_DEVC',
-	'71fe96d81a11a32a39ba410d812181ad',
+	get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' ),
 	'SARHL2_ID1234567890_REFP', TRUE,
 	0.00, 0.00, 0.00, 
 	0, -- FIRST LOCAL positions IS ALWAYS zero since the device IS IN calibration point
@@ -505,7 +505,7 @@ SELECT * FROM sar.F_HL2_STAGING_WAYPOINTS;
 SELECT 
 (COUNT(*) > 0)::BOOLEAN AS SESSION_DEFINED_IN_STAGING_FL
 FROM sar.F_HL2_STAGING_WAYPOINTS
-WHERE SESSION_TOKEN_ID = '71fe96d81a11a32a39ba410d812181ad';
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' );
 
 -- the session is not inherited by anther one based_on is empty)
 -- to be sure, check into the database (why doesn't the request report the session ID??? strange, and possibly dangerous)
@@ -517,7 +517,7 @@ FROM sar.F_HL2_STAGING_WAYPOINTS
 WHERE 1=1
 	AND LOCAL_AREA_INDEX_ID = 0 
 	AND U_REFERENCE_POSITION_ID = 'SARHL2_ID1234567890_REFP'
-	AND SESSION_TOKEN_ID = '71fe96d81a11a32a39ba410d812181ad'
+	AND SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' )
 	AND SESSION_TOKEN_INHERITED_ID IS NULL;
 -- the session exists and it is not inherited, yuppie!
 
@@ -525,7 +525,7 @@ WHERE 1=1
 SELECT 
 MAX(LOCAL_POSITION_ID) AS MAX_LOCAL_POSITION_ID 
 FROM sar.F_HL2_STAGING_WAYPOINTS
-WHERE SESSION_TOKEN_ID = '71fe96d81a11a32a39ba410d812181ad';
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' );
 
 -- ALIGNMENT ALGORITHM
 -- in this example, the waypoint is compared with only one point, but it gives the idea
@@ -683,7 +683,7 @@ INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
 SELECT 
 	'SARHL2_ID0931557300_DEVC' AS DEVICE_ID,
 	'SARHL2_ID1234567890_REFP' AS U_REFERENCE_POSITION_ID,
-	'71fe96d81a11a32a39ba410d812181ad' AS SESSION_TOKEN_ID,
+	get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' ) AS SESSION_TOKEN_ID,
 	pos_id AS LOCAL_POSITION_ID,
 	component_of(v, 1) AS UX_VL,
 	component_of(v, 2) AS UY_VL,
@@ -728,6 +728,40 @@ RETURNING
 
 DROP TYPE json_schema;
 SELECT * FROM sar.F_HL2_STAGING_WAYPOINTS;
+
+-- PATHS : just rename and load inside the same session (not the inherited one)
+INSERT INTO sar.F_HL2_STAGING_PATHS (
+	DEVICE_ID,
+	SESSION_TOKEN_ID,
+	
+	LOCAL_WAYPOINT_1_ID,
+	LOCAL_WAYPOINT_2_ID
+) VALUES
+(
+	'SARHL2_ID8651165355_DEVC',
+	get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' ),
+	0, 1
+),
+
+(
+	'SARHL2_ID8651165355_DEVC',
+	get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' ),
+	1, 2
+),
+(
+	'SARHL2_ID8651165355_DEVC',
+	get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' ),
+	2, 3
+),
+(
+	'SARHL2_ID8651165355_DEVC',
+	get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' ),
+	0, 4
+)
+RETURNING
+	*;
+
+-- AREA RENAMINGS : ...? ignore it, pls
 
 
 
@@ -901,7 +935,113 @@ the quality can be formulated in this way:
 
 ====================================================== */
 
--- ...
+-- get session ID (just for testing)
+SELECT get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' );
+
+-- another request arrives immediately after calibration
+-- (api:DOWNLOAD)
+/* DOWNLOAD REQUEST
+```json
+{
+	-- inherited from base hl2 class
+	user_id : 'SARHL2_ID8849249249_USER',
+	device_id : 'SARHL2_ID8651165355_DEVC',
+	session_token : '8e55b08c1c9270cfcd6cc45c68f7f7af',
+	
+	-- request data
+	base_on : '', -- first request: it is empty
+	reference-pos : 'SARHL2_ID1234567890_REFP'
+	current_pos : [x,y,z],
+	radius : 500.0f
+}
+```
+*/
+
+-- Ups...
+UPDATE sar.F_HL2_STAGING_WAYPOINTS
+	SET CREATED_TS = TO_TIMESTAMP('2023/08/23 12:00:02', 'YYYY/MM/DD HH:MI:SS')
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' );
+
+-- does the session exist in staging? --> NO
+SELECT 
+(COUNT(*) > 0)::BOOLEAN AS SESSION_DEFINED_IN_STAGING_FL
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' );
+
+-- search for a good session to inherit
+SELECT DISTINCT 
+SESSION_TOKEN_ID, 
+SESSION_TOKEN_INHERITED_ID, -- IF it IS NULL, the SESSION IS original
+MAX(CREATED_TS) AS CREATED_TS
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE 1=1
+	AND LOCAL_AREA_INDEX_ID = 0 
+	AND U_REFERENCE_POSITION_ID = 'SARHL2_ID1234567890_REFP'
+GROUP BY 1,2
+ORDER BY 
+	CREATED_TS DESC
+LIMIT 1;
+-- the first session is the most recent one
+
+-- this is the session to inherit
+-- insert the first session waypoint
+INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
+	DEVICE_ID,
+	SESSION_TOKEN_ID, 
+	SESSION_TOKEN_INHERITED_ID,
+	U_REFERENCE_POSITION_ID, U_SOURCE_FROM_SERVER_FL,
+	UX_VL, UY_VL, UZ_VL,
+	LOCAL_POSITION_ID, 
+	LOCAL_AREA_INDEX_ID
+	-- AREA_RADIUS_VL ???
+) VALUES (
+	'SARHL2_ID8651165355_DEVC',
+	get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' ),
+	get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' ), -- inherited
+	'SARHL2_ID1234567890_REFP', TRUE,
+	0.00, 0.00, 0.00, 
+	0, -- FIRST LOCAL positions IS ALWAYS zero since the device IS IN calibration point
+	0  -- FIRST area_index IS ALWAYS zero
+)
+RETURNING 
+	*;
+
+-- (counter-check) is my current session inheriting data from another session?
+SELECT DISTINCT 
+SESSION_TOKEN_ID, 
+SESSION_TOKEN_INHERITED_ID, -- it IS NOT NULL now 
+MAX(CREATED_TS) AS CREATED_TS
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' )
+GROUP BY 1,2
+ORDER BY CREATED_TS DESC;
+
+
+/* ======================================================
+
+### First download -- logics so far
+
+- (HL2) DOWNLOAD from device
+	- immediately afer calibration
+	- the database IS NOT empty
+		- in particular, another session is generating data
+- (SERVER) get infos
+	- get sessions ordered from the most recent one
+	- is the asking session currently active?
+- is the session active also in staging? --> NO
+	- add the reference point to the DB
+	- create area index 0
+- (SERVER) is there another session enabled? --> NO
+	- (nothing to do: the information already inserted has NULL as inherited session)
+- return
+	- max_id : 0
+	- waypoints_alignment : empty
+
+====================================================== */
+
+
+
+
 
 
 
