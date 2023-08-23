@@ -136,3 +136,73 @@ CREATE OR REPLACE FUNCTION sar_reference_point_id( code bigint )
 AS $$ BEGIN
 	RETURN CONCAT( 'SARHL2_ID', LPAD(code::TEXT, 10, '0'), '_REFP' );
 END $$;
+
+
+
+
+
+-- minimum between a set of numbers (max 5 values)
+CREATE OR REPLACE FUNCTION max_of(
+	val1 NUMERIC ,
+	val2 NUMERIC , 
+	val3 NUMERIC DEFAULT -9999999999,
+	val4 NUMERIC DEFAULT -9999999999,
+	val5 NUMERIC DEFAULT -9999999999
+)
+	RETURNS NUMERIC 
+	LANGUAGE plpgsql
+AS $$ 
+DECLARE 
+	max_from_query NUMERIC;
+BEGIN
+	SELECT MAX(val)::NUMERIC AS val
+	INTO max_from_query
+	FROM (
+		SELECT val1::NUMERIC AS val
+		UNION
+		SELECT val2::NUMERIC AS val
+		UNION
+		SELECT val3::NUMERIC AS val
+		UNION
+		SELECT val4::NUMERIC AS val
+		UNION
+		SELECT val5::NUMERIC AS val
+	) AS val_set;
+	
+	RETURN max_from_query;
+END $$;
+
+
+
+
+
+-- minimum between a set of numbers (max 5 values)
+CREATE OR REPLACE FUNCTION min_of(
+	val1 NUMERIC ,
+	val2 NUMERIC , 
+	val3 NUMERIC DEFAULT 9999999999,
+	val4 NUMERIC DEFAULT 9999999999,
+	val5 NUMERIC DEFAULT 9999999999
+)
+	RETURNS NUMERIC 
+	LANGUAGE plpgsql
+AS $$ 
+DECLARE 
+	max_from_query NUMERIC;
+BEGIN
+	SELECT MIN(val)::NUMERIC AS val
+	INTO max_from_query
+	FROM (
+		SELECT val1::NUMERIC AS val
+		UNION
+		SELECT val2::NUMERIC AS val
+		UNION
+		SELECT val3::NUMERIC AS val
+		UNION
+		SELECT val4::NUMERIC AS val
+		UNION
+		SELECT val5::NUMERIC AS val
+	) AS val_set;
+	
+	RETURN max_from_query;
+END $$;

@@ -27,4 +27,10 @@ else
     echo "TESTING MODE IS OFF"
 fi
 
+if [[ "${APP_USE_EXPERIMENTAL_SCRIPT}" == "true" ]] ; then
+    echo "loading experimental script ... "
+    psql ${args} -f ${APP_SETUP_PATH}/setup_experimental.sql
+    echo "loading experimental script ... OK"
+fi
+
 echo "===== END"

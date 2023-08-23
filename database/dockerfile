@@ -1,6 +1,5 @@
 
 # FROM postgres:15-alpine
-
 # this image is itnegrated with PGvector -- https://github.com/pgvector/pgvector#additional-installation-methods
 FROM ankane/pgvector
 
@@ -12,6 +11,7 @@ RUN mkdir /app && \
 
 COPY ./setup/setup_datamodel.sql /app/datamodel/setup_datamodel.sql
 COPY ./setup/setup_libraries.sql /app/datamodel/setup_libraries.sql
+COPY ./setup/setup_experimental.sql /app/datamodel/setup_experimental.sql
 COPY ./samples/* /app/samples
 
 ENV APP_SETUP_PATH=/app/datamodel
@@ -19,5 +19,6 @@ ENV APP_SETUP_FILE=/app/datamodel/setup_datamodel.sql
 ENV APP_LIB_SETUP_FILE=/app/datamodel/setup_libraries.sql
 ENV APP_SAMPLES_PATH=/app/samples
 ENV APP_TESTING_MODE=false
+ENV APP_USE_EXPERIMENTAL_SCRIPT=false
 
 COPY ./setup/setup.sh /docker-entrypoint-initdb.d/setup.sh
