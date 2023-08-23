@@ -176,7 +176,7 @@ WHERE NOT(DELETED_FL) AND USER_ADMIN_FL;
 
 -- users
 SELECT * FROM SAR.d_user 
-WHERE USER_ID IN ( 'SARHL2_ID8849249249_USER', 'SARHL2_ID2894646521_USER' )
+WHERE USER_ID IN ( 'SARHL2_ID8849249249_USER', 'SARHL2_ID2894646521_USER' );
 
 -- select DEVICEs
 SELECT ldu.USER_ID, dev.device_id FROM sar.D_DEVICE dev LEFT JOIN sar.L_DEVICE_USER ldu ON ( dev.DEVICE_ID = ldu.DEVICE_ID )
@@ -200,6 +200,9 @@ SELECT * FROM sar.F_USER_ACTIVITY WHERE USER_END_AT_TS IS NULL;
 
 -- check the DEVICE sessions opened
 SELECT * FROM sar.F_DEVICE_ACTIVITY WHERE DEVICE_OFF_AT_TS IS NULL;
+
+-- reference point -> 'SARHL2_ID1234567890_REFP'
+SELECT * FROM sar.D_HL2_REFERENCE_POSITIONS;
 
 
 
@@ -232,8 +235,7 @@ How the scenario proceeds:
 
 - (HL2) performs calibration
 - (HL2) after calibration, download is called
-- (SERVER) check quality
-	- no points from quality
+- (SERVER) ... check quality ... (ignore now)
 - (SERVER) try to find a previously defined session
 	- no session returned from this query, te table is empty
 - (SERVER) register zero-pos as original, not inherited
@@ -290,8 +292,21 @@ is used only immediately after the device logs out.
 
 ====================================================== */
 
--- create reference point -> 'SARHL2_ID1234567890_REFP'
--- ...
+-- find data from previously available sessions
+SELECT DISTINCT 
+
+SESSION_TOKEN_ID, 
+CREATED_TS
+
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE 1=1
+	AND LOCAL_AREA_INDEX_ID = 0
+ORDER BY 
+	CREATED_TS DESC;
+
+
+
+
 
 
 
