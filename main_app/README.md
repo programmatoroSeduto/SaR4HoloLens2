@@ -191,7 +191,7 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         cur.execute("BEGIN TRANSACTION;")
 
         cur.execute(
-            api_transaction_device_login_sql_exec_log,
+            api_AAAAAAAAAAAA_sql_exec_log,
             {
                 'LOG_TYPE_DS' : 'aaa',
                 'LOG_TYPE_ACCESS_FL' : True,

@@ -18,7 +18,7 @@ ENV APP_SETUP_PATH=/app/datamodel
 ENV APP_SETUP_FILE=/app/datamodel/setup_datamodel.sql
 ENV APP_LIB_SETUP_FILE=/app/datamodel/setup_libraries.sql
 ENV APP_SAMPLES_PATH=/app/samples
-ENV APP_TESTING_MODE=false
+ENV APP_LOAD_SAMPLES=false
 ENV APP_USE_EXPERIMENTAL_SCRIPT=false
 
 COPY ./setup/setup.sh /docker-entrypoint-initdb.d/setup.sh

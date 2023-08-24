@@ -34,12 +34,18 @@ import time
 config = config_handle()
 log:log_handle = None
 log_err_details = ""
-log, log_err_details = setup_log(
-    debug = False,
+log, log_err_details = setup_log( 
+    debug = config.debug_mode,
     layer = config.log_layer_default,
     log_file_path = config.log_file_path,
     log_file_name = config.log_file_name
 )
+log.debug(f"config.debug_mode : {config.debug_mode}", src="main")
+log.debug(f"config.log_layer_default : {config.log_layer_default}", src="main")
+log.debug(f"config.log_file_path : {config.log_file_path}", src="main")
+log.debug(f"config.log_file_name : {config.log_file_name}", src="main")
+log.debug(f"config.start_delay : {config.start_delay}", src="main")
+
 if log is None:
     print(f"[{datetime.now()}, CONFIG] CRITICAL: error during the creation of the logger! \n\t{log_err_details}")
     sys.exit(2)
@@ -47,9 +53,10 @@ if log is None:
 log.info("trying to connect to the database ... ", src="main")
 db = interfaces.db_interface()
 try:
-    log.debug(f"waiting 10s ...", src="main")
-    time.sleep(10)
-    log.debug(f"waiting 10s ... OK", src="main")
+    if config.start_delay > 0:
+        log.debug(f"waiting {config.start_delay}s ...", src="main")
+        time.sleep(config.start_delay)
+        log.debug(f"waiting {config.start_delay}s ... OK", src="main")
     log.debug(f"Connecting to: \n\tDB Address: {db_access_data['host']}:{db_access_data['port']}\n\tDB name: {db_access_data['dbname']}", src="main")
     db.connect( db_access_data )
     log.info("trying to connect to the database ... OK", src="main")
@@ -228,6 +235,23 @@ async def api_device_login(
         request_body,
         tr.response
     )
+
+
+
+# === HL2 integration === #
+from api_transactions.api_security_transactions import transaction_hl2_security
+'''
+def example():
+    global config, env
+    tr_security = transaction_hl2_security(env, api_models.api_hl2_base_request())
+    tr_security.check()
+    tr_security.execute()
+    
+    if not tr_security.success:
+        return 'error!'
+
+    # else: go on
+'''
 
 
 

@@ -14,7 +14,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      APP_TESTING_MODE: true
+      APP_LOAD_SAMPLES: true
       APP_USE_EXPERIMENTAL_SCRIPT: true
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

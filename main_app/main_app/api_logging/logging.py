@@ -71,14 +71,14 @@ class log:
 
 
     def debug_detail(self, msg:str = "", layer:int = log_layer.working_step_detail, src:str = "???") -> None:
-        if self.__log_debug:
+        if not self.__log_debug:
             return
         ss = f"{self.__get_log_header(log_type.debug, layer, src)} {msg}"
         self.__log_print(ss, layer, log_type.debug, src)
 
 
     def debug(self, msg:str = "", layer:int = log_layer.working_phase, src:str = "???") -> None:
-        if self.__log_debug:
+        if not self.__log_debug:
             return
         ss = f"{self.__get_log_header(log_type.debug, layer, src)} {msg}"
         self.__log_print(ss, layer, log_type.debug, src)
@@ -122,7 +122,7 @@ class log:
 
     def __log_print(self, ss, layer:int, ltype:log_type, src=str) -> None:
         self.__log_history.append(self.__log_history_item(ss, layer, ltype, src))
-        if(int(layer) > int(self.__current_log_layer)):
+        if(int(layer) > int(self.__current_log_layer)):  
             return
         print(ss)
         if self.__use_log_file_main:

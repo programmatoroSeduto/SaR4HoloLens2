@@ -14,6 +14,7 @@ def setup_log(debug:bool = False, layer:int = 0, log_file_path:str = "", log_fil
     )
     if log_handle is None:
         return ( None, "ERROR: logger constructor returned None!")
+    log_handle.set_layer(True, layer)
     
     if log_file_path != "" and log_file_name != "":
         try:

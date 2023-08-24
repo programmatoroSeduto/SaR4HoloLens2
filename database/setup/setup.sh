@@ -22,7 +22,7 @@ echo "creating datamodel ... OK"
 
 echo -e "\n\n\n\n\n==================\n\n\n\n\n"
 
-if [[ "${APP_TESTING_MODE}" == "true" ]] ; then
+if [[ "${APP_LOAD_SAMPLES}" == "true" ]] ; then
     echo "TESTING MODE IS ON"
     echo "creating samples ..."
     for APP_SAMPLES_FILE in ${APP_SAMPLES_PATH}/*; do 

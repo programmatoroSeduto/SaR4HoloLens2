@@ -168,10 +168,39 @@ class data_hl2_waypoint(data_base_pack):
     )
 
 class data_hl2_path(data_base_pack):
-    wp1:int
-    wp2:int
+    wp1:int = Field(
+        ge = 0
+    )
+    wp2:int = Field(
+        ge = 0
+    )
+    dist:float = Field(
+        ge=0.0
+    )
     tstmp:datetime = Field(
+        default=datetime.now(),
         description="the date/time the link has been recorded"
+    )
+
+
+
+## ===== HL2 DOWNLOAD ===== ##
+
+class api_hl2_download_request(api_hl2_base_request):
+    based_on:str
+    ref_id:str = Field(
+        pattern = refpos_id_pattern
+    )
+    center:tuple[float, float, float]
+    radius:float = Field(
+        default = 500.00 # meters
+    )
+
+class api_hl2_download_response(api_hl2_base_request):
+    based_on:str
+    max_id:int
+    waypoints_alignment:dict[int, int] = Field(
+        default = dict()
     )
 
 
@@ -199,24 +228,4 @@ class api_hl2_upload_request(api_hl2_base_request):
 
 class api_hl2_upload_response(api_hl2_base_response):
     pass
-
-
-
-## ===== HL2 DOWNLOAD ===== ##
-
-class api_hl2_download_request(api_hl2_base_request):
-    based_on:str
-    reference_id:str = Field(
-        pattern = refpos_id_pattern
-    )
-    current_position:tuple[float, float, float]
-    radius:float = Field(
-        default = 500.00 # meters
-    )
-
-class api_hl2_download_response(api_hl2_base_request):
-    max_id:int
-    waypoints_alignment:dict[int, int] = Field(
-        default = dict()
-    )
 

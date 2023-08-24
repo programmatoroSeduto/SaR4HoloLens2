@@ -190,7 +190,7 @@ END IF
 
 IF not USER_AUTH_UPLOAD_FL
     -> RETURN : 401 unauthorized
-    -> LOG : user not allowed to upload!
+    -> LOG : user not allowed to upload
 END
 
 IF not SESSION_ID_FOUND_FL
