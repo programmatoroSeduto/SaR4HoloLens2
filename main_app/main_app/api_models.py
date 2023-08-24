@@ -163,7 +163,7 @@ class data_hl2_waypoint(data_base_pack):
     v:tuple[float, float, float] = Field(
         description="Area Center of the waypoint wrt the reference position"
     )
-    tstmp:datetime = Field(
+    wp_timestamp:datetime = Field(
         description="the date/time the waypoint has been recorded"
     )
 
@@ -177,7 +177,7 @@ class data_hl2_path(data_base_pack):
     dist:float = Field(
         ge=0.0
     )
-    tstmp:datetime = Field(
+    pt_timestamp:datetime = Field(
         default=datetime.now(),
         description="the date/time the link has been recorded"
     )
@@ -197,22 +197,30 @@ class api_hl2_download_request(api_hl2_base_request):
     )
 
 class api_hl2_download_response(api_hl2_base_request):
-    based_on:str
-    max_id:int
-    waypoints_alignment:dict[int, int] = Field(
-        default = dict()
+    ref_id:str = Field(
+        description="Identifier of the reference point used for calibration by HL2",
+        pattern=refpos_id_pattern
     )
-
+    based_on:str
+    max_idx:int
+    waypoints:list[data_hl2_waypoint] = Field(
+        default=list(),
+        description="set of waypoints measured by the HoloLens2 system"
+    )
+    paths:list[data_hl2_path] = Field(
+        default=list(),
+        description="list of links locally measured between waypoints"
+    )
 
 
 ## ===== HL2 UPLOAD ===== ##
 
 class api_hl2_upload_request(api_hl2_base_request):
-    based_on:str
     ref_id:str = Field(
         description="Identifier of the reference point used for calibration by HL2",
         pattern=refpos_id_pattern
     )
+    based_on:str
     radius:float = Field(
         description="spherical radius of the waypoint around its area center"
     )
@@ -227,5 +235,9 @@ class api_hl2_upload_request(api_hl2_base_request):
     )
 
 class api_hl2_upload_response(api_hl2_base_response):
-    pass
+    based_on:str
+    max_id:int
+    waypoints_alignment:dict[int, int] = Field(
+        default = dict()
+    )
 
