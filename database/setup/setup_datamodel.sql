@@ -238,6 +238,7 @@ CREATE TABLE sar.F_SESSION_ALIAS (
 
     DEVICE_ID CHAR(24) NOT NULL
     , USER_ID CHAR(24) NOT NULL
+    , OWNER_SESSION_TOKEN_ID TEXT NOT NULL
     , USER_SESSION_TOKEN_ID TEXT NOT NULL
     , SALT_ID TEXT NOT NULL
     , FAKE_SESSION_TOKEN_ID TEXT NOT NULL
@@ -248,6 +249,12 @@ CREATE TABLE sar.F_SESSION_ALIAS (
     , CREATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
 );
+COMMENT 
+    ON COLUMN sar.F_SESSION_ALIAS.OWNER_SESSION_TOKEN_ID 
+    IS 'the user session which required the creation of this fake token';
+COMMENT 
+    ON COLUMN sar.F_SESSION_ALIAS.USER_SESSION_TOKEN_ID 
+    IS 'this is not the owner of the session token, but the session token which is mapped to the faked token';
 COMMENT 
     ON TABLE sar.F_SESSION_ALIAS 
     IS 'for security reasons, it is strongly discouraged to echo a session token inside a response; for this reason, the server can map a session token in another fake session token';
@@ -664,8 +671,10 @@ CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
     
     -- measures
     , LOCAL_AREA_INDEX_ID INT NOT NULL
-    , AREA_RADIUS_VL FLOAT(4) NOT NULL
-        DEFAULT 0.5
+    -- , AREA_RADIUS_VL FLOAT(4) NOT NULL
+    --     DEFAULT 0.5
+    , WAYPOINT_CREATED_TS TIMESTAMP
+        DEFAULT NULL
     
     -- alignment algorihm results
     , ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK BIGINT
@@ -760,13 +769,18 @@ CREATE TABLE sar.F_HL2_STAGING_PATHS (
     
     DEVICE_ID CHAR(24) NOT NULL
     , SESSION_TOKEN_ID TEXT NOT NULL
+    , SESSION_TOKEN_INHERITED_ID TEXT
+        DEFAULT NULL
+    , U_REFERENCE_POSITION_ID TEXT NOT NULL
 
-    , LOCAL_WAYPOINT_1_ID INT NOT NULL
-    , LOCAL_WAYPOINT_2_ID INT NOT NULL
-    , SOURCE_FROM_SERVER_FL BOOLEAN NOT NULL
-        DEFAULT false
+    , WAYPOINT_1_STAGING_FK INT NOT NULL
+    , WAYPOINT_2_STAGING_FK INT NOT NULL
+    , PATH_DISTANCE FLOAT
+        DEFAULT NULL
     
     -- metadata
+    , SOURCE_FROM_SERVER_FL BOOLEAN NOT NULL
+        DEFAULT false
     , CREATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
 );
