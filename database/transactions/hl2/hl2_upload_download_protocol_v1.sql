@@ -146,6 +146,7 @@ AS $$ BEGIN
 	RETURN TRUE;
 END $$ ;
 
+-- get session token from tables (if the session is opened)
 CREATE OR REPLACE FUNCTION get_session_of( arg_user_id TEXT, arg_device_id TEXT )
 	RETURNS TEXT
 	LANGUAGE plpgsql
@@ -378,7 +379,7 @@ INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
 	0  -- FIRST area_index IS ALWAYS zero
 )
 RETURNING 
-	F_HL2_QUALITY_WAYPOINTS_PK;
+	*;
 
 -- check insert result
 SELECT * FROM sar.F_HL2_STAGING_WAYPOINTS;
@@ -397,7 +398,7 @@ INSERT INTO sar.F_HL2_STAGING_AREA_INDEX (
 	0, 0
 )
 RETURNING
-	F_HL2_STAGING_AREA_INDEX_PK;
+	*;
 
 -- check the insert 
 SELECT * FROM sar.F_HL2_STAGING_AREA_INDEX;
@@ -526,6 +527,7 @@ SELECT
 MAX(LOCAL_POSITION_ID) AS MAX_LOCAL_POSITION_ID 
 FROM sar.F_HL2_STAGING_WAYPOINTS
 WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' );
+-- in the general case, the session ID should be the inherited one
 
 -- ALIGNMENT ALGORITHM
 -- in this example, the waypoint is compared with only one point, but it gives the idea
@@ -957,11 +959,6 @@ SELECT get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' );
 ```
 */
 
--- Ups...
-UPDATE sar.F_HL2_STAGING_WAYPOINTS
-	SET CREATED_TS = TO_TIMESTAMP('2023/08/23 12:00:02', 'YYYY/MM/DD HH:MI:SS')
-WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' );
-
 -- does the session exist in staging? --> NO
 SELECT 
 (COUNT(*) > 0)::BOOLEAN AS SESSION_DEFINED_IN_STAGING_FL
@@ -1015,6 +1012,22 @@ FROM sar.F_HL2_STAGING_WAYPOINTS
 WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID8849249249_USER', 'SARHL2_ID8651165355_DEVC' )
 GROUP BY 1,2
 ORDER BY CREATED_TS DESC;
+
+-- get max IDX on inherited SESSION 
+SELECT 
+MAX(LOCAL_POSITION_ID) AS MAX_LOCAL_POSITION_ID 
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' );
+-- using inherited session id
+
+-- get all the positions inside a given radius
+SELECT 
+*
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE SESSION_TOKEN_ID = get_session_of( 'SARHL2_ID2894646521_USER', 'SARHL2_ID0931557300_DEVC' )
+-- let's assume a radius = 3
+--    the current pos is due to based_on empty 
+AND dist( UX_VL, UY_VL, UZ_VL, 0, 0, 0 ) <= 3; 
 
 
 /* ======================================================
