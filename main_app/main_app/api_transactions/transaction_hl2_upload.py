@@ -12,6 +12,10 @@ from api_transactions.api_security_transactions.ud_security_support import ud_se
 
 
 
+    
+
+
+
 api_transaction_hl2_upload_sql_exec_log = """
 INSERT INTO sar.F_ACTIVITY_LOG (
     LOG_TYPE_DS, LOG_TYPE_ACCESS_FL, LOG_SUCCESS_FL, LOG_WARNING_FL, LOG_ERROR_FL, LOG_SECURITY_FAULT_FL,
@@ -30,6 +34,9 @@ VALUES (
 
 
 
+    
+
+
 
 class api_transaction_hl2_upload(api_transaction_base):
     ''' HoloLens2 Upload transaction
@@ -38,16 +45,16 @@ class api_transaction_hl2_upload(api_transaction_base):
     inside the measures of the stagn area table. 
     '''
 
-    def __init__(self, env: environment, request) -> None:
+    def __init__(self, env: environment, request:api_hl2_upload_request) -> None:
         ''' Create the transaction
         
         '''
         super().__init__(env)
         
         # request comes from the API
-        self.request = request
+        self.request:api_hl2_upload_request = request
         # response is built during check phase
-        self.response = None
+        self.response:api_hl2_upload_response = None
 
         # CHECK response from the daabase
         self.__res:list = None
@@ -60,7 +67,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         self.__log_unsecure_request:bool = False
 
         # transaction custom data
-        pass
+        self.security_handle:ud_security_support = ud_security_support(env)
 
 
 
@@ -73,7 +80,36 @@ class api_transaction_hl2_upload(api_transaction_base):
         ''' transaction check phase
         
         '''
-        pass
+        if self.request.based_on == "":
+            self.__build_response(
+                res_status=status.HTTP_400_BAD_REQUEST,
+                res_status_description="bad request",
+                log_detail='based_on in request cannot be empty'
+            )
+            return
+
+        # fake session ID checks
+        found, inherited, inherits_session = self.__check_session_exists()
+        if not found:
+            self.__build_response(
+                res_status=status.HTTP_404_NOT_FOUND,
+                res_status_description="not found",
+                log_detail='session is missing in staging'
+            )
+            return
+        found, _, fake_session_token, salt = self.security_handle.has_fake_token(
+            self.request.user_id,
+            self.request.device_id,
+            self.request.session_token
+        )
+        if fake_session_token != self.request.based_on:
+            self.__build_response(
+                res_status=status.HTTP_400_BAD_REQUEST,
+                res_status_description="bad request",
+                log_detail='reference to a session, but using a unknown fake token',
+                unsecure_request=True
+            )
+            return
 
         self.__build_response(
             res_status=status.HTTP_200_OK,
@@ -135,7 +171,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         cur.execute(
             api_transaction_hl2_upload_sql_exec_log,
             {
-                'LOG_TYPE_DS' : 'hololens2 integration',
+                'LOG_TYPE_DS' : 'hololens2 upload',
                 'LOG_TYPE_ACCESS_FL' : False,
                 'LOG_SUCCESS_FL' : False,
                 'LOG_WARNING_FL' : False,
@@ -154,6 +190,39 @@ class api_transaction_hl2_upload(api_transaction_base):
 
 
 
+    def __check_session_exists( self ) -> (bool, bool, str):
+        ''' check if the session exists and return its real inherited token if found
+        
+        '''
+        found, data, _, _ = self.__extract_from_db(
+            """
+            SELECT 
+                ( SESSION_TOKEN_INHERITED_ID IS NOT NULL )::BOOLEAN AS HAS_INHERITED_SESSION_FL,
+                SESSION_TOKEN_INHERITED_ID
+            FROM sar.F_HL2_STAGING_WAYPOINTS
+            WHERE 1=1
+            AND LOCAL_POSITION_ID = 0
+            AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
+            AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s;
+            """,
+            {
+                'U_REFERENCE_POSITION_ID' : self.request.ref_id,
+                'SESSION_TOKEN_ID' : self.request.session_token
+            }
+        )
+
+        if not found:
+            return ( False, False, '' )
+        else:
+            return ( True, data[0]['HAS_INHERITED_SESSION_FL'], data[0]['SESSION_TOKEN_INHERITED_ID'] )
+
+
+
+
+    
+
+
+    
     def __build_response( self, 
         res_status:int, 
         res_status_description:str, 

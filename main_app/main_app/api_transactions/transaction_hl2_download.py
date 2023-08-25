@@ -331,7 +331,7 @@ class api_transaction_hl2_download(api_transaction_base):
         cur.execute(
             api_transaction_hl2_download_sql_exec_log,
             {
-                'LOG_TYPE_DS' : 'hololens2 integration',
+                'LOG_TYPE_DS' : 'hololens2 download',
                 'LOG_TYPE_ACCESS_FL' : False,
                 'LOG_SUCCESS_FL' : True,
                 'LOG_WARNING_FL' : False,
@@ -354,7 +354,7 @@ class api_transaction_hl2_download(api_transaction_base):
         cur.execute(
             api_transaction_hl2_download_sql_exec_log,
             {
-                'LOG_TYPE_DS' : 'hololens2 integration',
+                'LOG_TYPE_DS' : 'hololens2 download',
                 'LOG_TYPE_ACCESS_FL' : False,
                 'LOG_SUCCESS_FL' : False,
                 'LOG_WARNING_FL' : False,

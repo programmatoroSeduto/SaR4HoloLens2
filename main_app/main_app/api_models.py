@@ -230,14 +230,10 @@ class api_hl2_upload_request(api_hl2_base_request):
     paths:list[data_hl2_path] = Field(
         description="list of links locally measured between waypoints"
     )
-    area_renaming:dict[int, int] = Field(
-        description="Area remapping local, used for describing zones at HL2 level"
-    )
 
 class api_hl2_upload_response(api_hl2_base_response):
-    based_on:str
     max_id:int
-    waypoints_alignment:dict[int, int] = Field(
+    wp_alignment:dict[int, int] = Field(
         default = dict()
     )
 

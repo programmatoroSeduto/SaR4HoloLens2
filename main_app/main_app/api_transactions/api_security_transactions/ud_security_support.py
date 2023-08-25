@@ -64,7 +64,7 @@ class ud_security_support:
 
 
 
-    def get_fake_token_infos(fake_token) -> (bool, str, str, str, str, str):
+    def get_fake_token_infos(self, fake_token) -> (bool, str, str, str, str, str):
         ''' Get all the informations related to the fake token if it exists
         
         Return in not exising case:
@@ -83,6 +83,8 @@ class ud_security_support:
             (False, None, None, None)
         Return when the token is found (first available):
             (True, 'user_session_token', 'fake_session_token', 'salt')
+        Names:
+            found, user_session_token, fake_session_token, salt
         '''
 
         found, data, _, _ = self.__extract_from_db(
