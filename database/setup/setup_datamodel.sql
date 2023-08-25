@@ -654,8 +654,10 @@ CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
     , SESSION_TOKEN_INHERITED_ID TEXT
         DEFAULT NULL
 
-    -- position local identifier
+    -- position local identifier (inherited)
     , LOCAL_POSITION_ID INT NOT NULL
+    -- local position identifier directly from the request
+    , REQUEST_POSITION_ID INT NOT NULL
 
     -- area center
     , U_REFERENCE_POSITION_ID TEXT NOT NULL
@@ -680,6 +682,10 @@ CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
     , ALIGNMENT_TYPE_FL BOOLEAN NOT NULL
         DEFAULT false
     , ALIGNMENT_QUALITY_VL FLOAT
+        DEFAULT NULL
+    , ALIGNMENT_DISTANCE_VL FLOAT
+        DEFAULT NULL
+    , ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK FLOAT
         DEFAULT NULL
     
     -- metadata
