@@ -238,21 +238,81 @@ async def api_device_login(
 
 
 
-# === HL2 integration === #
+# === HL2 integration download === #
 from api_transactions.api_security_transactions import transaction_hl2_security
-'''
-def example():
+from api_transactions.transaction_hl2_download import api_transaction_hl2_download
+@api.post(
+    "/api/hl2/download",
+    tags=[ metadata.api_tags.api_hl2_download ],
+    response_model=api_models.api_hl2_download_response
+)
+async def api_hl2_download(
+    request_body: Annotated[api_models.api_hl2_download_request, Body()]
+) -> api_models.api_hl2_download_response:
+    ''' HoloLens2 Download
+
+    The API call allows HoloLens2 to get data from the server. 
+    '''
     global config, env
+    log.info_api( "/api/hl2/download", src=metadata.api_tags.api_hl2_download )
+
     tr_security = transaction_hl2_security(env, api_models.api_hl2_base_request())
     tr_security.check()
     tr_security.execute()
     
     if not tr_security.success:
-        return 'error!'
+        return utils.set_response_timestamp(
+            request_body,
+            tr_security.response
+        )
 
-    # else: go on
-'''
+    tr_download = api_transaction_hl2_download(env, request_body)
+    tr_download.check()
+    tr_download.execute()
 
+    return utils.set_response_timestamp(
+        request_body,
+        tr_download.response
+    )
+
+
+
+# === HL2 integration upload === #
+from api_transactions.transaction_hl2_upload import api_transaction_hl2_upload
+@api.post(
+    "/api/hl2/upload",
+    tags=[ metadata.api_tags.api_hl2_upload ],
+    response_model=api_models.api_hl2_upload_response
+) 
+async def api_hl2_upload(
+    request_body: Annotated[api_models.api_hl2_upload_request, Body()]
+) -> api_models.api_hl2_upload_response:
+    ''' HoloLens2 Upload
+
+    This API call allows he HoloLens2 to send new informations to 
+    the server
+    '''
+    global config, env
+    log.info_api( "/api/hl2/upload", src=metadata.api_tags.api_hl2_upload )
+
+    tr_security = transaction_hl2_security(env, api_models.api_hl2_base_request())
+    tr_security.check()
+    tr_security.execute()
+    
+    if not tr_security.success:
+        return utils.set_response_timestamp(
+            request_body,
+            tr_security.response
+        )
+
+    tr_upload = api_transaction_hl2_upload(env, request_body)
+    tr_upload.check()
+    tr_upload.execute()
+
+    return utils.set_response_timestamp(
+        request_body,
+        tr_upload.response
+    )
 
 
 

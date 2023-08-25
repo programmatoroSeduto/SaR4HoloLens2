@@ -340,6 +340,31 @@ SELECT COUNT(*) AS CREATED_PATHS FROM insert_step;
 
 
 
+"""
+inputs:
+{
+    'U_REFERENCE_POSITION_ID' = ''
+    'SESSION_TOKEN_INHERITED_ID' = ''
+}
+output:
+    MAX_LOCAL_POSITION_ID
+"""
+api_transaction_hl2_upload_sql_exec_get_max_id = """
+SELECT 
+    MAX(LOCAL_POSITION_ID) AS MAX_LOCAL_POSITION_ID
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE 1=1
+AND NOT(ALIGNMENT_TYPE_FL)
+AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
+AND ( 
+	SESSION_TOKEN_INHERITED_ID IS NULL 
+	OR 
+	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
+	)
+"""
+
+
+
 
     
 
@@ -404,6 +429,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         self.quality_b = 4.75
         self.renamings_found = False
         self.renamings = list()
+        self.max_idx
 
 
 
@@ -486,6 +512,7 @@ class api_transaction_hl2_upload(api_transaction_base):
     def __exec_success( self ):
         global api_transaction_hl2_upload_sql_exec_waypoints
         global api_transaction_hl2_upload_sql_exec_paths
+        global api_transaction_hl2_upload_sql_exec_get_max_id
 
         cur = self.db.get_cursor()
         cur.execute("BEGIN TRANSACTION;")
@@ -517,7 +544,35 @@ class api_transaction_hl2_upload(api_transaction_base):
             }
         )
 
-        # ... build response ...
+        # get max index in session
+        _, data, _, _ = self.__extract_from_db(
+            api_transaction_hl2_upload_sql_exec_get_max_id,
+            {
+                'U_REFERENCE_POSITION_ID' : self.request.ref_id,
+                'SESSION_TOKEN_INHERITED_ID' : self.inherits_session or ''
+            }
+        )
+        self.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
+
+        # report on log
+        cur.execute(
+            api_transaction_hl2_upload_sql_exec_log,
+            {
+                'LOG_TYPE_DS' : 'hololens2 upload',
+                'LOG_TYPE_ACCESS_FL' : False,
+                'LOG_SUCCESS_FL' : True,
+                'LOG_WARNING_FL' : False,
+                'LOG_SECURITY_FAULT_FL' :  False,
+                'LOG_DETAILS_DS' : self.__log_detail_ds,
+                'LOG_DATA' : self.dict_to_field(dict(self.request)),
+            }
+        )
+
+        # build response
+        self.response.max_id = self.max_idx
+        self.response.wp_alignment = dict()
+        for align in self.renamings:
+            self.response.wp_alignment[align['REQUEST_POSITION_ID']] = align['ALIGNED_POSITION_ID']
 
         cur.execute("COMMIT TRANSACTION;")
 
