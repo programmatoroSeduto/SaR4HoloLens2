@@ -3,6 +3,16 @@ import requests
 import json
 from fastapi import status
 import sys
+import random
+import time
+from datetime import datetime
+
+random.seed(time.time())
+newpoint = [
+    random.uniform(-1, 5),
+    0,
+    random.uniform(-1, 5)
+]
 
 main_app_address = "http://127.0.0.1:5000/api"
 user_session_token = {
@@ -216,13 +226,15 @@ if res.status_code == status.HTTP_200_OK:
     print("Server OK")
 else:
     err = True
-    print("ERROR: can't acquire device ")
+    print("ERROR: can't download ")
     print("returned code:", res.status_code)
 print("response:")
 res_jsonobj = None
 res_raw = None
 try:
     print("(JSON response)", res.json())
+    res_jsonobj = res.json()
+    fake_session_token = res_jsonobj['based_on']
 except:
     print("(RAW response)", res.text)
     res_raw = res.text
@@ -233,6 +245,123 @@ if err:
 print("hl2 trying to download positions from server (expected: empty) ... END")
 
 input()
+
+
+
+
+## ===== UPLOAD REQUEST ===== ## 
+
+print("hl2 time to upload! ... ")
+payload = {
+    'user_id' : 'SARHL2_ID4243264423_USER',
+    'device_id' : 'SARHL2_ID8651165355_DEVC',
+    'session_token' : user_session_token['SARHL2_ID4243264423_USER'],
+    'ref_id' : 'SARHL2_ID1234567890_REFP',
+    'based_on' : fake_session_token,
+    'waypoints' : [
+        {
+            'pos_id' : 1,
+            'area_id' : 0,
+            'v' : newpoint,
+            'wp_timestamp' : datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        }
+    ],
+    'paths' : [
+        {
+            'wp1' : 0,
+            'wp2' : 1,
+            'dist' : newpoint[0]*newpoint[0] + newpoint[2]*newpoint[2],
+            'pt_timestamp' : datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        }
+    ]
+}
+
+res = None
+print(json.dumps(payload, indent=4))
+try:
+    res = requests.post(
+        url=f"{main_app_address}/hl2/upload",
+        data=json.dumps(payload)
+    )   
+except ConnectionRefusedError as cre:
+    print("CONNECTION ERROR --", cre, "\nclosing")
+    sys.exit(1)
+except requests.exceptions.ConnectionError as reqcre:
+    print("CONNECTION ERROR --", reqcre, "\nclosing")
+    sys.exit(1)
+
+if res.status_code == status.HTTP_200_OK:
+    print("Server OK")
+else:
+    err = True
+    print("ERROR: can't upload! ")
+    print("returned code:", res.status_code)
+print("response:")
+res_jsonobj = None
+res_raw = None
+try:
+    print("(JSON response)", res.json())
+    res_jsonobj = res.json()
+except:
+    print("(RAW response)", res.text)
+    res_raw = res.text
+
+print("hl2 time to upload! ... END")
+
+input()
+
+
+
+
+## ===== DOWNLOAD REQUEST ===== ## 
+
+print("hl2 trying to download positions from server ... ")
+payload = {
+    'user_id' : 'SARHL2_ID4243264423_USER',
+    'device_id' : 'SARHL2_ID8651165355_DEVC',
+    'session_token' : user_session_token['SARHL2_ID4243264423_USER'],
+    'based_on' : fake_session_token,
+    'ref_id' : 'SARHL2_ID1234567890_REFP',
+    'center' : [ 0, 0, 0 ],
+    'radius' : 2
+}
+res = None
+try:
+    res = requests.post(
+        url=f"{main_app_address}/hl2/download",
+        data=json.dumps(payload)
+    )   
+except ConnectionRefusedError as cre:
+    print("CONNECTION ERROR --", cre, "\nclosing")
+    sys.exit(1)
+except requests.exceptions.ConnectionError as reqcre:
+    print("CONNECTION ERROR --", reqcre, "\nclosing")
+    sys.exit(1)
+
+if res.status_code == status.HTTP_200_OK:
+    print("Server OK")
+else:
+    err = True
+    print("ERROR: can't download ")
+    print("returned code:", res.status_code)
+print("response:")
+res_jsonobj = None
+res_raw = None
+try:
+    print("(JSON response)", res.json())
+    res_jsonobj = res.json()
+    fake_session_token = res_jsonobj['based_on']
+except:
+    print("(RAW response)", res.text)
+    res_raw = res.text
+
+if err:
+    print("ERROR: closing")
+    sys.exit(1)
+print("hl2 trying to download positions from server  ... END")
+
+input()
+
 
 
 ## ===== USER LOGOUT FOR NON ADMIN USER ===== ## 

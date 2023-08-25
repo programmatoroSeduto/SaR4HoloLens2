@@ -239,7 +239,7 @@ CREATE TABLE sar.F_SESSION_ALIAS (
     DEVICE_ID CHAR(24) NOT NULL
     , USER_ID CHAR(24) NOT NULL
     , OWNER_SESSION_TOKEN_ID TEXT NOT NULL
-    , USER_SESSION_TOKEN_ID TEXT NOT NULL
+    , USER_SESSION_TOKEN_ID TEXT
     , SALT_ID TEXT NOT NULL
     , FAKE_SESSION_TOKEN_ID TEXT NOT NULL
 
@@ -252,7 +252,7 @@ COMMENT
     IS 'the user session which required the creation of this fake token';
 COMMENT 
     ON COLUMN sar.F_SESSION_ALIAS.USER_SESSION_TOKEN_ID 
-    IS 'this is not the owner of the session token, but the session token which is mapped to the faked token';
+    IS 'this is not the owner of the session token, but the session token which is mapped to the faked token. The system could also decide to generate a completely fake token, using just the salt';
 COMMENT 
     ON TABLE sar.F_SESSION_ALIAS 
     IS 'for security reasons, it is strongly discouraged to echo a session token inside a response; for this reason, the server can map a session token in another fake session token';
@@ -777,8 +777,8 @@ CREATE TABLE sar.F_HL2_STAGING_PATHS (
         DEFAULT NULL
     , U_REFERENCE_POSITION_ID TEXT NOT NULL
 
-    , WAYPOINT_1_STAGING_FK INT NOT NULL
-    , WAYPOINT_2_STAGING_FK INT NOT NULL
+    , WAYPOINT_1_STAGING_FK INT
+    , WAYPOINT_2_STAGING_FK INT
     , PATH_DISTANCE FLOAT
         DEFAULT NULL
     

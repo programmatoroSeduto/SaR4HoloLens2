@@ -27,27 +27,26 @@ class ud_security_support:
 
 
 
-    def try_get_real_token_from_fake(self, user_id, device_id, owner_token, fake_token) -> str:
+    def try_get_real_token_from_fake(self, user_id, device_id, owner_token, fake_token) -> (bool, bool, str):
         ''' try to get the real token from a fake token
         
         the function tries to get a real session token from fake token. 
         If the function fails, it returns None, and the meaning of this
         return value depends on the situation the check is runned out. 
-
-        TODO
-        - cache system : to avoid useless requests to the database
         '''
 
         found, data, _, _ = self.__extract_from_db(
             """
             SELECT 
-                USER_SESSION_TOKEN_ID 
+                USER_SESSION_TOKEN_ID, 
+                (FAKE_SESSION_TOKEN_ID = SALT_ID)::BOOLEAN AS IS_NOT_INHERITED_TOKEN_FL
             FROM sar.F_SESSION_ALIAS
             WHERE 1=1
             AND USER_ID  = %(user_id)s
             AND DEVICE_ID  = %(device_id)s
             AND OWNER_SESSION_TOKEN_ID = %(owner_token)s
-            AND FAKE_SESSION_TOKEN_ID = %(fake_token)s;
+            AND FAKE_SESSION_TOKEN_ID = %(fake_token)s
+            LIMIT 1;
             """,
             {
                 'user_id' : user_id,
@@ -58,9 +57,9 @@ class ud_security_support:
         )
 
         if not found:
-            return None
+            return (False, False, None)
         else:
-            return data[0]['USER_SESSION_TOKEN_ID']
+            return (True, data[0]['IS_NOT_INHERITED_TOKEN_FL'], data[0]['USER_SESSION_TOKEN_ID'])
 
 
 
@@ -111,11 +110,14 @@ class ud_security_support:
             return (True, data[0]['USER_SESSION_TOKEN_ID'], data[0]['FAKE_SESSION_TOKEN_ID'], data[0]['SALT_ID'])
 
 
-    def create_fake_session_token(self, user_id, device_id, owner_token, user_token) -> bool:
+    def create_fake_session_token(self, user_id, device_id, owner_token, user_token = None) -> bool:
         cur = self.db.get_cursor()
         _, data, _, _ = self.__extract_from_db(
             """
-            INSERT INTO sar.F_SESSION_ALIAS 
+            INSERT INTO sar.F_SESSION_ALIAS (
+                USER_ID, DEVICE_ID, OWNER_SESSION_TOKEN_ID, USER_SESSION_TOKEN_ID,
+                SALT_ID, FAKE_SESSION_TOKEN_ID
+            )
             SELECT 
                 %(user_id)s AS USER_ID ,
                 %(device_id)s AS DEVICE_ID ,
@@ -123,7 +125,7 @@ class ud_security_support:
                 data_tab.session_to_hide AS USER_SESSION_TOKEN_ID ,
                 data_tab.salt_code AS SALT_ID ,
                 MD5(
-                    CONCAT( data_tab.salt_code, data_tab.session_to_hide, data_tab.salt_code )
+                    CONCAT( data_tab.salt_code, COALESCE(data_tab.session_to_hide, 'NOTINHERITEDSESSION'), data_tab.salt_code )
                 ) AS FAKE_SESSION_TOKEN_ID
             FROM (
                 SELECT 
@@ -131,7 +133,7 @@ class ud_security_support:
                     %(user_token)s AS session_to_hide
             ) AS data_tab 
             RETURNING
-                FAKE_SESSION_TOKEN_ID;
+                FAKE_SESSION_TOKEN_ID, SALT_ID;
             """,
             {
                 'user_id' : user_id,

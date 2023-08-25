@@ -163,7 +163,7 @@ class data_hl2_waypoint(data_base_pack):
     v:tuple[float, float, float] = Field(
         description="Area Center of the waypoint wrt the reference position"
     )
-    wp_timestamp:datetime = Field(
+    wp_timestamp:Union[str, datetime] = Field(
         description="the date/time the waypoint has been recorded"
     )
 
@@ -177,8 +177,7 @@ class data_hl2_path(data_base_pack):
     dist:float = Field(
         ge=0.0
     )
-    pt_timestamp:datetime = Field(
-        default=datetime.now(),
+    pt_timestamp:Union[str, datetime] = Field(
         description="the date/time the link has been recorded"
     )
 
@@ -221,9 +220,9 @@ class api_hl2_upload_request(api_hl2_base_request):
         pattern=refpos_id_pattern
     )
     based_on:str
-    radius:float = Field(
-        description="spherical radius of the waypoint around its area center"
-    )
+    # radius:float = Field(
+    #     description="spherical radius of the waypoint around its area center"
+    # )
     waypoints:list[data_hl2_waypoint] = Field(
         description="set of waypoints measured by the HoloLens2 system"
     )

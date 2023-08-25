@@ -91,19 +91,23 @@ FROM all_points
 WHERE SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
 ) -- SELECT * FROM all_points;
 , selected_paths AS ( -- tutti gli archi che hanno almeno un punto nuovo tra i due estremi
-SELECT 
-*
+SELECT DISTINCT
+    WAYPOINT_1_STAGING_FK,
+    WAYPOINT_2_STAGING_FK,
+    PATH_DISTANCE,
+    MIN(CREATED_TS) AS CREATED_TS
 FROM sar.F_HL2_STAGING_PATHS
 WHERE 1=0
 OR WAYPOINT_1_STAGING_FK IN ( SELECT DISTINCT F_HL2_QUALITY_WAYPOINTS_PK FROM unknown_points )
 OR WAYPOINT_2_STAGING_FK IN ( SELECT DISTINCT F_HL2_QUALITY_WAYPOINTS_PK FROM unknown_points )
+GROUP BY 1,2,3
 ) 
 SELECT
     pth.WAYPOINT_1_STAGING_FK,
     wp1s.LOCAL_POSITION_ID AS LOCAL_POSITION_1_ID,
     pth.WAYPOINT_2_STAGING_FK,
     wp2s.LOCAL_POSITION_ID AS LOCAL_POSITION_2_ID,
-    COALESCE(pth.PATH_DISTANCE ,dist( 
+    COALESCE(pth.PATH_DISTANCE, dist( 
         wp1s.UX_VL, wp1s.UY_VL, wp1s.UZ_VL, 
         wp2s.UX_VL, wp2s.UY_VL, wp2s.UZ_VL )) AS PATH_DISTANCE,
     pth.CREATED_TS
@@ -220,13 +224,13 @@ class api_transaction_hl2_download(api_transaction_base):
             self.device_is_calibrating = False
             self.inherited_session_fake = self.request.based_on
 
-            self.inherited_session_real = self.security_handle.try_get_real_token_from_fake(
+            token_found, is_not_inherited_token, self.inherited_session_real = self.security_handle.try_get_real_token_from_fake(
                 self.request.user_id,
                 self.request.device_id,
                 self.request.session_token,
                 self.inherited_session_fake )
             
-            if self.inherited_session_real is None:
+            if not token_found:
                 self.__build_response(
                     res_status=status.HTTP_401_UNAUTHORIZED,
                     res_status_description="unauthorized",
@@ -234,8 +238,10 @@ class api_transaction_hl2_download(api_transaction_base):
                     unsecure_request=True
                 )
                 return
+            elif not is_not_inherited_token:
+                self.inheritable_session_staging = self.inherited_session_real
             else:
-                self.inheritable_session_staging = self.request.based_on
+                self.inheritable_session_staging = None
         
         # session exists in staging? if not, try to find a inheritable session
         self.__get_staging_infos()
@@ -481,7 +487,7 @@ class api_transaction_hl2_download(api_transaction_base):
         cur = self.db.get_cursor()
 
         # create fake session token if required
-        if self.device_is_calibrating_verified and self.inheritable_session_staging is not None:
+        if self.device_is_calibrating_verified:
             self.inherited_session_real = self.inheritable_session_staging
             self.inherited_session_fake = self.security_handle.create_fake_session_token(
                 self.request.user_id,

@@ -21,6 +21,7 @@ input:
     'JSON_WAYPOINTS' : '',
     'DEVICE_ID' : '',
     'U_REFERENCE_POSITION_ID' : '',
+    'SESSION_TOKEN_ID' : '',
     'SESSION_TOKEN_INHERITED_ID' : '',
     'ALIGNMENT_TUNING_THRESHOLD_VL' : 1.3,
     'ALIGNMENT_TUNING_TOLERANCE_VL' : 0.01,
@@ -224,11 +225,18 @@ INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (DEVICE_ID, SESSION_TOKEN_ID, SESSION_TO
 SELECT * FROM set_wps_aligned
 RETURNING *
 )
-SELECT
+SELECT DISTINCT
 	REQUEST_POSITION_ID,
-	ALIGNED_POSITION_ID
-FROM wps_renamings
-WHERE REQUEST_POSITION_ID <> ALIGNED_POSITION_ID;
+	LOCAL_POSITION_ID AS ALIGNED_POSITION_ID
+FROM set_wps_new
+WHERE REQUEST_POSITION_ID <> LOCAL_POSITION_ID
+UNION
+SELECT DISTINCT
+	REQUEST_POSITION_ID,
+	LOCAL_POSITION_ID AS ALIGNED_POSITION_ID
+FROM set_wps_aligned
+WHERE REQUEST_POSITION_ID <> LOCAL_POSITION_ID
+;
 """
 
 
@@ -271,8 +279,13 @@ SELECT
 	*
 FROM sar.F_HL2_STAGING_WAYPOINTS
 WHERE 1=1
+AND NOT(ALIGNMENT_TYPE_FL)
 AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
-AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s
+AND (
+	SESSION_TOKEN_INHERITED_ID IS NULL
+	OR
+	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
+)
 ) -- SELECT * FROM waypoints_base;
 , paths_renamed AS (
 SELECT 
@@ -281,10 +294,7 @@ SELECT
 	wp1map.U_REFERENCE_POSITION_ID AS U_REFERENCE_POSITION_ID,
 	wp1map.F_HL2_QUALITY_WAYPOINTS_PK AS WAYPOINT_1_STAGING_FK,
 	wp2map.F_HL2_QUALITY_WAYPOINTS_PK AS WAYPOINT_2_STAGING_FK,
-	COALESCE(
-		request_data.dist,
-		dist( wp1map.UX_VL, wp1map.UY_VL, wp1map.UZ_VL, wp2map.UX_VL, wp2map.UY_VL, wp2map.UZ_VL )
-	) AS PATH_DISTANCE,
+    dist( wp1map.UX_VL, wp1map.UY_VL, wp1map.UZ_VL, wp2map.UX_VL, wp2map.UY_VL, wp2map.UZ_VL ) AS PATH_DISTANCE,
 	COALESCE(
 		request_data.pt_timestamp,
 		CURRENT_TIMESTAMP
@@ -429,7 +439,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         self.quality_b = 4.75
         self.renamings_found = False
         self.renamings = list()
-        self.max_idx
+        self.max_idx = 0
 
 
 
@@ -476,7 +486,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         self.__build_response(
             res_status=status.HTTP_200_OK,
             res_status_description="success",
-            log_detail=''
+            log_detail='upload successfully completed'
         )
 
 
@@ -493,6 +503,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         if not self.__check_done:
             raise Exception("Missing CHECK step")
         
+        '''
         try:
             if self.__log_error:
                 self.__exec_fail()
@@ -500,7 +511,12 @@ class api_transaction_hl2_upload(api_transaction_base):
                 self.__exec_success()
         except Exception as e:
             self.log.err("Execution error during EXEC phase! {e}", src="aaaaaa")
-            self.db.execute("ROLLBACK TRANSACTION;")
+            self.db.get_cursor().execute("ROLLBACK TRANSACTION;")
+        '''
+        if self.__log_error:
+            self.__exec_fail()
+        else:
+            self.__exec_success()
 
 
 
@@ -525,6 +541,7 @@ class api_transaction_hl2_upload(api_transaction_base):
                 'JSON_WAYPOINTS' : json.dumps([ json.loads(wp.model_dump_json()) for wp in self.request.waypoints ]),
                 'DEVICE_ID' : self.request.device_id,
                 'U_REFERENCE_POSITION_ID' : self.request.ref_id,
+                'SESSION_TOKEN_ID' : self.request.session_token,
                 'SESSION_TOKEN_INHERITED_ID' : self.inherits_session,
                 'ALIGNMENT_TUNING_THRESHOLD_VL' : self.tuning_threshold,
                 'ALIGNMENT_TUNING_TOLERANCE_VL' : self.tuning_tollerance,
@@ -533,16 +550,29 @@ class api_transaction_hl2_upload(api_transaction_base):
             }
         )
 
+        self.response.wp_alignment = dict()
+        if self.renamings_found:
+            for align in self.renamings:
+                self.response.wp_alignment[align['REQUEST_POSITION_ID']] = align['ALIGNED_POSITION_ID']
+        true_request = list()
+        for path in self.request.paths:
+            from_pk = self.response.wp_alignment.get( path.wp1, path.wp1 )
+            to_pk = self.response.wp_alignment.get( path.wp2, path.wp2 )
+            if from_pk != to_pk:
+                true_request.append(path)
+
         # upload links
-        _, _, _, _ = self.__extract_from_db(
-            api_transaction_hl2_upload_sql_exec_paths,
-            {
-                'JSON_PATHS' : json.dumps([ json.loads(wp.model_dump_json()) for wp in self.request.paths ]),
-                'DEVICE_ID' : self.request.device_id,
-                'U_REFERENCE_POSITION_ID' : self.request.ref_id,
-                'SESSION_TOKEN_INHERITED_ID' : self.inherits_session,
-            }
-        )
+        if len(true_request) > 0:
+            _, _, _, _ = self.__extract_from_db(
+                api_transaction_hl2_upload_sql_exec_paths,
+                {
+                    'JSON_PATHS' : json.dumps([ json.loads(wp.model_dump_json()) for wp in true_request ]),
+                    'DEVICE_ID' : self.request.device_id,
+                    'U_REFERENCE_POSITION_ID' : self.request.ref_id,
+                    'SESSION_TOKEN_ID' : self.request.session_token,
+                    'SESSION_TOKEN_INHERITED_ID' : self.inherits_session,
+                }
+            )
 
         # get max index in session
         _, data, _, _ = self.__extract_from_db(
@@ -570,9 +600,6 @@ class api_transaction_hl2_upload(api_transaction_base):
 
         # build response
         self.response.max_id = self.max_idx
-        self.response.wp_alignment = dict()
-        for align in self.renamings:
-            self.response.wp_alignment[align['REQUEST_POSITION_ID']] = align['ALIGNED_POSITION_ID']
 
         cur.execute("COMMIT TRANSACTION;")
 
