@@ -155,7 +155,7 @@ SELECT
 	'SARHL2_ID8651165355_DEVC' AS DEVICE_ID,
 	'bf001756272ed463ce1d522470967e38' AS SESSION_TOKEN_ID,
 	'42b9a74748e1d20befb8f0df94c0f1cc' SESSION_TOKEN_INHERITED_ID,
-	req_pos_id AS LOCAL_POSITION_ID,
+	(max_session_id.max_id + ROW_NUMBER() OVER ()) AS LOCAL_POSITION_ID,
 	req_pos_id AS REQUEST_POSITION_ID,
 	'SARHL2_ID1234567890_REFP' AS U_REFERENCE_POSITION_ID,
 	component_of(req_v, 1) AS UX_VL,
@@ -170,6 +170,11 @@ SELECT
 	dist AS ALIGNMENT_DISTANCE_VL,
 	align_with_fk AS ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK 
 FROM classification_data
+LEFT JOIN (
+	SELECT 
+		MAX(LOCAL_POSITION_ID) AS max_id
+	FROM session_data
+) AS max_session_id ON (1=1)
 WHERE NOT(WP_IS_REDUNDANT_FL)
 RETURNING *
 ) -- SELECT * FROM set_wps_new;
@@ -197,5 +202,23 @@ FROM classification_data
 WHERE WP_IS_REDUNDANT_FL
 RETURNING *
 ) -- SELECT * FROM set_wps_new UNION ALL SELECT * FROM set_wps_aligned;
-SELECT 1;
-DROP TYPE json_schema;
+SELECT
+	req_pos_id AS REQUEST_POSITION_ID,
+	CASE 
+		WHEN WP_IS_REDUNDANT_FL THEN align_with_loc_pos_id
+		ELSE req_pos_id
+	END AS ALIGNED_POSITION_ID
+FROM analysis_data;
+
+
+
+
+
+-----------------------------------------------------------
+
+SELECT 
+	maxid.max_id + ROW_NUMBER() OVER () AS new_idx
+FROM sar.F_HL2_STAGING_WAYPOINTS
+LEFT JOIN (
+	SELECT 55 AS max_id
+) AS maxid ON (1=1);
