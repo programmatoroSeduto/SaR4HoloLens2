@@ -176,12 +176,12 @@ class api_transaction_hl2_download(api_transaction_base):
         
         # in case based_on="", the inherited real is assigned by the class
         #    depending on the inheritable sessions found for that refpoint
-        self.inherited_session_fake = None # it will be the new session fake token if created in this request
-        self.inherited_session_real = None
-        self.inheritable_session_staging = None
+        self.inherited_session_fake = None # from request or generated, None if the session doesn't inherit
+        self.inherited_session_real = None # from security check upon request or found by the transaction, None if the session doesn't inherit
+        self.inheritable_session_staging = None # assigned in __get_staging_infos(), None if the session doesn't inherit
         self.inherited_origin_pk = None # None if the session is the real first session
-        self.staging_session_exists = False
-        self.max_id = -1
+        self.staging_session_exists = False # assigned in __get_staging_infos(), it says if there are rows with this session token as owner
+        self.max_id = 0 # assigned by __exec_success(), it is zero at least
 
         # daa from database
         self.wps_raw = None
@@ -287,6 +287,9 @@ class api_transaction_hl2_download(api_transaction_base):
             'RADIUS' : self.request.radius
         }
 
+        self.response.ref_id = self.request.ref_id
+        self.response.based_on = self.inherited_session_fake or ""
+
         # get max of local IDs
         _, data, _, _ = self.__extract_from_db( 
             api_transaction_hl2_download_sql_exec_get_max_id,
@@ -295,15 +298,13 @@ class api_transaction_hl2_download(api_transaction_base):
                 'SESSION_TOKEN_INHERITED_ID' : req_dict['SESSION_TOKEN_INHERITED_ID']
             }
         )
+        self.response.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
 
         # extract waypoints
         found, self.wps_raw, _, _ = self.__extract_from_db( 
             api_transaction_hl2_download_sql_exec_get_waypoints,
             req_dict )
 
-        self.response.ref_id = self.request.ref_id
-        self.response.based_on = self.inherited_session_fake or ""
-        self.response.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
         if found: 
             # extract paths
             _, self.pth_raw, _, _ = self.__extract_from_db( 
@@ -514,9 +515,9 @@ class api_transaction_hl2_download(api_transaction_base):
             {
                 'DEVICE_ID' : self.request.device_id,
                 'SESSION_TOKEN_ID' : self.request.session_token,
-                'SESSION_TOKEN_INHERITED_ID' : self.inherited_session_fake,
-                'U_REFERENCE_POSITION_ID' : self.request.ref_id,
-                'ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK' : self.inherited_origin_pk,
+                'SESSION_TOKEN_INHERITED_ID' : self.inherited_session_fake, # can be None
+                'U_REFERENCE_POSITION_ID' : self.request.ref_id, 
+                'ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK' : self.inherited_origin_pk, # can be None
                 'ALIGNMENT_TYPE_FL' : ( self.inherited_origin_pk is not None )
             }
         )

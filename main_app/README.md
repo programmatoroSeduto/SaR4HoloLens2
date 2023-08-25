@@ -229,6 +229,28 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
         return self.response
 
 
+    def __extract_from_db(self, query, query_data):
+        ''' results as a dictionary
+        
+        RETURNS
+            ( is res not empty?, res_data, res_schema, res_count )
+        '''
+        cur = self.db.get_cursor()
+        cur.execute(query, query_data)
+        res_data_raw = cur.fetchall()
+        res_schema = [ str(col.name).upper() for col in cur.description ]
+        res_count = cur.rowcount
+
+        if res_count == 0:
+            return ( False, None, list(), 0 )
+        
+        res_data = list()
+        for row in res_data_raw:
+            res_data.append(self.to_dict(res_schema, row))
+        
+        return ( True, res_data, res_schema, res_count )
+
+
 ```
 
 Here's a general approach you can use to implement the code of a transaction:
