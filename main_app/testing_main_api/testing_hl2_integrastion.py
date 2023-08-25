@@ -6,6 +6,7 @@ import sys
 import random
 import time
 from datetime import datetime
+import math
 
 random.seed(time.time())
 newpoint = [
@@ -14,7 +15,8 @@ newpoint = [
     random.uniform(-1, 5)
 ]
 
-main_app_address = "http://127.0.0.1:5000/api"
+# main_app_address = "http://127.0.0.1:5000/api"
+main_app_address = "http://127.0.0.1/sar/api"
 user_session_token = {
     'SARHL2_ID8849249249_USER' : '',
     'SARHL2_ID4243264423_USER' : ''
@@ -270,7 +272,7 @@ payload = {
         {
             'wp1' : 0,
             'wp2' : 1,
-            'dist' : newpoint[0]*newpoint[0] + newpoint[2]*newpoint[2],
+            'dist' : math.sqrt(newpoint[0]*newpoint[0] + newpoint[2]*newpoint[2]),
             'pt_timestamp' : datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         }
     ]

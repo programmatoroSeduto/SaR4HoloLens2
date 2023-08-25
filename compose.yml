@@ -8,7 +8,8 @@ services:
       context: ./database
       dockerfile: dockerfile
     environment:
-      APP_TESTING_MODE: true
+      APP_LOAD_SAMPLES: true
+      APP_USE_EXPERIMENTAL_SCRIPT: false
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
@@ -32,11 +33,17 @@ services:
       - internal
     environment:
       UVICORN_WEB_CONCURRENCY: 1
-      UVICORN_CMD_OPTIONS: 
+      UVICORN_CMD_OPTIONS: --reload
       APP_DEBUG_MODE: true
       APP_LOG_PATH: /app/logs/main_app
       APP_LOG_NAME: main_app
       APP_LOG_LAYER: 9999
+      APP_STARTUP_DELAY: 5
+      DB_HOST: database
+      DB_PORTNO: 5432
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
   
   proxy:
     container_name: proxy

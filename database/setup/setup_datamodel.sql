@@ -658,6 +658,7 @@ CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
     , LOCAL_POSITION_ID INT NOT NULL
     -- local position identifier directly from the request
     , REQUEST_POSITION_ID INT NOT NULL
+        DEFAULT -1
 
     -- area center
     , U_REFERENCE_POSITION_ID TEXT NOT NULL
@@ -671,6 +672,7 @@ CREATE TABLE sar.F_HL2_STAGING_WAYPOINTS (
     
     -- measures
     , LOCAL_AREA_INDEX_ID INT NOT NULL
+        DEFAULT 0
     -- , AREA_RADIUS_VL FLOAT(4) NOT NULL
     --     DEFAULT 0.5
     , WAYPOINT_CREATED_TS TIMESTAMP
