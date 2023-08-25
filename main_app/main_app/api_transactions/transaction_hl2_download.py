@@ -201,10 +201,11 @@ class api_transaction_hl2_download(api_transaction_base):
             self.inherited_session_real = None
             self.inheritable_session_staging = None
 
-            if self.security_handle.has_fake_token(
+            found_fake_token, _, _, _ = self.security_handle.has_fake_token(
                 self.request.user_id,
                 self.request.device_id,
-                self.request.session_token ):
+                self.request.session_token )
+            if found_fake_token:
                 self.__build_response(
                     res_status=status.HTTP_401_UNAUTHORIZED,
                     res_status_description="unauthorized",
@@ -258,14 +259,20 @@ class api_transaction_hl2_download(api_transaction_base):
         if not self.__check_done:
             raise Exception("Missing CHECK step")
         
+        '''
         try:
             if self.__log_error:
                 self.__exec_fail()
             else:
                 self.__exec_success()
         except Exception as e:
-            self.log.err("Execution error during EXEC phase! {e}", src="aaaaaa")
-            self.db.execute("ROLLBACK TRANSACTION;")
+            self.log.err("Execution error during EXEC phase! {e}", src="transaction_hl2_download:execute")
+            self.db.get_cursor().execute("ROLLBACK TRANSACTION;")
+        '''
+        if self.__log_error:
+            self.__exec_fail()
+        else:
+            self.__exec_success()
     
 
 
@@ -281,9 +288,9 @@ class api_transaction_hl2_download(api_transaction_base):
             'U_REFERENCE_POSITION_ID' : self.request.ref_id,
             'SESSION_TOKEN_INHERITED_ID' : ( self.inherited_session_real or '' ),
             'SESSION_TOKEN_ID' : self.request.session_token,
-            'POS_X' : ( 0.0 if self.self.device_is_calibrating_verified else self.request.center[0] ),
-            'POS_Y' : ( 0.0 if self.self.device_is_calibrating_verified else self.request.center[1] ),
-            'POS_Z' : ( 0.0 if self.self.device_is_calibrating_verified else self.request.center[2] ),
+            'POS_X' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[0] ),
+            'POS_Y' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[1] ),
+            'POS_Z' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[2] ),
             'RADIUS' : self.request.radius
         }
 
@@ -307,9 +314,11 @@ class api_transaction_hl2_download(api_transaction_base):
 
         if found: 
             # extract paths
-            _, self.pth_raw, _, _ = self.__extract_from_db( 
+            paths_found, self.pth_raw, _, _ = self.__extract_from_db( 
                 api_transaction_hl2_download_sql_exec_get_paths,
                 req_dict )
+            if not paths_found:
+                self.pth_raw = list()
 
             # build the response
             for wp in self.wps_raw:
@@ -331,7 +340,7 @@ class api_transaction_hl2_download(api_transaction_base):
         cur.execute(
             api_transaction_hl2_download_sql_exec_log,
             {
-                'LOG_TYPE_DS' : 'hololens2 download',
+                'LOG_TYPE_DS' : 'hl2 download',
                 'LOG_TYPE_ACCESS_FL' : False,
                 'LOG_SUCCESS_FL' : True,
                 'LOG_WARNING_FL' : False,
@@ -354,7 +363,7 @@ class api_transaction_hl2_download(api_transaction_base):
         cur.execute(
             api_transaction_hl2_download_sql_exec_log,
             {
-                'LOG_TYPE_DS' : 'hololens2 download',
+                'LOG_TYPE_DS' : 'hl2 download',
                 'LOG_TYPE_ACCESS_FL' : False,
                 'LOG_SUCCESS_FL' : False,
                 'LOG_WARNING_FL' : False,
@@ -402,7 +411,7 @@ class api_transaction_hl2_download(api_transaction_base):
         '''
 
         # does my session exist in staging?
-        _, data, _, _ = self.__extract_from_db(
+        _, data, _, _ = self.__extract_from_db( # does my session exist in staging?
             """
             SELECT 
             (COUNT(*) > 0)::BOOLEAN AS EXISTS_FL
@@ -418,10 +427,10 @@ class api_transaction_hl2_download(api_transaction_base):
 
         # (calibration only) does it exists a session I can inherit? 
         if self.device_is_calibrating_verified:
-            found, data, _, _ = self.__extract_from_db(
+            found, data, _, _ = self.__extract_from_db( # if self.device_is_calibrating_verified:
                 """
                 SELECT DISTINCT 
-                SESSION_TOKEN_ID AS INHERITABLE_SESSION_TOKEN_ID
+                    SESSION_TOKEN_ID AS INHERITABLE_SESSION_TOKEN_ID
                 FROM sar.F_HL2_STAGING_WAYPOINTS
                 WHERE 1=1
                 AND SESSION_TOKEN_INHERITED_ID IS NULL
@@ -441,13 +450,13 @@ class api_transaction_hl2_download(api_transaction_base):
 
         # (in any case) get the PK of the origin of the inherited origin position
         if self.inheritable_session_staging is not None:
-            _, data, _, _ = self.__extract_from_db(
+            _, data, _, _ = self.__extract_from_db( # if self.inheritable_session_staging is not None:
                 """
                 SELECT 
                     F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK
                 FROM sar.F_HL2_STAGING_WAYPOINTS 
                 WHERE 1=1
-                AND SESSION_TOKEN_ID = %(INHERITABLE_SESSION_TOKEN_ID)s; 
+                AND SESSION_TOKEN_ID = %(INHERITABLE_SESSION_TOKEN_ID)s
                 AND LOCAL_POSITION_ID = 0
                 LIMIT 1;
                 """,
@@ -495,10 +504,11 @@ class api_transaction_hl2_download(api_transaction_base):
                 U_REFERENCE_POSITION_ID, U_SOURCE_FROM_SERVER_FL,
                 UX_VL, UY_VL, UZ_VL,
                 LOCAL_POSITION_ID,
+                REQUEST_POSITION_ID,
                 ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
                 ALIGNMENT_QUALITY_VL,
-                ALIGNMENT_TYPE_FL
-                -- LOCAL_AREA_INDEX_ID ??
+                ALIGNMENT_TYPE_FL,
+                LOCAL_AREA_INDEX_ID
                 -- AREA_RADIUS_VL ???
             ) VALUES (
                 %(DEVICE_ID)s,
@@ -507,15 +517,17 @@ class api_transaction_hl2_download(api_transaction_base):
                 %(U_REFERENCE_POSITION_ID)s, TRUE,
                 0.00, 0.00, 0.00, 
                 0,
+                0,
                 %(ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK)s,
                 100.0,
-                %(ALIGNMENT_TYPE_FL)s
+                %(ALIGNMENT_TYPE_FL)s,
+                0
             );
             """,
             {
                 'DEVICE_ID' : self.request.device_id,
                 'SESSION_TOKEN_ID' : self.request.session_token,
-                'SESSION_TOKEN_INHERITED_ID' : self.inherited_session_fake, # can be None
+                'SESSION_TOKEN_INHERITED_ID' : self.inherited_session_real, # can be None
                 'U_REFERENCE_POSITION_ID' : self.request.ref_id, 
                 'ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK' : self.inherited_origin_pk, # can be None
                 'ALIGNMENT_TYPE_FL' : ( self.inherited_origin_pk is not None )

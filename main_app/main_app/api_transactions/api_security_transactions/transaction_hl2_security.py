@@ -39,6 +39,7 @@ AUTH_UPDATE_DEVICE_FL AS USER_AUTH_UPLOAD_FL
 
 FROM sar.D_USER
 WHERE NOT(DELETED_FL)
+AND USER_ID = %(user_id)s
 ) AS user_data
 
 LEFT JOIN ( -- check session token
@@ -242,7 +243,7 @@ class api_transaction_hl2_security(api_transaction_base):
             self.__build_response(
                 res_status=status.HTTP_200_OK,
                 res_status_description="success",
-                log_detail=''
+                log_detail='security check success'
             )
 
 
@@ -264,7 +265,26 @@ class api_transaction_hl2_security(api_transaction_base):
     
 
     def __exec_success( self ):
-        pass # nothing to do here
+        global api_transaction_hl2_security_sql_exec_log
+        
+        cur = self.db.get_cursor()
+        cur.execute("BEGIN TRANSACTION;")
+
+        cur.execute(
+            api_transaction_hl2_security_sql_exec_log,
+            {
+                'LOG_TYPE_DS' : 'hl2 request',
+                'LOG_TYPE_ACCESS_FL' : False,
+                'LOG_SUCCESS_FL' : True,
+                'LOG_WARNING_FL' : False,
+                'LOG_SECURITY_FAULT_FL' : False,
+                'LOG_DETAILS_DS' : self.__log_detail_ds,
+                'LOG_DATA' : self.dict_to_field(dict(self.request)),
+            }
+        )
+
+        cur.execute("COMMIT TRANSACTION;")
+        self.success = True
     
 
     def __exec_fail( self ):

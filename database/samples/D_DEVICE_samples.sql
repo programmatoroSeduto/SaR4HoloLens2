@@ -72,7 +72,7 @@ VALUES
     false, true -- user write, dev write
 )
 , (
-    sar_user_id(7864861468),
+    sar_device_id(7864861468),
     'hololens2', 
     'laboratorium hololens 2 SAR project implementation v1.9', 
     'Microsoft HoloLens2',

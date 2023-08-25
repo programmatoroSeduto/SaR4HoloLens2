@@ -187,7 +187,7 @@ class data_hl2_path(data_base_pack):
 ## ===== HL2 DOWNLOAD ===== ##
 
 class api_hl2_download_request(api_hl2_base_request):
-    based_on:str
+    based_on:str = ''
     ref_id:str = Field(
         pattern = refpos_id_pattern
     )
@@ -196,13 +196,13 @@ class api_hl2_download_request(api_hl2_base_request):
         default = 500.00 # meters
     )
 
-class api_hl2_download_response(api_hl2_base_request):
+class api_hl2_download_response(api_hl2_base_response):
     ref_id:str = Field(
-        description="Identifier of the reference point used for calibration by HL2",
-        pattern=refpos_id_pattern
+        default = '',
+        description="Identifier of the reference point used for calibration by HL2"
     )
-    based_on:str
-    max_idx:int
+    based_on:str = ''
+    max_idx:int = -1
     waypoints:list[data_hl2_waypoint] = Field(
         default=list(),
         description="set of waypoints measured by the HoloLens2 system"
@@ -232,7 +232,7 @@ class api_hl2_upload_request(api_hl2_base_request):
     )
 
 class api_hl2_upload_response(api_hl2_base_response):
-    max_id:int
+    max_id:int = -1
     wp_alignment:dict[int, int] = Field(
         default = dict()
     )

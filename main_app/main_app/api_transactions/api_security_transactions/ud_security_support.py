@@ -164,3 +164,15 @@ class ud_security_support:
             res_data.append(self.to_dict(res_schema, row))
         
         return ( True, res_data, res_schema, res_count )
+
+
+
+    def to_dict( self, fields:list[str], values:list[str] ):
+        return dict(zip(fields, values))
+
+
+
+    def dict_to_field( self, d:dict ):
+        for k in d.keys():
+            d[k] = str(d[k])
+        return json.dumps(d)

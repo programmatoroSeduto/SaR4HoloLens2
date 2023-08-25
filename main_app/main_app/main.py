@@ -239,7 +239,7 @@ async def api_device_login(
 
 
 # === HL2 integration download === #
-from api_transactions.api_security_transactions import transaction_hl2_security
+from api_transactions.api_security_transactions.transaction_hl2_security import api_transaction_hl2_security
 from api_transactions.transaction_hl2_download import api_transaction_hl2_download
 @api.post(
     "/api/hl2/download",
@@ -256,7 +256,11 @@ async def api_hl2_download(
     global config, env
     log.info_api( "/api/hl2/download", src=metadata.api_tags.api_hl2_download )
 
-    tr_security = transaction_hl2_security(env, api_models.api_hl2_base_request())
+    tr_security = api_transaction_hl2_security(env, api_models.api_hl2_base_request(
+        user_id=request_body.user_id,
+        device_id=request_body.device_id,
+        session_token=request_body.session_token
+    ))
     tr_security.check()
     tr_security.execute()
     
@@ -295,7 +299,11 @@ async def api_hl2_upload(
     global config, env
     log.info_api( "/api/hl2/upload", src=metadata.api_tags.api_hl2_upload )
 
-    tr_security = transaction_hl2_security(env, api_models.api_hl2_base_request())
+    tr_security = api_transaction_hl2_security(env, api_models.api_hl2_base_request(
+        user_id=request_body.user_id,
+        device_id=request_body.device_id,
+        session_token=request_body.session_token
+    ))
     tr_security.check()
     tr_security.execute()
     
