@@ -170,7 +170,7 @@ class api_transaction_<topic>_<operation>(api_transaction_base):
                 self.__exec_success()
         except Exception as e:
             self.log.err("Execution error during EXEC phase! {e}", src="aaaaaa")
-            self.db.execute("ROLLBACK TRANSACTION;")
+            self.db.get_cursor().execute("ROLLBACK TRANSACTION;")
     
 
     def __exec_success( self ):

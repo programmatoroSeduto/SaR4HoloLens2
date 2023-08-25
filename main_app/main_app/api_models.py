@@ -236,3 +236,23 @@ class api_hl2_upload_response(api_hl2_base_response):
         default = dict()
     )
 
+
+
+## ===== HL2 SETTINGS FROM SERVER ===== ##
+
+class api_hl2_settings_request(api_hl2_base_request):
+    config_profile_id:int = -1
+
+class api_hl2_settings_response(api_hl2_base_response):
+    found_profile:bool = True
+    config_profile_id:int = 0
+    user_height:float = 1.85
+    base_height:float = 0.8
+    base_distance:float = 0.5
+    distance_tollerance:float = 0.1
+    use_cluster:bool = True
+    cluster_size:int = 25
+    use_max_indices:bool = True
+    max_indices:int = 10
+    log_layer:int = 1
+    ref_id:str = ''

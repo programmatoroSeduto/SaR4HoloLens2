@@ -324,6 +324,48 @@ async def api_hl2_upload(
 
 
 
+# === HL2 settings from server === #
+from api_transactions.transaction_hl2_settings import api_transaction_hl2_settings
+@api.post(
+    "/api/hl2/settings",
+    tags=[ metadata.api_tags.api_hl2_settings ],
+    response_model=api_models.api_hl2_settings_response
+) 
+async def api_hl2_upload(
+    request_body: Annotated[api_models.api_hl2_settings_request, Body()]
+) -> api_models.api_hl2_settings_response:
+    ''' HoloLens2 Settings from Server
+
+    It can be very useful to easily load setting directly from
+    the server instead of compiling them each time. 
+    '''
+    global config, env
+    log.info_api( "/api/hl2/settings", src=metadata.api_tags.api_hl2_settings )
+
+    tr_security = api_transaction_hl2_security(env, api_models.api_hl2_base_request(
+        user_id=request_body.user_id,
+        device_id=request_body.device_id,
+        session_token=request_body.session_token
+    ))
+    tr_security.check()
+    tr_security.execute()
+    
+    if not tr_security.success:
+        return utils.set_response_timestamp(
+            request_body,
+            tr_security.response
+        )
+
+    tr_settings = api_transaction_hl2_settings(env, request_body)
+    tr_settings.check()
+    tr_settings.execute()
+
+    return utils.set_response_timestamp(
+        request_body,
+        tr_settings.response
+    )
+
+
 
 
 log.info("Application is running now...", src="main")

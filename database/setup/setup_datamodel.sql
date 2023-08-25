@@ -619,6 +619,10 @@ CREATE TABLE sar.D_HL2_USER_DEVICE_SETTINGS (
     , LOG_LAYER_VL INT NOT NULL 
         DEFAULT 1
     
+    -- other settings
+    , REFERENCE_POSITION_ID CHAR(24)
+        DEFAULT null
+    
     -- metadata
     , CREATED_TS TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP
@@ -630,6 +634,9 @@ CREATE TABLE sar.D_HL2_USER_DEVICE_SETTINGS (
 COMMENT 
     ON TABLE sar.D_HL2_USER_DEVICE_SETTINGS 
     IS 'each HoloLens2 device must have custom settings loaded at startup by the device from server';
+COMMENT 
+    ON COLUMN sar.D_HL2_USER_DEVICE_SETTINGS.REFERENCE_POSITION_ID 
+    IS 'a reference position for the calibration can be binded to a configuration profile for more flexibility of the device';
 COMMENT 
     ON COLUMN sar.D_HL2_USER_DEVICE_SETTINGS.CONFIGURATION_PROFILE_ID 
     IS 'each user can have different config profiles';

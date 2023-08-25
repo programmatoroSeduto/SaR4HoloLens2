@@ -8,3 +8,4 @@ class api_tags:
     api_device_logout = "device logout"
     api_hl2_download = "HoloLens2 Integration Download"
     api_hl2_upload = "HoloLens2 Integration Upload"
+    api_hl2_settings = "HoloLens2 Integration Settings from Server"
