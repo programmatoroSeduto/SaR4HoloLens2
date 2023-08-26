@@ -617,7 +617,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         /// <summary>
         /// ...
         /// </summary>
-        public static api_base_response hl2UploadResponse
+        public static api_hl2_upload_response hl2UploadResponse
         {
             get => hl2UploadResponsePack;
         }
