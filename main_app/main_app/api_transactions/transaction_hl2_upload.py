@@ -41,7 +41,7 @@ CREATE TYPE json_schema AS (
 );
 WITH 
 request_data AS (
-SELECT
+SELECT DISTINCT
     pos_id,
     area_id,
     v,
@@ -266,7 +266,7 @@ CREATE TYPE json_schema AS (
 );
 WITH 
 request_data AS (
-SELECT
+SELECT DISTINCT
     wp1,
     wp2,
     dist,
