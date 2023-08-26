@@ -34,6 +34,11 @@ namespace Packages.PositionDatabase.Utils
             get => wp1.Key + "_" + wp2.Key;
         }
 
+        public string KeyStable
+        {
+            get => stableID.ToString("0000");
+        }
+
 
 
         // ===== PUBLIC METHODS ===== //
@@ -49,6 +54,27 @@ namespace Packages.PositionDatabase.Utils
             if (wpFrom == null) return null;
 
             return (wp1 == wpFrom ? wp2 : wp1);
+        }
+
+
+
+        // ===== PRIVATE ===== //
+
+        private int stableID = -1;
+
+
+
+        // ===== PRIVATE STATIC ===== //
+
+        private static int StableIdGenerator = 0;
+
+
+
+        // ===== PUBLIC METHODS ===== //
+
+        public PositionDatabasePath()
+        {
+            stableID = PositionDatabasePath.StableIdGenerator++;
         }
 
 

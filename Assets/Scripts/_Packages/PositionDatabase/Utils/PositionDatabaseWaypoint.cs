@@ -15,9 +15,19 @@ namespace Packages.PositionDatabase.Utils
             get => positionID;
         }
 
+        public int PositionStableID
+        {
+            get => stableID;
+        }
+
         public string Key
         {
             get => positionID.ToString("0000");
+        }
+
+        public string KeyStable
+        {
+            get => stableID.ToString("0000");
         }
 
         public Vector3 FirstAreaCenter
@@ -65,10 +75,22 @@ namespace Packages.PositionDatabase.Utils
 
         private int positionID = -1;
         private Vector3 AreaCenterFirst;
+        private int stableID = -1;
+
+
+
+        // ===== PRIVATE STATIC ===== //
+
+        private static int StableIdGenerator = 0;
 
 
 
         // ===== PUBLIC METHODS ===== //
+
+        public PositionDatabaseWaypoint()
+        {
+            stableID = PositionDatabaseWaypoint.StableIdGenerator++;
+        }
 
         public void AddPath(PositionDatabaseWaypoint wpTo)
         {

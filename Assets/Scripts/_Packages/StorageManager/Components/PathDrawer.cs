@@ -69,7 +69,7 @@ namespace Packages.StorageManager.Components
                 StaticLogger.Warn(this, "cannot get tag from a null waypoint; the 'wp' parameter is null", logLayer: 1);
                 return "";
             }
-            return wp.Key;
+            return wp.KeyStable;
         }
 
         public string TagOf(PositionDatabasePath link)
@@ -79,7 +79,7 @@ namespace Packages.StorageManager.Components
                 StaticLogger.Warn(this, "cannot get tag from a null link; the 'link' parameter is null", logLayer: 1);
                 return "";
             }
-            return link.Key;
+            return link.KeyStable;
         }
 
 

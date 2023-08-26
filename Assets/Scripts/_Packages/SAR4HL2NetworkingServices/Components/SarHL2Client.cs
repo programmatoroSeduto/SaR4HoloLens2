@@ -457,6 +457,8 @@ namespace Packages.SAR4HL2NetworkingServices.Components
                         archiveWaypoints.Add(finalPosId, wp);
                 }
                 UpdatedEntriesPaths.Clear();
+
+                /* (molto probabilmente non serve per l'allineamento del Positions DB)
                 foreach(data_hl2_path pt in ptList)
                 {
                     int wp1 = (SarAPI.AlignmentLookup.ContainsKey(pt.wp1) ? SarAPI.AlignmentLookup[pt.wp1] : pt.wp1);
@@ -475,6 +477,7 @@ namespace Packages.SAR4HL2NetworkingServices.Components
                     if (isKnownPath21)
                         archivePaths.Remove(finalK21);
                 }
+                */
             }
             StaticLogger.Info(sourceLog, "Performing alignment with the server ... OK", logLayer: 2);
 

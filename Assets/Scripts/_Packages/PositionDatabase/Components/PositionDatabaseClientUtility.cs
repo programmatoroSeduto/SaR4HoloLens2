@@ -27,14 +27,10 @@ namespace Packages.PositionDatabase.Components
         public PositionsDatabase PositionsDB = null;
         [Tooltip("Reference to the SAR client")]
         public SarHL2Client Client = null;
-        [Tooltip("Use timing update")]
-        public bool UseTimedUpdate = true;
-        [Tooltip("Update time (default: each 60 seconds)")]
-        public float TimedUpdatePeriodSecs = 60.0f;
-        [Tooltip("Use minimum number of new points inside the DB")]
-        public bool UseMinNumberOfPoints = true;
-        [Tooltip("Check for a minimum number of new points inside the database position (set to -1 if unused)")]
-        public int MinNumberOfPointsForUpdate = 5;
+        [Tooltip("Upload time (default: each 60 seconds)")]
+        public float UploadTime = 60.0f;
+        [Tooltip("Download time (default: each 120 seconds). Priority is given to the download")]
+        public float DownloadTime = 120.0f;
         [Tooltip("Max retry count for connection")]
         public int MaxRetryCountConnection = 10;
         [Tooltip("Connection Retry Delay")]
@@ -60,10 +56,6 @@ namespace Packages.PositionDatabase.Components
         private List<PositionDatabasePath> newPaths = new List<PositionDatabasePath>();
         // user only for logging
         private string classLogSource = "PositionDatabaseClientUtility";
-        // miss count for download
-        private int downloadMiss = 0;
-        // hit count for download
-        private int downloadHit = 0;
 
 
 
@@ -161,7 +153,16 @@ namespace Packages.PositionDatabase.Components
             // first download
             StaticLogger.Info(sourceLog, $"First download from server ...", logLayer: 0);
             yield return BSCOR_Download();
-            StaticLogger.Info(sourceLog, $"First download from server ... OK: dataset aligned", logLayer: 0);
+            if(!Client.Success)
+            {
+                StaticLogger.Err(sourceLog, $"Error during first download; terminating coroutine ...");
+                COR_MainWorkingCycle = null;
+                init = false;
+                yield break;
+            }
+            StaticLogger.Info(sourceLog, $"First download from server ... OK: starting inner working cycle", logLayer: 0);
+
+            yield return BSCOR_InnerWorkingCycle();
         }
 
         public IEnumerator BSCOR_ConnectClient()
@@ -188,6 +189,78 @@ namespace Packages.PositionDatabase.Components
             }
         }
 
+        public IEnumerator BSCOR_InnerWorkingCycle()
+        {
+            string sourceLog = $"{classLogSource}:ORCOR_InnerWorkingCycle";
+            yield return null;
+
+            float remainingUploadTime = UploadTime;
+            float remainingDownloadTime = DownloadTime;
+            float timeUnit = 5.0f;
+            int retryCount = 10;
+
+            while(retryCount > 0)
+            {
+                StaticLogger.Info(sourceLog, $"waiting ... ", logLayer: 3);
+                yield return new WaitForSecondsRealtime(timeUnit);
+                StaticLogger.Info(sourceLog, $"waiting ... OK updating remaining time", logLayer: 3);
+
+                remainingUploadTime -= timeUnit;
+                remainingDownloadTime -= timeUnit;
+
+                if(remainingDownloadTime <= 0)
+                {
+                    StaticLogger.Info(sourceLog, $"time to download!", logLayer: 1);
+
+                    // ... perform upload
+                    StaticLogger.Info(sourceLog, $"uploading ... ", logLayer: 2);
+                    yield return BSCOR_Upload();
+                    if(!Client.Success)
+                    {
+                        StaticLogger.Warn(sourceLog, $"Unable to upload!", logLayer: 1);
+                        --retryCount;
+                        continue;
+                    }
+                    StaticLogger.Info(sourceLog, $"uploading ... OK", logLayer: 2);
+
+                    // ... perform download
+                    StaticLogger.Info(sourceLog, $"downloading ... ", logLayer: 2);
+                    yield return BSCOR_Download();
+                    if (!Client.Success)
+                    {
+                        StaticLogger.Warn(sourceLog, $"Unable to download!", logLayer: 1);
+                        --retryCount;
+                        continue;
+                    }
+                    StaticLogger.Info(sourceLog, $"downloading ... OK", logLayer: 2);
+
+                    remainingUploadTime = UploadTime;
+                    remainingDownloadTime = DownloadTime;
+                    retryCount = 10;
+                }
+                else if (remainingUploadTime <= 0)
+                {
+                    StaticLogger.Info(sourceLog, $"time to upload!", logLayer: 1);
+
+                    // ... perform upload
+                    StaticLogger.Info(sourceLog, $"uploading ... ", logLayer: 2);
+                    yield return BSCOR_Upload();
+                    if (!Client.Success)
+                    {
+                        StaticLogger.Warn(sourceLog, $"Unable to upload!", logLayer: 1);
+                        --retryCount;
+                        continue;
+                    }
+                    StaticLogger.Info(sourceLog, $"uploading ... OK", logLayer: 2);
+
+                    remainingUploadTime = UploadTime;
+                    retryCount = 10;
+                }
+            }
+
+            StaticLogger.Err(sourceLog, $"Unable to perform inner cycle (many errors occurred, exhausted attempts)");
+        }
+
 
 
         // ===== DOWNLOAD FEATURE ===== //
@@ -197,15 +270,14 @@ namespace Packages.PositionDatabase.Components
             string sourceLog = $"{classLogSource}:BSCOR_Download";
             yield return null;
             
-            StaticLogger.Info(sourceLog, $"Calling download from server ...", logLayer: 1);
+            StaticLogger.Info(sourceLog, $"Calling API download from server ...", logLayer: 1);
             yield return Client.ORCOR_DownloadFromServer(PositionsDB.CurrentZone.AreaCenter, UpdateRadius);
             if (!Client.Success)
             {
-                StaticLogger.Warn(sourceLog, $"Calling download from server... ERROR: cannot download from server (miss:{++downloadMiss})", logLayer: 0);
+                StaticLogger.Warn(sourceLog, $"Calling download from server... ERROR: cannot download from server", logLayer: 0);
                 yield break;
             }
-            else ++downloadHit;
-            StaticLogger.Info(sourceLog, $"Calling download from server ... OK (hit:{downloadHit})", logLayer: 1);
+            StaticLogger.Info(sourceLog, $"Calling download from server ... OK", logLayer: 1);
 
             if (Client.UpdatedEntriesWps.Count == 0)
             {
@@ -219,7 +291,7 @@ namespace Packages.PositionDatabase.Components
             foreach (Tuple<int, int, data_hl2_waypoint> jwp in Client.UpdatedEntriesWps)
             {
                 /*
-                 * è impossibile che nel download salgano dei rename. Tutte le posizioni hanno ID nuovi
+                 * è impossibile che nel download salgano dei rename. Tutte le posizioni hanno ID req->loc coincidenti
                  * */
                 PositionDatabaseWaypoint wp = GetWaypointFromJsonClass(jwp.Item3);
 
@@ -228,19 +300,26 @@ namespace Packages.PositionDatabase.Components
                     if(PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2] != null)
                     {
                         // c'è stato qualche nuovo inserimento mentre si svolgeva il dowload dei dati
-
-                        PositionDatabaseWaypoint wpNew = PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2];
-                        wpNew.setPositionID(wpCacheIndex++);
-                        newPositions.Add(wpNew);
-                        foreach (PositionDatabasePath pt in wp.Paths)
-                            newPaths.Add(pt);
+                        // l'inserimento è già stato catturato dalla CALLBACK
+                        // l'elemento va spostato nell'indice
+                        // oppure è un elemento che avevo allocato quando il mio MaxIdx era più basso
+                        // (prima del download non potevo sapere quante fossero le posizioni, così nel dubbio ho allocato al primo posto disponibile)
+                        int idx = wpCacheIndex++;
+                        PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2].setPositionID(idx);
+                        // idx potrebbe essere più alto del massimo indice a disposizione sul dizionario, attenzione
+                        if (PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(idx))
+                            PositionsDB.LowLevelDatabase.WpIndex[idx] = PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2];
+                        else
+                            PositionsDB.LowLevelDatabase.WpIndex.Add(idx, PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2]);
+                        // PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2] = null; // non serve qui, tanto la alloco sicuro dopo l'IF
                     }
                     PositionsDB.LowLevelDatabase.WpIndex[jwp.Item2] = wp;
-                    yield return new WaitForEndOfFrame();
                 }
                 else
                     PositionsDB.LowLevelDatabase.WpIndex.Add(jwp.Item2, wp);
                 PositionsDB.LowLevelDatabase.Database.Add(wp);
+
+                yield return new WaitForEndOfFrame(); // per alleggerire il carico computazionale sul frame
             }
             PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex;
             StaticLogger.Info(sourceLog, $"Importing waypoints ... OK", logLayer: 1);
@@ -262,9 +341,76 @@ namespace Packages.PositionDatabase.Components
                 }
 
                 PositionsDB.LowLevelDatabase.WpIndex[wp1Idx].AddPath(PositionsDB.LowLevelDatabase.WpIndex[wp2Idx]);
+
+                yield return new WaitForEndOfFrame(); // per alleggerire il carico computazionale sul frame
             }
             StaticLogger.Info(sourceLog, $"Importing paths ... OK", logLayer: 1);
             PositionsDB.SetStatusImporting(this, false);
+        }
+
+
+
+        // ===== UPLOAD FEATURE ===== //
+
+        public IEnumerator BSCOR_Upload()
+        {
+
+            string sourceLog = $"{classLogSource}:BSCOR_Upload";
+            yield return null;
+
+            StaticLogger.Info(sourceLog, $"Collecting informations to upload ...", logLayer: 1);
+            List<data_hl2_waypoint> wpList = collectWaypointsUpload();
+            List<data_hl2_path> ptList = collectPathsUpload();
+            yield return new WaitForEndOfFrame();
+            if(wpList.Count == 0)
+            {
+                StaticLogger.Info(sourceLog, $"nohing new to upload", logLayer: 1);
+                yield break;
+            }
+            StaticLogger.Info(sourceLog, $"Collecting informations to upload ... OK ready", logLayer: 1);
+
+            StaticLogger.Info(sourceLog, $"Calling API upload to server ...", logLayer: 1);
+            yield return Client.ORCOR_UploadToServer(wpList, ptList);
+            if(!Client.Success)
+            {
+                StaticLogger.Err(sourceLog, $"Collecting informations to upload ... ERROR: cannot upload, API error");
+                yield break;
+            }
+            StaticLogger.Info(sourceLog, $"Calling API upload to server ... OK", logLayer: 1);
+
+            StaticLogger.Info(sourceLog, $"Aligning positions database ...", logLayer: 1);
+            PositionsDB.SetStatusImporting(this, true);
+            int wpCacheIndex = Client.ServerPositionIndex;
+            foreach(Tuple<int, int, data_hl2_waypoint> item in Client.UpdatedEntriesWps)
+            {
+                // questo ciclo azzecca solo renamings (non ci sono aggiunte, ovviamente, dato che i dati li stai fornendo tu)
+                int oldIdx = item.Item1;
+                int newIdx = item.Item2;
+
+                if(PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(newIdx))
+                {
+                    if(PositionsDB.LowLevelDatabase.WpIndex[newIdx] != null)
+                    {
+                        // c'è stato un inserimento mentre si faceva l'upload
+                        // l'inserimento è già stato catturato dalla CALLBACK 
+                        // però l'elemento va spostato, altrimenti verrà sovrascritto
+                        int idx = wpCacheIndex;
+                        PositionsDB.LowLevelDatabase.WpIndex[newIdx].setPositionID(wpCacheIndex++);
+                        PositionsDB.LowLevelDatabase.WpIndex[idx] = PositionsDB.LowLevelDatabase.WpIndex[newIdx];
+                        PositionsDB.LowLevelDatabase.WpIndex[newIdx] = null;
+                    }
+                    PositionsDB.LowLevelDatabase.WpIndex[newIdx] = PositionsDB.LowLevelDatabase.WpIndex[oldIdx];
+                }
+                else
+                {
+                    // altrimenti puoi inserire liberamente l'elemento al suo posto
+                    PositionsDB.LowLevelDatabase.WpIndex.Add(newIdx, PositionsDB.LowLevelDatabase.WpIndex[oldIdx]);
+                }
+                PositionsDB.LowLevelDatabase.WpIndex[oldIdx] = null;
+            }
+            // il renaming degli archi avviene in maniera implicita poichè per ottenere la chiave di un path si usano dei get dai wps
+            PositionsDB.SetStatusImporting(this, false);
+            StaticLogger.Info(sourceLog, $"Aligning positions database ... OK aligned", logLayer: 1);
         }
 
 
@@ -282,6 +428,61 @@ namespace Packages.PositionDatabase.Components
             wp.AreaRadius = PositionsDB.BaseDistance;
 
             return wp;
+        }
+
+        private data_hl2_waypoint GetJsonClassFromWaypoint(PositionDatabaseWaypoint wp)
+        {
+            data_hl2_waypoint jwp = new data_hl2_waypoint();
+            jwp.pos_id = wp.PositionID;
+            jwp.area_id = 0;
+            jwp.v = new List<float> { wp.AreaCenter.x, wp.AreaCenter.y, wp.AreaCenter.z };
+            jwp.wp_timestamp = wp.Timestamp.ToString("%yyyy/%MM/%d %HH:%mm:%ss");
+
+            return jwp;
+        }
+
+        private data_hl2_path GetJsonClassFromPath(PositionDatabasePath pt)
+        {
+            data_hl2_path jpt = new data_hl2_path();
+            jpt.wp1 = pt.wp1.PositionID;
+            jpt.wp2 = pt.wp2.PositionID;
+            jpt.pt_timestamp = pt.wp1.Timestamp.ToString("%yyyy/%MM/%d %HH:%mm:%ss");
+
+            return jpt;
+        }
+
+        private List<data_hl2_waypoint> collectWaypointsUpload()
+        {
+            List<data_hl2_waypoint> wpList = new List<data_hl2_waypoint>();
+            HashSet<int> idWpsDuplicates = new HashSet<int>();
+            foreach (PositionDatabaseWaypoint wp in newPositions)
+            {
+                if (!idWpsDuplicates.Contains(wp.PositionID))
+                {
+                    wpList.Add(GetJsonClassFromWaypoint(wp));
+                    idWpsDuplicates.Add(wp.PositionID);
+                }
+            }
+
+            newPositions.Clear();
+            return wpList;
+        }
+
+        private List<data_hl2_path> collectPathsUpload()
+        {
+            List<data_hl2_path> ptList = new List<data_hl2_path>();
+            HashSet<string> idDuplicates = new HashSet<string>();
+            foreach (PositionDatabasePath pt in newPaths)
+            {
+                if (!idDuplicates.Contains(pt.Key))
+                {
+                    ptList.Add(GetJsonClassFromPath(pt));
+                    idDuplicates.Add(pt.Key);
+                }
+            }
+
+            newPaths.Clear();
+            return ptList;
         }
 
     }
