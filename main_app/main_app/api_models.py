@@ -181,6 +181,10 @@ class data_hl2_path(data_base_pack):
         description="the date/time the link has been recorded"
     )
 
+class data_hl2_align_item(data_base_pack):
+    request_position_id:int
+    aligned_position_id:int
+
 
 
 ## ===== HL2 DOWNLOAD ===== ##
@@ -215,14 +219,11 @@ class api_hl2_download_response(api_hl2_base_response):
 ## ===== HL2 UPLOAD ===== ##
 
 class api_hl2_upload_request(api_hl2_base_request):
+    based_on:str
     ref_id:str = Field(
         description="Identifier of the reference point used for calibration by HL2",
         pattern=refpos_id_pattern
     )
-    based_on:str
-    # radius:float = Field(
-    #     description="spherical radius of the waypoint around its area center"
-    # )
     waypoints:list[data_hl2_waypoint] = Field(
         description="set of waypoints measured by the HoloLens2 system"
     )
@@ -232,8 +233,8 @@ class api_hl2_upload_request(api_hl2_base_request):
 
 class api_hl2_upload_response(api_hl2_base_response):
     max_id:int = -1
-    wp_alignment:dict[int, int] = Field(
-        default = dict()
+    wp_alignment:list[data_hl2_align_item] = Field(
+        default = list()
     )
 
 

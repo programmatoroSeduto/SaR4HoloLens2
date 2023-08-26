@@ -6,7 +6,7 @@ from main_app.api_logging.logging import log
 from main_app.interfaces import db_interface
 from .transaction_base import api_transaction_base
 import json
-from main_app.api_models import api_hl2_upload_request, api_hl2_upload_response, data_hl2_waypoint, data_hl2_path
+from main_app.api_models import api_hl2_upload_request, api_hl2_upload_response, data_hl2_waypoint, data_hl2_path, data_hl2_align_item
 from api_transactions.api_security_transactions.ud_security_support import ud_security_support
 
 
@@ -550,14 +550,21 @@ class api_transaction_hl2_upload(api_transaction_base):
             }
         )
 
-        self.response.wp_alignment = dict()
+        self.response.wp_alignment = list()
+        align_dict = dict()
         if self.renamings_found:
             for align in self.renamings:
-                self.response.wp_alignment[align['REQUEST_POSITION_ID']] = align['ALIGNED_POSITION_ID']
+                align_dict[align['REQUEST_POSITION_ID']] = align['ALIGNED_POSITION_ID']
+                self.response.wp_alignment.append(
+                    data_hl2_align_item(
+                        request_position_id=align['REQUEST_POSITION_ID'],
+                        aligned_position_id=align['ALIGNED_POSITION_ID']
+                    )
+                )
         true_request = list()
         for path in self.request.paths:
-            from_pk = self.response.wp_alignment.get( path.wp1, path.wp1 )
-            to_pk = self.response.wp_alignment.get( path.wp2, path.wp2 )
+            from_pk = align_dict.get( path.wp1, path.wp1 )
+            to_pk = align_dict.get( path.wp2, path.wp2 )
             if from_pk != to_pk:
                 true_request.append(path)
 
