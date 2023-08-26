@@ -133,6 +133,16 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         /// </summary>
         public static readonly string ApiAddress_DeviceLogout = "/api/device/logout";
 
+        /// <summary>
+        /// HoloLens2 integration Download API address.
+        /// </summary>
+        public static readonly string ApiAddress_Hl2Download = "/api/hl2/download";
+
+        /// <summary>
+        /// HoloLens2 integration Upload API address.
+        /// </summary>
+        public static readonly string ApiAddress_Hl2Upload = "/api/hl2/upload";
+
 
 
         // ===== PRIVATE ===== //
@@ -147,15 +157,31 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         private static bool userLoggedIn = false;
         // user id
         private static string userID = "";
+        // ...
+        private static string deviceID = "";
         // user session token
         private static string userSessionToken = "";
+        // reference position 
+        private static string referencePosId = "";
         // device logged in?
         private static bool deviceLoggedIn = false;
         // user login response
         private static api_user_login_response userLoginResponsePack = null;
         // device login response pack
         private static api_device_login_response deviceLoginResponsePack = null;
-               
+        // ...
+        private static api_hl2_download_response hl2DownloadResponsePack = null;
+        // ...
+        private static string hl2DownloadResponsePackJson = "";
+        // ...
+        private static string fakeToken = "";
+        // ...
+        private static api_hl2_upload_response hl2UploadResponsePack = null;
+        // ...
+        private static Dictionary<int, int> uploadAlignmentLookup = new Dictionary<int, int>();
+        // ...
+        private static int maxIdx = 0;
+
 
 
         // ===== API CALLS : SERVICE STATUS ===== //
@@ -457,6 +483,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             if (resultCode == 200)
             {
                 deviceLoggedIn = true;
+                SarAPI.deviceID = deviceID;
                 StaticLogger.Info(sourceLog, $"OK Device Logged in", logLayer: 0);
             }
 
@@ -467,8 +494,217 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
 
 
-        // ===== UTILITY URL BUILDER ===== //
+        // ===== API CALLS : HL2 DOWNLOAD ===== //
 
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static api_base_response Hl2DownloadResponse
+        {
+            get => hl2DownloadResponsePack;
+        }
+
+        /// <summary>
+        /// raw JSON response from server
+        /// </summary>
+        public static string Hl2DownloadResponseJson
+        {
+            get => hl2DownloadResponsePackJson;
+        }
+
+        public static IEnumerator ApiCall_Hl2Download(string referencePositionId, Vector3 currentPosition, float radius, bool calibrating = false, int timeout = -1)
+        {
+            string sourceLog = "SarAPI:ApiCall_Hl2Download";
+            yield return null;
+
+            if (inProgress)
+            {
+                StaticLogger.Err(sourceLog,
+                    "can't handle more than one request per time; not allowed", logLayer: 1);
+                yield break;
+            }
+            else if (!userLoggedIn || userSessionToken == "")
+            {
+                StaticLogger.Err(sourceLog,
+                    "Cannot download from server: missing login");
+                yield break;
+            }
+            else if (!SarAPI.ServiceStatus)
+            {
+                StaticLogger.Info(sourceLog,
+                    "Did you check the service status before calling the API?", logLayer: 1);
+                StaticLogger.Err(sourceLog,
+                    "rying to call the server, but the server seems not online", logLayer: 0);
+                yield break;
+            }
+            else if (!calibrating && fakeToken == "")
+            {
+                StaticLogger.Err(sourceLog,
+                    "Trying to get data (no calibration option enabled) with not yet set fake token", logLayer: 0);
+                yield break;
+            }
+            else if (referencePositionId == "")
+            {
+                StaticLogger.Err(sourceLog,
+                    "Reference Position ID cannot be null", logLayer: 0);
+                yield break;
+            }
+
+            StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
+            hl2DownloadResponsePack = null;
+            inProgress = true;
+            completed = false;
+
+            string requestURL = GetAPIUrl(
+                ApiAddress_Hl2Download
+            );
+            api_hl2_download_request payload = new api_hl2_download_request();
+            payload.user_id = userID;
+            payload.device_id = deviceID;
+            payload.session_token = userSessionToken;
+            payload.based_on = fakeToken;
+            payload.ref_id = referencePositionId;
+            payload.center = Vector3ToList(calibrating ? Vector3.zero : currentPosition);
+            payload.radius = radius;
+
+            yield return BSCOR_PerformRequestPost(
+                requestURL,
+                JsonUtility.ToJson(payload, true),
+                timeout
+            );
+
+            hl2DownloadResponsePackJson = result;
+            hl2DownloadResponsePack = JsonUtility.FromJson<api_hl2_download_response>(result);
+
+            if (resultCode == 200)
+            {
+                fakeToken = hl2DownloadResponsePack.based_on;
+                referencePosId = referencePositionId;
+                StaticLogger.Info(sourceLog, $"OK download done", logLayer: 0);
+            }
+
+            inProgress = false;
+            completed = true;
+            StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
+        }
+
+
+
+        // ===== API CALLS : HL2 UPLOAD ===== //
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static api_base_response hl2UploadResponse
+        {
+            get => hl2UploadResponsePack;
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static Dictionary<int, int> AlignmentLookup
+        {
+            get => uploadAlignmentLookup;
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static int ServerPositionIndex
+        {
+            get => maxIdx;
+        }
+
+        public static IEnumerator ApiCall_Hl2Upload(List<data_hl2_waypoint> waypoints = null, List<data_hl2_path> paths = null, int timeout = -1)
+        {
+            string sourceLog = "SarAPI:ApiCall_Hl2Upload";
+            yield return null;
+
+            if (inProgress)
+            {
+                StaticLogger.Err(sourceLog,
+                    "can't handle more than one request per time; not allowed", logLayer: 1);
+                yield break;
+            }
+            else if (!userLoggedIn || userSessionToken == "")
+            {
+                StaticLogger.Err(sourceLog,
+                    "Cannot download from server: missing login");
+                yield break;
+            }
+            else if (!SarAPI.ServiceStatus)
+            {
+                StaticLogger.Info(sourceLog,
+                    "Did you check the service status before calling the API?", logLayer: 1);
+                StaticLogger.Err(sourceLog,
+                    "rying to call the server, but the server seems not online", logLayer: 0);
+                yield break;
+            }
+            else if (fakeToken == "")
+            {
+                StaticLogger.Info(sourceLog,
+                    "Did you call API download before calling the UPLOAD API entry?", logLayer: 1);
+                StaticLogger.Err(sourceLog,
+                    "Trying to upload data (no calibration option enabled) with not yet set fake token", logLayer: 0);
+                yield break;
+            }
+            else if (referencePosId == "")
+            {
+                StaticLogger.Info(sourceLog,
+                    "Did you call API download before calling the UPLOAD API entry?", logLayer: 1);
+                StaticLogger.Err(sourceLog,
+                    "Trying to upload data with not yet set reference position ID", logLayer: 0);
+                yield break;
+            }
+
+            StaticLogger.Info(sourceLog, "STARTING REQUEST", logLayer: 2);
+            hl2UploadResponsePack = null;
+            inProgress = true;
+            completed = false;
+
+            string requestURL = GetAPIUrl(
+                ApiAddress_Hl2Upload
+            );
+            api_hl2_upload_request payload = new api_hl2_upload_request();
+            payload.user_id = userID;
+            payload.device_id = deviceID;
+            payload.session_token = userSessionToken;
+            payload.ref_id = referencePosId;
+            payload.based_on = fakeToken;
+            payload.waypoints = waypoints;
+            payload.paths = paths;
+
+            yield return BSCOR_PerformRequestPost(
+                requestURL,
+                JsonUtility.ToJson(payload, true),
+                timeout
+            );
+
+            hl2UploadResponsePack = JsonUtility.FromJson<api_hl2_upload_response>(result);
+
+            if (resultCode == 200)
+            {
+                foreach(data_hl2_align_item item in hl2UploadResponsePack.wp_alignment)
+                {
+                    if (!uploadAlignmentLookup.ContainsKey(item.request_position_id))
+                        uploadAlignmentLookup.Add(
+                            item.request_position_id,
+                            item.aligned_position_id
+                        );
+                }
+                maxIdx = hl2UploadResponsePack.max_id;
+                StaticLogger.Info(sourceLog, $"OK upload done", logLayer: 0);
+            }
+
+            inProgress = false;
+            completed = true;
+            StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
+        }
+
+
+
+        // ===== UTILITY URL BUILDER ===== //
 
         private static string GetAPIUrl(string apiPath = "/")
         {
@@ -612,6 +848,14 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
             success = reqSuccess;
             return reqSuccess;
+        }
+
+        private static List<float> Vector3ToList(Vector3 v)
+        {
+            return new List<float>
+            {
+                v.x, v.y, v.z
+            };
         }
     }
 }
