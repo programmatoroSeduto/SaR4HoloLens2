@@ -60,23 +60,6 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
             get => success;
         }
 
-        public bool NewDataFromServer
-        {
-            get
-            {
-                if(!isDirty)
-                {
-                    // TODO : also check the data archive (condition 1. missing)
-
-                    isDirty = (renamedWaypoints.Count > 0) 
-                        || (newWaypoints.Count > 0) 
-                        || (renamedPaths.Count > 0) 
-                        || (newPaths.Count > 0);
-                }
-                return isDirty;
-            }
-        }
-
 
 
         // ===== PRIVATE ===== //
@@ -96,27 +79,21 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
         // success or not for the previously executed operation
         private bool success = false;
 
-        // wether the archive is dirty or not
-        /*
-         * NOT DIRTY WHEN:
-         * 1. all the IDS in archiveWaypoints coincide
-         * 2. renamedWaypoints is a empty set (there are no waypoint violating the 1.)
-         * 3. newWaypoints is a empty set (all the new waypoints have been discovered by the positions database)
-         * 4. same conditions (2. and 3.) hold for paths as well
-         * */
-        private bool isDirty = false;
         // the positons archive (local ID -> tuple( local ID aligned with server, waypoint data ))
+        // se le posizioni sono in questa tabella, significa che sono state certificate e allineate col server
+        // non è possibile che il server mi ritorni una posizione che già esiste, quindi che non è nulla (non viene fatto renaming sulle posizioni note)
+        // se li ho ricevuti dal server, allora sono sacrosanti e condivisi con tutti gli opeatori che fanno uso della stessa sessione
+        // e la classe NON aggiunge qui dati che non siano stati validati e allineati col server
+        // se capita un caso di 'renaming' significa che la base dati non è allineata! Manca l'upload prima del download
         private Dictionary<int, Tuple<int, data_hl2_waypoint>> archiveWaypoints = new Dictionary<int, Tuple<int, data_hl2_waypoint>>();
-        // ...
-        private HashSet<int> renamedWaypoints = new HashSet<int>();
-        // ...
-        private HashSet<int> newWaypoints = new HashSet<int>();
+        // la seguente è da usare per i renamings
+        private Dictionary<int, Tuple<int, data_hl2_waypoint>> cachedRenamedWaypoints = new Dictionary<int, Tuple<int, data_hl2_waypoint>>();
         // the paths archive
         private Dictionary<Tuple<int, int>, data_hl2_path> archivePaths = new Dictionary<Tuple<int, int>, data_hl2_path>();
-        // ...
-        private HashSet<Tuple<int, int>> renamedPaths = new HashSet<Tuple<int, int>>();
-        // ...
-        private HashSet<Tuple<int, int>> newPaths = new HashSet<Tuple<int, int>>();
+        // visible to pos db -- waypoints (local, renamed, wpdata)
+        private List<Tuple<int, int, data_hl2_waypoint>> updatedEntriesWps = new List<Tuple<int, int, data_hl2_waypoint>>();
+        // visible to pos db -- paths
+        private List<Tuple<Tuple<int, int>, Tuple<int, int>, data_hl2_path>> updatedEntriesPaths = new List<Tuple<Tuple<int, int>, Tuple<int, int>, data_hl2_path>>();
 
 
 
@@ -268,12 +245,6 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
                 StaticLogger.Err(sourceLog, "Not connected: cannot download");
                 yield break;
             }
-            else if (isDirty)
-            {
-                StaticLogger.Info(sourceLog, "(isDirty = True) the Issue is probably due to the fact that the position database still have not read the positions after download or upload.", logLayer: 1);
-                StaticLogger.Err(sourceLog, "Data archive is still dirty! Cannot download");
-                yield break;
-            }
 
             isWorkingDownload = true;
             if (calibrating && archiveWaypoints.Count == 0)
@@ -303,49 +274,60 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
 
             StaticLogger.Info(sourceLog, "Collecting data ...", logLayer: 2);
             api_hl2_download_response data = SarAPI.Hl2DownloadResponse;
-            /*
-             * POSITION IS NEW (local ID is not in keys of 'archiveWaypoints')
-             * -> set 'newWaypoints' ADD local ID
-             * -> 'archiveWaypoints' ADD simple wrt the local ID
-             * -> dirty = true
-             * 
-             * POSITION IS ALREADY THERE (aligned ID is already present into the keys of 'archiveWaypoints')
-             * it's not possible! (put a error if it happens, but it is not possible with the algorihm running on the server side)
-             * */
-            foreach(data_hl2_waypoint wp in data.waypoints)
+
+            updatedEntriesWps.Clear();
+            foreach (data_hl2_waypoint wp in data.waypoints)
             {
                 if(!archiveWaypoints.ContainsKey(wp.pos_id) || archiveWaypoints[wp.pos_id] == null)
                 {
-                    newWaypoints.Add(wp.pos_id);
-                    archiveWaypoints.Add(wp.pos_id, new Tuple<int, data_hl2_waypoint>(wp.pos_id, wp));
-                    isDirty = true;
+                    updatedEntriesWps.Add(new Tuple<int, int, data_hl2_waypoint>(wp.pos_id, wp.pos_id, wp));
+                    if (!archiveWaypoints.ContainsKey(wp.pos_id))
+                        archiveWaypoints.Add(wp.pos_id, new Tuple<int, data_hl2_waypoint>(wp.pos_id, wp));
+                    else
+                        archiveWaypoints[wp.pos_id] = new Tuple<int, data_hl2_waypoint>(wp.pos_id, wp);
                 }
                 else
                 {
-                    StaticLogger.Warn(sourceLog, $"Redundant position found from the server\n\t{JsonUtility.ToJson(wp)}", logLayer: 1);
+                    StaticLogger.Warn(sourceLog, $"Redundant position found from the server (skipping element)\n\t{JsonUtility.ToJson(wp)}\n\tHINT: is the server aligned with the client and viceversa?", logLayer: 1);
                     continue;
                 }
             }
 
-            /*
-             * PATH IS NEW (wp1->wp2 is in the set OR wp2->wp1 is in the set)
-             * -> 'archivePaths' ADD simple (key, value)
-             * -> set 'newPaths' ADD tuple (wp1->wp2)
-             * -> dirty = true
-             * */
-            foreach(data_hl2_path path in data.paths)
+            updatedEntriesPaths.Clear();
+            foreach (data_hl2_path path in data.paths)
             {
                 Tuple<int, int> k12 = new Tuple<int, int>(path.wp1, path.wp2);
+                bool k12Exists = archivePaths.ContainsKey(k12);
+                bool k12HasValue = k12Exists && archivePaths[k12] != null;
                 Tuple<int, int> k21 = new Tuple<int, int>(path.wp2, path.wp1);
+                bool k21Exists = archivePaths.ContainsKey(k12);
+                bool k21HasValue = k21Exists && archivePaths[k21] != null;
 
-                // TODO: from here
+                if(k12HasValue || k12HasValue)
+                {
+                    StaticLogger.Warn(sourceLog, $"Redundant path found from the server (skipping element)\n\t{JsonUtility.ToJson(path)}\n\tHINT: is the server aligned with the client and viceversa?", logLayer: 1);
+                    continue;
+                }
+
+                // keep the double reference: doing so, recalling the result becomes simpler
+                if(!k12Exists)
+                    archivePaths.Add(k12, path);
+                else if (!k12HasValue)
+                    archivePaths[k12] = path;
+                if (!k21Exists)
+                    archivePaths.Add(k21, path);
+                else if (!k21HasValue)
+                    archivePaths[k21] = path;
+
+                updatedEntriesPaths.Add(new Tuple<Tuple<int, int>, Tuple<int, int>, data_hl2_path>(k12, k12, path));
             }
-
             StaticLogger.Info(sourceLog, "Collecting data ... OK: ready", logLayer: 2);
 
             success = true;
             isWorkingDownload = false;
         }
+
+
 
 
 
@@ -370,13 +352,8 @@ namespace Packages.SAR4HL2NetworkingSettings.Components
                 success = false;
                 yield break;
             }
-            else if (isDirty)
-            {
-                StaticLogger.Info(sourceLog, "(isDirty = True) the Issue is probably due to the fact that the position database still have not read the positions after download or upload.", logLayer: 1);
-                StaticLogger.Err(sourceLog, "Data archive is still dirty! Cannot upload");
-                success = false;
-                yield break;
-            }
+
+            // ...
 
             StaticLogger.Info(sourceLog, "upload process... OK: success", logLayer: 0);
         }
