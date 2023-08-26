@@ -90,7 +90,7 @@ namespace Packages.PositionDatabase.Components
         // active when the database is importing infos from file
         private bool isImporting = false;
         // the object which is importing data
-        private PositionDatabaseExportUtility activeImportUtility = null;
+        private MonoBehaviour activeImportUtility = null;
         // type of insert
         private bool linkedInsert = false;
         private bool unlinkedInsert = false;
@@ -190,7 +190,7 @@ namespace Packages.PositionDatabase.Components
                 AreaRenaming.Add(areaIndex, areaIndex);
             }
             wp.AreaIndex = AreaRenaming[areaIndex];
-            wp.setPositionID(lowLevel.Count);
+            wp.setPositionID(lowLevel.GetSharedIndex());
             wp.AreaCenter = lowLevel.SortReferencePosition;
             wp.AreaRadius = BaseDistance;
 
@@ -293,7 +293,7 @@ namespace Packages.PositionDatabase.Components
 
         // ===== IMPORT EXPORT SUPPORT ===== //
 
-        public bool SetStatusImporting(PositionDatabaseExportUtility who, bool opt)
+        public bool SetStatusImporting(MonoBehaviour who, bool opt)
         {
             if (isImporting && opt) return false;
 

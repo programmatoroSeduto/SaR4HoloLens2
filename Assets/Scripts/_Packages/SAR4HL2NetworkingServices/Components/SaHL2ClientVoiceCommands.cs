@@ -7,9 +7,9 @@ using UnityEngine.Networking;
 
 using Project.Scripts.Utils;
 using Project.Scripts.Components;
-using Packages.SAR4HL2NetworkingSettings.Utils;
+using Packages.SAR4HL2NetworkingServices.Utils;
 
-namespace Packages.SAR4HL2NetworkingSettings.Components
+namespace Packages.SAR4HL2NetworkingServices.Components
 {
     public class SaHL2ClientVoiceCommands : MonoBehaviour
     {

@@ -9,9 +9,9 @@ using UnityEngine.Networking;
 
 using Project.Scripts.Components;
 using Project.Scripts.Utils;
-using Packages.SAR4HL2NetworkingSettings.Components;
+using Packages.SAR4HL2NetworkingServices.Components;
 
-namespace Packages.SAR4HL2NetworkingSettings.Utils
+namespace Packages.SAR4HL2NetworkingServices.Utils
 {
     /// <summary>
     /// This static class allows to communicate with the server. 
@@ -594,6 +594,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
                 fakeToken = hl2DownloadResponsePack.based_on;
                 if(referencePosId == "")
                     referencePosId = referencePositionId;
+                maxIdx = hl2DownloadResponsePack.max_id;
                 StaticLogger.Info(sourceLog, $"OK download done", logLayer: 0);
             }
 

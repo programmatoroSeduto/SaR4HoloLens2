@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 using Project.Scripts.Components;
 using Project.Scripts.Utils;
 
-namespace Packages.SAR4HL2NetworkingSettings.Utils
+namespace Packages.SAR4HL2NetworkingServices.Utils
 {
     // ===== BASE DATA CLASSES ===== //
 
@@ -129,17 +129,17 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
     [Serializable]
     public class data_hl2_waypoint : data_base_pack
     {
-        public int pos_id;
-        public int area_id;
-        public List<float> v;
-        public string wp_timestamp;
+        public int pos_id; // shared ID (response)
+        public int area_id; // unused in this implementation (set always zero)
+        public List<float> v; 
+        public string wp_timestamp; 
     }
 
     [Serializable]
     public class data_hl2_path : data_base_pack
     {
-        public int wp1;
-        public int wp2;
+        public int wp1; // shared ID (response)
+        public int wp2; // shared ID (response)
         public float dist;
         public string pt_timestamp;
     }

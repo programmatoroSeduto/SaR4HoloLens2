@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Packages.SAR4HL2NetworkingSettings.ModuleTesting
+namespace Packages.SAR4HL2NetworkingServices.ModuleTesting
 {
     public class TestingConnectionUnity : MonoBehaviour
     {

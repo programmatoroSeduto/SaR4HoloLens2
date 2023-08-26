@@ -7,8 +7,8 @@ using Project.Scripts.Utils;
 using Packages.DiskStorageServices.Components;
 using Packages.PositionDatabase.Components;
 
-using Packages.SAR4HL2NetworkingSettings.Utils;
-using Packages.SAR4HL2NetworkingSettings.Components;
+using Packages.SAR4HL2NetworkingServices.Utils;
+using Packages.SAR4HL2NetworkingServices.Components;
 
 namespace Project.Scripts.Components
 {

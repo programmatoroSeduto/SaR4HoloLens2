@@ -79,12 +79,13 @@ namespace Packages.PositionDatabase.Utils
 
         public void setPositionID(int id)
         {
-            if (positionID == -1)
-            {
-                positionID = id;
-                if (Description == "")
-                    Description = Key;
-            }
+            if (Description == Key)
+                Description = "";
+            
+            positionID = id;
+            
+            if (Description == "")
+                Description = Key;
         }
 
         public void setFirstAreaCenter(Vector3 ac)

@@ -17,6 +17,11 @@ namespace Packages.PositionDatabase.Utils
         public int ClusterLength = -1;
         /// <summary> the maximum number of indices active for sorting the list (-1 if not used) </summary>
         public int MaxIndices = -1;
+        /// <summary> A index table used for mapping indices and waypoints </summary>
+        public Dictionary<int, PositionDatabaseWaypoint> WpIndex = new Dictionary<int, PositionDatabaseWaypoint>();
+        /// <summary> used for assigning position IDs </summary>
+        public int MaxSharedIndex = 0;
+        
 
 
 
@@ -223,6 +228,16 @@ namespace Packages.PositionDatabase.Utils
         public void Insert(PositionDatabaseWaypoint wp)
         {
             db.Insert(0, wp);
+            WpIndex.Add(wp.PositionID, wp);
+        }
+
+
+
+        // ===== SHARED INDEX ===== //
+
+        public int GetSharedIndex()
+        {
+            return MaxSharedIndex++;
         }
 
     }
