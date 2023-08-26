@@ -181,6 +181,10 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         private static Dictionary<int, int> uploadAlignmentLookup = new Dictionary<int, int>();
         // ...
         private static int maxIdx = 0;
+        // ...
+        private static bool downloadSuccess = true;
+        // ...
+        private static bool uploadSuccess = true;
 
 
 
@@ -409,6 +413,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
             userID = "";
             userSessionToken = "";
+            fakeToken = "";
             userLoggedIn = false;
 
             inProgress = false;
@@ -499,7 +504,15 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
         /// <summary>
         /// ...
         /// </summary>
-        public static api_base_response Hl2DownloadResponse
+        public static bool DownloadSuccess
+        {
+            get => downloadSuccess;
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static api_hl2_download_response Hl2DownloadResponse
         {
             get => hl2DownloadResponsePack;
         }
@@ -579,7 +592,8 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             if (resultCode == 200)
             {
                 fakeToken = hl2DownloadResponsePack.based_on;
-                referencePosId = referencePositionId;
+                if(referencePosId == "")
+                    referencePosId = referencePositionId;
                 StaticLogger.Info(sourceLog, $"OK download done", logLayer: 0);
             }
 
@@ -591,6 +605,14 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
 
         // ===== API CALLS : HL2 UPLOAD ===== //
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static bool UploadSuccess
+        {
+            get => uploadSuccess;
+        }
 
         /// <summary>
         /// ...
@@ -662,6 +684,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
             hl2UploadResponsePack = null;
             inProgress = true;
             completed = false;
+            downloadSuccess = false;
 
             string requestURL = GetAPIUrl(
                 ApiAddress_Hl2Upload
@@ -699,6 +722,7 @@ namespace Packages.SAR4HL2NetworkingSettings.Utils
 
             inProgress = false;
             completed = true;
+            downloadSuccess = true;
             StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
         }
 
