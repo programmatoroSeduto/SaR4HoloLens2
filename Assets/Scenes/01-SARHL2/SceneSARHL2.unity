@@ -2928,12 +2928,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124494743}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b82ee3b3dff9b764595e04a878324065, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  InitOnStart: 1
+  InitOnStart: 0
   PositionsDB: {fileID: 1124494746}
   Client: {fileID: 0}
   UploadTime: 2
