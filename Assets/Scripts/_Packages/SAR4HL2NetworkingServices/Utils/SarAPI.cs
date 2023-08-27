@@ -601,7 +601,11 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
 
             if (resultCode == 202)
             {
-                fakeToken = hl2DownloadResponsePack.based_on;
+                if (fakeToken == "")
+                {
+                    StaticLogger.Info(sourceLog, $"received new fake token from server", logLayer: 3);
+                    fakeToken = hl2DownloadResponsePack.based_on;
+                }
                 if (referencePosId == "")
                     referencePosId = referencePositionId;
                 SarAPI.maxIdx = hl2DownloadResponsePack.max_idx;

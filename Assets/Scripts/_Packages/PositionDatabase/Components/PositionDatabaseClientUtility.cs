@@ -173,8 +173,8 @@ namespace Packages.PositionDatabase.Components
             }
             StaticLogger.Info(sourceLog, $"First download from server ... OK: starting inner working cycle", logLayer: 0);
 
-            // yield return BSCOR_InnerWorkingCycle();
-            yield return BSCOR_Test();
+            yield return BSCOR_InnerWorkingCycle();
+            // yield return BSCOR_Test();
         }
 
         public IEnumerator BSCOR_ConnectClient()
@@ -277,6 +277,11 @@ namespace Packages.PositionDatabase.Components
                 else if (remainingUploadTime <= 0)
                 {
                     StaticLogger.Info(sourceLog, $"time to upload!", logLayer: 1);
+                    if(newPositions.Count == 0)
+                    {
+                        StaticLogger.Info(sourceLog, $"No new position to upload; skipping update...", logLayer: 1);
+                        continue;
+                    }
 
                     // ... perform upload
                     StaticLogger.Info(sourceLog, $"uploading ... ", logLayer: 2);

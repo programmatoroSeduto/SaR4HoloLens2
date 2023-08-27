@@ -20,7 +20,7 @@ namespace Packages.PositionDatabase.Utils
         /// <summary> A index table used for mapping indices and waypoints </summary>
         public Dictionary<int, PositionDatabaseWaypoint> WpIndex = new Dictionary<int, PositionDatabaseWaypoint>();
         /// <summary> used for assigning position IDs </summary>
-        public int MaxSharedIndex = 0;
+        public int MaxSharedIndex = -1;
         
 
 
@@ -237,7 +237,7 @@ namespace Packages.PositionDatabase.Utils
 
         public int GetSharedIndex()
         {
-            return MaxSharedIndex++;
+            return ++MaxSharedIndex;
         }
 
     }

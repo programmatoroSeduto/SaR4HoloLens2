@@ -2936,11 +2936,11 @@ MonoBehaviour:
   InitOnStart: 0
   PositionsDB: {fileID: 1124494746}
   Client: {fileID: 0}
-  UploadTime: 60
-  DownloadTime: 120
+  UploadTime: 2
+  DownloadTime: 7
   MaxRetryCountConnection: 10
   ConnectionRetryDelay: 30
-  UpdateRadius: 30
+  UpdateRadius: 1.75
 --- !u!1 &1130242957
 GameObject:
   m_ObjectHideFlags: 0
