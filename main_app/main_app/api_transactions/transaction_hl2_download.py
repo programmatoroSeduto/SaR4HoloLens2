@@ -27,7 +27,6 @@ FROM (
     FROM sar.F_HL2_STAGING_WAYPOINTS
     ) AS tab
 WHERE 1=1
-WHERE 1=1
 AND NOT(ALIGNMENT_TYPE_FL)
 AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
 AND ( 
@@ -58,9 +57,17 @@ AND LOCAL_POSITION_ID <> 0
 api_transaction_hl2_download_sql_exec_recall_waypoints = """
 WITH all_points AS (
 SELECT 
-ROW_NUMBER() OVER ( PARTITION BY LOCAL_POSITION_ID ORDER BY F_HL2_QUALITY_WAYPOINTS_PK DESC ) AS rowno,
+ROW_NUMBER() OVER ( PARTITION BY LOCAL_POSITION_ID ORDER BY PREFERRED_FL DESC, F_HL2_QUALITY_WAYPOINTS_PK DESC ) AS rowno,
 *
-FROM FROM sar.F_HL2_STAGING_WAYPOINTS
+FROM (
+    SELECT
+    CASE
+        WHEN SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s THEN 1
+        ELSE 0
+    END AS PREFERRED_FL,
+    *
+    FROM sar.F_HL2_STAGING_WAYPOINTS
+    ) AS tab
 WHERE 1=1
 AND NOT(ALIGNMENT_TYPE_FL)
 AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
@@ -356,7 +363,7 @@ class api_transaction_hl2_download(api_transaction_base):
         global api_transaction_hl2_download_sql_exec_recall_waypoints
 
         cur = self.db.get_cursor()
-        cur.execute("BEGIN TRANSACTION;")
+        # cur.execute("BEGIN TRANSACTION;")
 
         req_dict = {
             'U_REFERENCE_POSITION_ID' : self.request.ref_id,
@@ -441,7 +448,7 @@ class api_transaction_hl2_download(api_transaction_base):
             }
         )
 
-        cur.execute("COMMIT TRANSACTION;")
+        # cur.execute("COMMIT TRANSACTION;")
     
 
 
@@ -449,7 +456,7 @@ class api_transaction_hl2_download(api_transaction_base):
         global api_transaction_hl2_download_sql_exec_log
         
         cur = self.db.get_cursor()
-        cur.execute("BEGIN TRANSACTION;")
+        # cur.execute("BEGIN TRANSACTION;")
 
         cur.execute(
             api_transaction_hl2_download_sql_exec_log,
@@ -464,7 +471,7 @@ class api_transaction_hl2_download(api_transaction_base):
             }
         )
 
-        cur.execute("COMMIT TRANSACTION;")
+        # cur.execute("COMMIT TRANSACTION;")
 
 
 

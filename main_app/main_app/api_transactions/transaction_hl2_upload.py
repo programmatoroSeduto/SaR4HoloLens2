@@ -433,8 +433,8 @@ class api_transaction_hl2_upload(api_transaction_base):
         # transaction custom data
         self.security_handle:ud_security_support = ud_security_support(env)
         self.inherits_session = None
-        self.tuning_threshold = 1.3
-        self.tuning_tollerance = 0.01
+        self.tuning_threshold = 0.5
+        self.tuning_tollerance = 0.05
         self.quality_a = 1.00
         self.quality_b = 4.75
         self.renamings_found = False
@@ -531,7 +531,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         global api_transaction_hl2_upload_sql_exec_get_max_id
 
         cur = self.db.get_cursor()
-        cur.execute("BEGIN TRANSACTION;")
+        # cur.execute("BEGIN TRANSACTION;")
 
         # upload waypoints
         # https://stackoverflow.com/questions/65622045/pydantic-convert-to-jsonable-dict-not-full-json-string
@@ -608,7 +608,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         # build response
         self.response.max_id = self.max_idx
 
-        cur.execute("COMMIT TRANSACTION;")
+        # cur.execute("COMMIT TRANSACTION;")
 
 
 
@@ -621,7 +621,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         global api_transaction_hl2_upload_sql_exec_log
         
         cur = self.db.get_cursor()
-        cur.execute("BEGIN TRANSACTION;")
+        # cur.execute("BEGIN TRANSACTION;")
 
         cur.execute(
             api_transaction_hl2_upload_sql_exec_log,
@@ -636,7 +636,7 @@ class api_transaction_hl2_upload(api_transaction_base):
             }
         )
 
-        cur.execute("COMMIT TRANSACTION;")
+        # cur.execute("COMMIT TRANSACTION;")
 
 
 
