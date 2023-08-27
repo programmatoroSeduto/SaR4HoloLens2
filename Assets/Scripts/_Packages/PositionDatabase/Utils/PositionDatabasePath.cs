@@ -36,7 +36,7 @@ namespace Packages.PositionDatabase.Utils
 
         public string KeyStable
         {
-            get => stableID.ToString("0000");
+            get => wp1.KeyStable + "_" + wp2.KeyStable;
         }
 
 
@@ -58,23 +58,11 @@ namespace Packages.PositionDatabase.Utils
 
 
 
-        // ===== PRIVATE ===== //
-
-        private int stableID = -1;
-
-
-
-        // ===== PRIVATE STATIC ===== //
-
-        private static int StableIdGenerator = 0;
-
-
-
         // ===== PUBLIC METHODS ===== //
 
         public PositionDatabasePath()
         {
-            stableID = PositionDatabasePath.StableIdGenerator++;
+            
         }
 
 
