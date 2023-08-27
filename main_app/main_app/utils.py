@@ -2,6 +2,7 @@
 from datetime import datetime
 from main_app.api_models import api_base_request, api_base_response
 import os
+from fastapi import Response
 
 def config_from_env(varenv:str = "", default_val:str = None) -> any:
     if varenv == "":
@@ -16,7 +17,8 @@ def config_from_env(varenv:str = "", default_val:str = None) -> any:
     
     return varenv_val
 
-def set_response_timestamp(req:api_base_request, res:api_base_response):
+def set_response(response:Response, req:api_base_request, res:api_base_response):
     res.timestamp_received = req.timestamp
     res.timestamp_sent = datetime.now()
+    response.status_code = res.status
     return res

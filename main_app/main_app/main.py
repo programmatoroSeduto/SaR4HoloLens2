@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi import (
     status,
     Body,
+    Response
 )
 from pydantic import (
     BaseModel,
@@ -137,7 +138,8 @@ from api_transactions.transaction_user_login import api_transaction_user_login
     response_model=api_models.api_user_login_response,
 )
 async def api_user_login(
-    request_body: Annotated[api_models.api_user_login_request, Body()]
+    request_body: Annotated[api_models.api_user_login_request, Body()],
+    response:Response
 ) -> api_models.api_user_login_response:
     ''' User Login
     
@@ -150,7 +152,8 @@ async def api_user_login(
     tr.check()
     tr.execute()
 
-    return utils.set_response_timestamp(
+    return utils.set_response(
+        response,
         request_body,
         tr.response
     )
@@ -163,8 +166,9 @@ from api_transactions.transaction_user_logout import api_transaction_user_logout
     tags=[ metadata.api_tags.api_user_logout ],
     response_model=api_models.api_user_logout_response,
 )
-async def api_user_login(
-    request_body: Annotated[api_models.api_user_logout_request, Body()]
+async def api_user_logout(
+    request_body: Annotated[api_models.api_user_logout_request, Body()],
+    response:Response
 ) -> api_models.api_user_logout_response:
     ''' User Logout
     
@@ -177,7 +181,8 @@ async def api_user_login(
     tr.check()
     tr.execute()
 
-    return utils.set_response_timestamp(
+    return utils.set_response(
+        response,
         request_body,
         tr.response
     )
@@ -191,7 +196,8 @@ from api_transactions.transaction_device_login import api_transaction_device_log
     response_model=api_models.api_device_login_response,
 )
 async def api_device_login(
-    request_body: Annotated[api_models.api_device_login_request, Body()]
+    request_body: Annotated[api_models.api_device_login_request, Body()],
+    response:Response
 ) -> api_models.api_device_login_response:
     ''' Device Login
     
@@ -204,7 +210,8 @@ async def api_device_login(
     tr.check()
     tr.execute()
 
-    return utils.set_response_timestamp(
+    return utils.set_response(
+        response,
         request_body,
         tr.response
     )
@@ -217,8 +224,9 @@ from api_transactions.transaction_device_logout import api_transaction_device_lo
     tags=[ metadata.api_tags.api_device_logout ],
     response_model=api_models.api_device_logout_response,
 )
-async def api_device_login(
-    request_body: Annotated[api_models.api_device_logout_request, Body()]
+async def api_device_logout(
+    request_body: Annotated[api_models.api_device_logout_request, Body()],
+    response:Response
 ) -> api_models.api_device_logout_response:
     ''' Device Logout
     
@@ -231,7 +239,8 @@ async def api_device_login(
     tr.check()
     tr.execute()
 
-    return utils.set_response_timestamp(
+    return utils.set_response(
+        response,
         request_body,
         tr.response
     )
@@ -247,7 +256,8 @@ from api_transactions.transaction_hl2_download import api_transaction_hl2_downlo
     response_model=api_models.api_hl2_download_response
 )
 async def api_hl2_download(
-    request_body: Annotated[api_models.api_hl2_download_request, Body()]
+    request_body: Annotated[api_models.api_hl2_download_request, Body()],
+    response:Response
 ) -> api_models.api_hl2_download_response:
     ''' HoloLens2 Download
 
@@ -265,7 +275,8 @@ async def api_hl2_download(
     tr_security.execute()
     
     if not tr_security.success:
-        return utils.set_response_timestamp(
+        return utils.set_response(
+            response,
             request_body,
             tr_security.response
         )
@@ -274,7 +285,8 @@ async def api_hl2_download(
     tr_download.check()
     tr_download.execute()
 
-    return utils.set_response_timestamp(
+    return utils.set_response(
+        response,
         request_body,
         tr_download.response
     )
@@ -289,7 +301,8 @@ from api_transactions.transaction_hl2_upload import api_transaction_hl2_upload
     response_model=api_models.api_hl2_upload_response
 ) 
 async def api_hl2_upload(
-    request_body: Annotated[api_models.api_hl2_upload_request, Body()]
+    request_body: Annotated[api_models.api_hl2_upload_request, Body()],
+    response:Response
 ) -> api_models.api_hl2_upload_response:
     ''' HoloLens2 Upload
 
@@ -308,7 +321,8 @@ async def api_hl2_upload(
     tr_security.execute()
     
     if not tr_security.success:
-        return utils.set_response_timestamp(
+        return utils.set_response(
+            response,
             request_body,
             tr_security.response
         )
@@ -317,52 +331,10 @@ async def api_hl2_upload(
     tr_upload.check()
     tr_upload.execute()
 
-    return utils.set_response_timestamp(
+    return utils.set_response(
+        response,
         request_body,
         tr_upload.response
-    )
-
-
-
-# === HL2 settings from server === #
-from api_transactions.transaction_hl2_settings import api_transaction_hl2_settings
-@api.post(
-    "/api/hl2/settings",
-    tags=[ metadata.api_tags.api_hl2_settings ],
-    response_model=api_models.api_hl2_settings_response
-) 
-async def api_hl2_upload(
-    request_body: Annotated[api_models.api_hl2_settings_request, Body()]
-) -> api_models.api_hl2_settings_response:
-    ''' HoloLens2 Settings from Server
-
-    It can be very useful to easily load setting directly from
-    the server instead of compiling them each time. 
-    '''
-    global config, env
-    log.info_api( "/api/hl2/settings", src=metadata.api_tags.api_hl2_settings )
-
-    tr_security = api_transaction_hl2_security(env, api_models.api_hl2_base_request(
-        user_id=request_body.user_id,
-        device_id=request_body.device_id,
-        session_token=request_body.session_token
-    ))
-    tr_security.check()
-    tr_security.execute()
-    
-    if not tr_security.success:
-        return utils.set_response_timestamp(
-            request_body,
-            tr_security.response
-        )
-
-    tr_settings = api_transaction_hl2_settings(env, request_body)
-    tr_settings.check()
-    tr_settings.execute()
-
-    return utils.set_response_timestamp(
-        request_body,
-        tr_settings.response
     )
 
 
