@@ -169,7 +169,7 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
     {
         public string based_on;
         public string ref_id;
-        public int max_id;
+        public int max_idx;
         public List<data_hl2_waypoint> waypoints;
         public List<data_hl2_path> paths;
     }

@@ -320,6 +320,8 @@ namespace Packages.PositionDatabase.Components
                 StaticLogger.Info(sourceLog, $"Nothing to integrate; closing download", logLayer: 1);
                 yield break;
             }
+            else
+                StaticLogger.Info(sourceLog, $"found {Client.UpdatedEntriesWps.Count} waypoints to integrate", logLayer: 3);
 
             StaticLogger.Info(sourceLog, $"Importing waypoints ... ", logLayer: 2);
             PositionsDB.SetStatusImporting(this, true);
@@ -330,6 +332,7 @@ namespace Packages.PositionDatabase.Components
                  * è impossibile che nel download salgano dei rename. Tutte le posizioni hanno ID req->loc coincidenti
                  * */
                 PositionDatabaseWaypoint wp = GetWaypointFromJsonClass(jwp.Item3);
+                StaticLogger.Info(sourceLog, $"{wp}", logLayer: 3);
 
                 if (PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(jwp.Item2))
                 {
@@ -357,10 +360,14 @@ namespace Packages.PositionDatabase.Components
 
                 yield return new WaitForEndOfFrame(); // per alleggerire il carico computazionale sul frame
             }
-            if (PositionsDB.LowLevelDatabase.MaxSharedIndex < Client.ServerPositionIndex)
+            StaticLogger.Info(sourceLog, $"PositionsDB.LowLevelDatabase.MaxSharedIndex:{PositionsDB.LowLevelDatabase.MaxSharedIndex} Vs. Client.ServerPositionIndex:{Client.ServerPositionIndex} with wpCacheIndex:{wpCacheIndex}", logLayer: 2);
+            if (PositionsDB.LowLevelDatabase.MaxSharedIndex < wpCacheIndex)
+            {
+                StaticLogger.Info(sourceLog, $"max IDX moved: {PositionsDB.LowLevelDatabase.MaxSharedIndex} -> wpCacheIndex:{wpCacheIndex}", logLayer: 3);
                 PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex;
+            }
             else
-                StaticLogger.Info(sourceLog, $"PositionsDB.LowLevelDatabase.MaxSharedIndex:{PositionsDB.LowLevelDatabase.MaxSharedIndex} Vs. Client.ServerPositionIndex:{Client.ServerPositionIndex} -- the server has less informations than this device", logLayer: 2);
+                StaticLogger.Info(sourceLog, $"keep max IDX: {PositionsDB.LowLevelDatabase.MaxSharedIndex}", logLayer: 3);
             StaticLogger.Info(sourceLog, $"Importing waypoints ... OK", logLayer: 1);
 
             StaticLogger.Info(sourceLog, $"Importing paths ... ", logLayer: 2);
@@ -447,6 +454,14 @@ namespace Packages.PositionDatabase.Components
                 }
                 PositionsDB.LowLevelDatabase.WpIndex[oldIdx] = null;
             }
+            StaticLogger.Info(sourceLog, $"PositionsDB.LowLevelDatabase.MaxSharedIndex:{PositionsDB.LowLevelDatabase.MaxSharedIndex} Vs. Client.ServerPositionIndex:{Client.ServerPositionIndex} with wpCacheIndex:{wpCacheIndex}", logLayer: 2);
+            if (PositionsDB.LowLevelDatabase.MaxSharedIndex < wpCacheIndex)
+            {
+                StaticLogger.Info(sourceLog, $"max IDX moved: {PositionsDB.LowLevelDatabase.MaxSharedIndex} -> wpCacheIndex:{wpCacheIndex}", logLayer: 3);
+                PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex;
+            }
+            else
+                StaticLogger.Info(sourceLog, $"keep max IDX: {PositionsDB.LowLevelDatabase.MaxSharedIndex}", logLayer: 3);
             // il renaming degli archi avviene in maniera implicita poichè per ottenere la chiave di un path si usano dei get dai wps
             PositionsDB.SetStatusImporting(this, false);
             StaticLogger.Info(sourceLog, $"Aligning positions database ... OK aligned", logLayer: 1);

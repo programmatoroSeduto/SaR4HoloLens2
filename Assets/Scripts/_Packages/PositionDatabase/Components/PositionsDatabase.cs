@@ -15,11 +15,11 @@ namespace Packages.PositionDatabase.Components
 
         [Header("Positions Recording Settings")]
         [Tooltip("Base distance around a waypoint (in meters); each waypoint will be distant to another one by two times this value. ")]
-        public float BaseDistance = 1.0f;
+        public float BaseDistance = 0.5f;
         [Tooltip("Height of the cilinder around one waypoint")]
         public float BaseHeight = 0.8f;
         [Tooltip("Tolerance in collecting the measurements (in meters). ")]
-        public float DistanceTolerance = 0.01f;
+        public float DistanceTolerance = 0.05f;
 
         [Header("Dynamic Sort Settings")]
         [Tooltip("The object against which to make the sort; main camera is used if ReferenceObject is null")]

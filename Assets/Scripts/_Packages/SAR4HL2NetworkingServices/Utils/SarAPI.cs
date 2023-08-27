@@ -104,6 +104,14 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             get => internalServerError;
         }
 
+        /// <summary>
+        /// ...
+        /// </summary>
+        public static int ServerPositionIndex
+        {
+            get => maxIdx;
+        }
+
 
 
         // ===== PUBLIC : API ADDRESSES ===== //
@@ -589,13 +597,15 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
 
             hl2DownloadResponsePackJson = result;
             hl2DownloadResponsePack = JsonUtility.FromJson<api_hl2_download_response>(result);
+            StaticLogger.Info(sourceLog, $"JSON serialization inverse check: \n{JsonUtility.ToJson(hl2DownloadResponsePack, true)}", logLayer: 4);
 
-            if (resultCode == 200)
+            if (resultCode == 202)
             {
                 fakeToken = hl2DownloadResponsePack.based_on;
                 if (referencePosId == "")
                     referencePosId = referencePositionId;
-                maxIdx = hl2DownloadResponsePack.max_id;
+                SarAPI.maxIdx = hl2DownloadResponsePack.max_idx;
+                StaticLogger.Info(sourceLog, $"SET maxIdx FROM REQUEST : request:{hl2DownloadResponsePack.max_idx} maxIdx:{SarAPI.maxIdx} ServerPositionIndex:{SarAPI.ServerPositionIndex}", logLayer: 4);
                 StaticLogger.Info(sourceLog, $"OK download done", logLayer: 0);
                 downloadSuccess = true;
             }
@@ -633,14 +643,6 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
         public static Dictionary<int, int> AlignmentLookup
         {
             get => uploadAlignmentLookup;
-        }
-
-        /// <summary>
-        /// ...
-        /// </summary>
-        public static int ServerPositionIndex
-        {
-            get => maxIdx;
         }
 
         public static IEnumerator ApiCall_Hl2Upload(List<data_hl2_waypoint> waypoints = null, List<data_hl2_path> paths = null, int timeout = -1)
@@ -796,9 +798,10 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             if (timeout > 0)
                 www.timeout = timeout;
 
-            StaticLogger.Info(sourceLog, $"Sending to server: \n\tJSON: {payload}\n\t BINARY: {www.uploadedBytes}", logLayer: 4);
+            StaticLogger.Info(sourceLog, $"Sending to server: \n\tJSON: {payload}", logLayer: 4);
             yield return www.SendWebRequest();
-            StaticLogger.Info(sourceLog, $"Response from server: \n\tTEXT: {www.downloadHandler.text}", logLayer: 4);
+            resultCode = (int)www.responseCode;
+            StaticLogger.Info(sourceLog, $"Response from server: \n\tTEXT: {www.downloadHandler.text}\n\tSTATUS CODE: {resultCode}", logLayer: 4);
 
             result = www.downloadHandler.text;
             if (!handleRequestResult(www, www.result, sourceLog))
