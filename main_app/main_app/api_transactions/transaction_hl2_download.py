@@ -34,20 +34,58 @@ AND (
 	OR 
 	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
 	)
-)
+) -- SELECT * FROM all_points;
+, known_wps AS (
+SELECT DISTINCT  
+	LOCAL_POSITION_ID
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE 1=1
+AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
+AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s
+) -- SELECT * FROM known_wps;
+, wps_set_to_return AS (
 SELECT DISTINCT
-    F_HL2_QUALITY_WAYPOINTS_PK ,
+    %(DEVICE_ID)s AS DEVICE_ID,
+    %(SESSION_TOKEN_ID)s AS SESSION_TOKEN_ID,
+    %(SESSION_TOKEN_INHERITED_ID)s AS SESSION_TOKEN_INHERITED_ID,
+    %(U_REFERENCE_POSITION_ID)s AS U_REFERENCE_POSITION_ID,
     LOCAL_POSITION_ID,
     UX_VL, UY_VL, UZ_VL,
     COALESCE(
         WAYPOINT_CREATED_TS,
         CREATED_TS
-    ) AS WAYPOINT_CREATED_TS
+    ) AS WAYPOINT_CREATED_TS,
+    F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+    TRUE AS ALIGNMENT_TYPE_FL,
+    100 AS ALIGNMENT_QUALITY_VL,
+    0.0 AS ALIGNMENT_DISTANCE_VL,
+    F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK,
+    TRUE AS U_SOURCE_FROM_SERVER_FL,
+    LOCAL_POSITION_ID AS REQUEST_POSITION_ID
 FROM all_points
 WHERE rowno = 1
-AND dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) < %(RADIUS)s
+AND dist( UX_VL, UY_VL, UZ_VL, 0, 0, 0 ) < 1.75
 AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
 AND LOCAL_POSITION_ID <> 0
+AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM known_wps )
+) -- SELECT * FROM wps_set_to_return;
+, insert_step AS (
+INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
+    DEVICE_ID, SESSION_TOKEN_ID, SESSION_TOKEN_INHERITED_ID, U_REFERENCE_POSITION_ID,
+    LOCAL_POSITION_ID, UX_VL, UY_VL, UZ_VL, WAYPOINT_CREATED_TS, ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+    ALIGNMENT_TYPE_FL, ALIGNMENT_QUALITY_VL, ALIGNMENT_DISTANCE_VL, 
+    ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK, U_SOURCE_FROM_SERVER_FL, REQUEST_POSITION_ID
+)
+SELECT * FROM wps_set_to_return 
+RETURNING
+    *
+)
+SELECT
+	F_HL2_QUALITY_WAYPOINTS_PK ,
+	LOCAL_POSITION_ID ,
+	UX_VL, UY_VL, UZ_VL,
+	WAYPOINT_CREATED_TS
+FROM insert_step
 ;
 """
 
@@ -362,7 +400,7 @@ class api_transaction_hl2_download(api_transaction_base):
         global api_transaction_hl2_download_sql_exec_get_waypoints
         global api_transaction_hl2_download_sql_exec_get_paths
         global api_transaction_hl2_download_sql_exec_log
-        global api_transaction_hl2_download_sql_exec_recall_waypoints
+        # global api_transaction_hl2_download_sql_exec_recall_waypoints
 
         cur = self.db.get_cursor()
         # cur.execute("BEGIN TRANSACTION;")
@@ -374,8 +412,10 @@ class api_transaction_hl2_download(api_transaction_base):
             'POS_X' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[0] ),
             'POS_Y' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[1] ),
             'POS_Z' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[2] ),
-            'RADIUS' : self.request.radius
+            'RADIUS' : self.request.radius,
+            'DEVICE_ID' : self.request.device_id
         }
+        # self.log.debug_detail(f"req_dict:{req_dict}", src="transaction Download")
 
         self.response.ref_id = self.request.ref_id
         if self.device_is_calibrating_verified:
@@ -383,35 +423,22 @@ class api_transaction_hl2_download(api_transaction_base):
         else:
             self.response.based_on = ""
 
-        # get max of local IDs
-        _, data, _, _ = self.__extract_from_db( 
-            api_transaction_hl2_download_sql_exec_get_max_id,
-            {
-                'U_REFERENCE_POSITION_ID' : req_dict['U_REFERENCE_POSITION_ID'],
-                'SESSION_TOKEN_INHERITED_ID' : req_dict['SESSION_TOKEN_INHERITED_ID']
-            }
-        )
-        self.response.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
-
         # extract waypoints
+        # self.log.debug_detail(f"download waypoints query:\n{api_transaction_hl2_download_sql_exec_get_waypoints % req_dict}", src="transaction Download")
         found, self.wps_raw, _, _ = self.__extract_from_db( 
             api_transaction_hl2_download_sql_exec_get_waypoints,
             req_dict )
 
         if found: 
-            cur.execute(
-                api_transaction_hl2_download_sql_exec_recall_waypoints,
+            # get max of local IDs
+            _, data, _, _ = self.__extract_from_db( 
+                api_transaction_hl2_download_sql_exec_get_max_id,
                 {
-                   'U_REFERENCE_POSITION_ID' : self.request.ref_id,
-                    'SESSION_TOKEN_INHERITED_ID' : ( self.inherited_session_real or '' ),
-                    'SESSION_TOKEN_ID' : self.request.session_token,
-                    'POS_X' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[0] ),
-                    'POS_Y' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[1] ),
-                    'POS_Z' : ( 0.0 if self.device_is_calibrating_verified else self.request.center[2] ),
-                    'RADIUS' : self.request.radius,
-                    'DEVICE_ID' : self.request.device_id
+                    'U_REFERENCE_POSITION_ID' : req_dict['U_REFERENCE_POSITION_ID'],
+                    'SESSION_TOKEN_INHERITED_ID' : req_dict['SESSION_TOKEN_INHERITED_ID']
                 }
             )
+            self.response.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
 
             # extract paths
             paths_found, self.pth_raw, _, _ = self.__extract_from_db( 

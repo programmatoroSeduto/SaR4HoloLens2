@@ -6,6 +6,7 @@ from pydantic import (
 from datetime import datetime
 from typing import (
     Union,
+    Annotated
 )
 
 user_id_pattern = "SARHL2_ID[0-9]{10}_USER"
@@ -24,10 +25,9 @@ class data_base_pack(BaseModel):
 ## ===== BASE REQUEST RESPONSE ===== ##
 
 class api_base_request(BaseModel):
-    timestamp: datetime = Field(
-        default=datetime.now(),
+    timestamp:Annotated[datetime, Field(
         description="the time the request arrived to the server",
-        )
+        )] = datetime.now()
 
 class api_base_response(BaseModel):
     timestamp_received: Union[datetime, None] = Field(
