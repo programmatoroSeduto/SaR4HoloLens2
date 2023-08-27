@@ -581,65 +581,65 @@ situation it will deal with a number of problems on the data:
 
 ====================================================== */
 
-DROP TABLE IF EXISTS sar.D_HL2_USER_DEVICE_SETTINGS;
-CREATE TABLE sar.D_HL2_USER_DEVICE_SETTINGS (
+-- DROP TABLE IF EXISTS sar.D_HL2_USER_DEVICE_SETTINGS;
+-- CREATE TABLE sar.D_HL2_USER_DEVICE_SETTINGS (
 
-    DEVICE_ID CHAR(24) NOT NULL
-    , USER_ID CHAR(24) NOT NULL
-    , CONFIGURATION_PROFILE_ID INT NOT NULL
-        DEFAULT 0
-    , CONFIGURATION_PROFILE_DS VARCHAR(500)
-        DEFAULT ''
+--     DEVICE_ID CHAR(24) NOT NULL
+--     , USER_ID CHAR(24) NOT NULL
+--     , CONFIGURATION_PROFILE_ID INT NOT NULL
+--         DEFAULT 0
+--     , CONFIGURATION_PROFILE_DS VARCHAR(500)
+--         DEFAULT ''
 
-    -- user setting overwrite
-    , USER_HEIGHT_VL FLOAT(15) NOT NULL
-        DEFAULT 1.85
+--     -- user setting overwrite
+--     , USER_HEIGHT_VL FLOAT(15) NOT NULL
+--         DEFAULT 1.85
 
-    -- positions daabase settings
-    , BASE_HEIGHT_VL FLOAT(15) NOT NULL
-        DEFAULT 0.8
-    , BASE_DISTANCE_VL FLOAT(15) NOT NULL
-        DEFAULT 0.5
-    , DISTANCE_TOLLERANCE_VL FLOAT NOT NULL
-        DEFAULT 0.1
+--     -- positions daabase settings
+--     , BASE_HEIGHT_VL FLOAT(15) NOT NULL
+--         DEFAULT 0.8
+--     , BASE_DISTANCE_VL FLOAT(15) NOT NULL
+--         DEFAULT 0.5
+--     , DISTANCE_TOLLERANCE_VL FLOAT NOT NULL
+--         DEFAULT 0.1
     
-    -- dynamic sort: cluster size
-    , USER_CLUSTER_FL BOOLEAN NOT NULL
-        DEFAULT true
-    , CLUSTER_SIZE_VL INT NOT NULL
-        DEFAULT 25
+--     -- dynamic sort: cluster size
+--     , USER_CLUSTER_FL BOOLEAN NOT NULL
+--         DEFAULT true
+--     , CLUSTER_SIZE_VL INT NOT NULL
+--         DEFAULT 25
 
-    -- dynamic sort: max indices
-    , USE_MAX_INDICES_FL BOOLEAN NOT NULL
-        DEFAULT true
-    , MAX_INDICES_VL INT NOT NULL
-        DEFAULT 10
+--     -- dynamic sort: max indices
+--     , USE_MAX_INDICES_FL BOOLEAN NOT NULL
+--         DEFAULT true
+--     , MAX_INDICES_VL INT NOT NULL
+--         DEFAULT 10
     
-    -- logging settings
-    , LOG_LAYER_VL INT NOT NULL 
-        DEFAULT 1
+--     -- logging settings
+--     , LOG_LAYER_VL INT NOT NULL 
+--         DEFAULT 1
     
-    -- other settings
-    , REFERENCE_POSITION_ID CHAR(24)
-        DEFAULT null
+--     -- other settings
+--     , REFERENCE_POSITION_ID CHAR(24)
+--         DEFAULT null
     
-    -- metadata
-    , CREATED_TS TIMESTAMP NOT NULL
-        DEFAULT CURRENT_TIMESTAMP
-    , UPDATED_TS TIMESTAMP NOT NULL
-        DEFAULT CURRENT_TIMESTAMP
+--     -- metadata
+--     , CREATED_TS TIMESTAMP NOT NULL
+--         DEFAULT CURRENT_TIMESTAMP
+--     , UPDATED_TS TIMESTAMP NOT NULL
+--         DEFAULT CURRENT_TIMESTAMP
 
-    , PRIMARY KEY ( DEVICE_ID, USER_ID, CONFIGURATION_PROFILE_ID )
-);
-COMMENT 
-    ON TABLE sar.D_HL2_USER_DEVICE_SETTINGS 
-    IS 'each HoloLens2 device must have custom settings loaded at startup by the device from server';
-COMMENT 
-    ON COLUMN sar.D_HL2_USER_DEVICE_SETTINGS.REFERENCE_POSITION_ID 
-    IS 'a reference position for the calibration can be binded to a configuration profile for more flexibility of the device';
-COMMENT 
-    ON COLUMN sar.D_HL2_USER_DEVICE_SETTINGS.CONFIGURATION_PROFILE_ID 
-    IS 'each user can have different config profiles';
+--     , PRIMARY KEY ( DEVICE_ID, USER_ID, CONFIGURATION_PROFILE_ID )
+-- );
+-- COMMENT 
+--     ON TABLE sar.D_HL2_USER_DEVICE_SETTINGS 
+--     IS 'each HoloLens2 device must have custom settings loaded at startup by the device from server';
+-- COMMENT 
+--     ON COLUMN sar.D_HL2_USER_DEVICE_SETTINGS.REFERENCE_POSITION_ID 
+--     IS 'a reference position for the calibration can be binded to a configuration profile for more flexibility of the device';
+-- COMMENT 
+--     ON COLUMN sar.D_HL2_USER_DEVICE_SETTINGS.CONFIGURATION_PROFILE_ID 
+--     IS 'each user can have different config profiles';
 
 DROP SEQUENCE IF EXISTS sar.F_HL2_STAGING_WAYPOINTS_SEQUENCE;
 CREATE SEQUENCE sar.F_HL2_STAGING_WAYPOINTS_SEQUENCE
