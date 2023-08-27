@@ -16,30 +16,22 @@ namespace Packages.SAR4HL2NetworkingServices.Components
         // ===== GUI ===== //
 
         [Header("Connection Settings")]
-        [HideInInspector]
         [Tooltip("Web Address of the server")]
         public string ServerURL = "http://127.0.0.1:80/sar/";
-        [HideInInspector]
         [Tooltip("Connect on start?")]
         public bool ConnectOnStart = false;
-        [HideInInspector]
         [Tooltip("Connection Timeout (-1 if not used)")]
         public int ConnectionTimeout = 10;
 
         [Header("Login Settings")]
-        [HideInInspector]
         [Tooltip("User ID")]
-        public string UserId = "SARHL2_ID0000000000_USER";
-        [HideInInspector]
+        public string UserId = "";
         [Tooltip("User Approver ID")]
-        public string UserApproverID = "SARHL2_ID0000000000_USER";
-        [HideInInspector]
+        public string UserApproverID = "";
         [Tooltip("Device ID")]
-        public string DeviceId = "SARHL2_ID0000000000_DEVC";
-        [HideInInspector]
+        public string DeviceId = "";
         [Tooltip("Reference position")]
-        public string ReferencePositionId = "SARHL2_ID0000000000_REFP";
-        [HideInInspector]
+        public string ReferencePositionId = "";
         [Tooltip("User Access Key")]
         public string UserAccessKey = "";
 
@@ -275,7 +267,7 @@ namespace Packages.SAR4HL2NetworkingServices.Components
                 yield return SarAPI.ApiCall_Hl2Download(ReferencePositionId, Vector3.zero, radius ?? 250.0f, calibrating:true, timeout:ConnectionTimeout);
             else
                 yield return SarAPI.ApiCall_Hl2Download(ReferencePositionId, pos ?? Vector3.zero, radius ?? 250.0f, calibrating: true, timeout: ConnectionTimeout);
-            StaticLogger.Info(sourceLog, "Performing download request ... OK", logLayer: 2);
+            // StaticLogger.Info(sourceLog, "Performing download request ... OK", logLayer: 2);
             if(!SarAPI.DownloadSuccess)
             {
                 StaticLogger.Err(sourceLog, "UNABLE TO DOWNLOAD");

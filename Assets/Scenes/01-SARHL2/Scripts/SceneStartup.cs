@@ -8,6 +8,8 @@ using Project.Scripts.Components;
 using Project.Scripts.Utils;
 using Packages.PositionDatabase.Components;
 using Packages.PositionDatabase.Utils;
+using Packages.SAR4HL2NetworkingServices.Components;
+using Packages.SAR4HL2NetworkingServices.Utils;
 
 namespace Project.Scenes.SARHL2.Components
 {
@@ -18,6 +20,8 @@ namespace Project.Scenes.SARHL2.Components
         [Header("Basic Settings")]
         [Tooltip("Scene Position Database")]
         public PositionsDatabase DatabaseReference = null;
+        [Tooltip("Reference to the client")]
+        public PositionDatabaseClientUtility PosdbClientReference = null;
 
 
 
@@ -57,6 +61,27 @@ namespace Project.Scenes.SARHL2.Components
                 StaticLogger.Err(SourceLog, "no calibration unit defined! Unable to start scene; leaving scene unset");
                 return;
             }
+
+            if(PosdbClientReference != null && !PosdbClientReference.InitOnStart)
+            {
+                SarHL2Client clientComponent = (SarHL2Client)StaticAppSettings.GetObject("SarServerComponent", null);
+                if(clientComponent == null)
+                {
+                    StaticLogger.Err(SourceLog, "SarHL2Client reference not found in the main settings");
+                    Debug.LogWarning("SarHL2Client reference is null");
+                }
+                else
+                {
+                    StaticLogger.Info(SourceLog, "SarHL2Client reference is not null");
+                    Debug.Log("SarHL2Client reference is not null");
+                }
+                PosdbClientReference.Client = clientComponent;
+                if(!PosdbClientReference.TryInit())
+                {
+                    StaticLogger.Warn(SourceLog, "SarHL2Client: unable to init the component");
+                }
+            }
+            
 
             referenceName = StaticAppSettings.GetOpt("CalibrationPositionID", "UNKNOWN");
             if(referenceName == "UNKNOWN")
@@ -102,7 +127,11 @@ namespace Project.Scenes.SARHL2.Components
             isWaitingCalibration = false;
 
             StaticLogger.Info(SourceLog, $"setting stub calibration infos", logLayer: 0);
-            StaticTransform.SetReference(referenceName, Vector3.zero, Quaternion.identity);
+            if(!StaticTransform.SetReference(referenceName, Vector3.zero, Quaternion.identity))
+            {
+                StaticLogger.Warn(SourceLog, "Cannot set calibration!");
+                return;
+            }
         }
 
         private void StartupCalibration()

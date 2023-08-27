@@ -30,7 +30,7 @@ namespace Project.Scripts.Components
         [Tooltip("Entry Point Component")]
         public EntryPoint EntryPointComponent = null;
         [Tooltip("Calibration Position")]
-        public string CalibrationPositionID = "SARHL2_ID90909091_REFPOS";
+        public string CalibrationPositionID = "SARHL2_ID1234567890_REFP";
         [Tooltip("Startup mode")]
         public StartupModes StartupMode = StartupModes.PcDevelopment;
         [Tooltip("The component in charge to perform the calibration")]
@@ -43,10 +43,10 @@ namespace Project.Scripts.Components
 
         // server connection settings
         [Header("server connection settings")]
-        [Tooltip("Server IP address")]
-        public string SarServerURL = "http://131.175.204.169/sar/";
         [Tooltip("Server GameObject Handle")]
         public SarHL2Client SarServerComponent = null;
+        [Tooltip("Server IP address")]
+        public string SarServerURL = "http://131.175.204.169/sar/";
         [Tooltip("Either to execute the connection on start or not (you can use the voice command in case)")]
         public bool ConnectOnStart = true;
 
@@ -224,7 +224,7 @@ namespace Project.Scripts.Components
                     break;
                 case StartupModes.PcDevelopment:
                     SetDebugMode(true);
-                    EntryPointComponent.enabled = false;
+                    // EntryPointComponent.enabled = false;
                     UseLogLayer = true;
                     SetLogObjet(true, true, true, true); // enable all logs
                     break;
@@ -313,11 +313,14 @@ namespace Project.Scripts.Components
             StaticAppSettings.SetOpt("SarServerURL", SarServerURL);
             if(SarServerComponent != null)
             {
+                SarServerComponent.ServerURL = this.SarServerURL;
                 SarServerComponent.UserId = this.OperatorUniversalUserID;
                 SarServerComponent.UserApproverID = this.ApproverUserID;
                 SarServerComponent.UserAccessKey = this.UserAccessKey;
                 SarServerComponent.ConnectOnStart = ConnectOnStart;
-                
+                SarServerComponent.DeviceId = this.OperatorUniversalDeviceID;
+                SarServerComponent.ReferencePositionId = this.CalibrationPositionID;
+
                 StaticAppSettings.SetObject("SarServerComponent", SarServerComponent);
                 SarAPI.Client = SarServerComponent;
             }

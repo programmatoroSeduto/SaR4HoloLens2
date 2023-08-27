@@ -18,15 +18,6 @@ namespace Project.Scripts.Components
 
 
 
-        // ===== PUBLIC ===== //
-
-        public bool CalibrationDone
-        {
-            get => calibrationDone;
-        }
-
-
-
         // ===== PRIVATE ===== //
 
         // if the calibration has been successfully done or not

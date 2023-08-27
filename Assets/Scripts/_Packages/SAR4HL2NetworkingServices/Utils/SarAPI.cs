@@ -529,6 +529,7 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
         {
             string sourceLog = "SarAPI:ApiCall_Hl2Download";
             yield return null;
+            downloadSuccess = false;
 
             if (inProgress)
             {
@@ -592,11 +593,14 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             if (resultCode == 200)
             {
                 fakeToken = hl2DownloadResponsePack.based_on;
-                if(referencePosId == "")
+                if (referencePosId == "")
                     referencePosId = referencePositionId;
                 maxIdx = hl2DownloadResponsePack.max_id;
                 StaticLogger.Info(sourceLog, $"OK download done", logLayer: 0);
+                downloadSuccess = true;
             }
+            else
+                downloadSuccess = false;
 
             inProgress = false;
             completed = true;
@@ -685,7 +689,7 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             hl2UploadResponsePack = null;
             inProgress = true;
             completed = false;
-            downloadSuccess = false;
+            uploadSuccess = false;
 
             string requestURL = GetAPIUrl(
                 ApiAddress_Hl2Upload
@@ -719,11 +723,13 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
                 }
                 maxIdx = hl2UploadResponsePack.max_id;
                 StaticLogger.Info(sourceLog, $"OK upload done", logLayer: 0);
+                uploadSuccess = true;
             }
+            else
+                uploadSuccess = false;
 
             inProgress = false;
             completed = true;
-            downloadSuccess = true;
             StaticLogger.Info(sourceLog, "CLOSING REQUEST", logLayer: 2);
         }
 

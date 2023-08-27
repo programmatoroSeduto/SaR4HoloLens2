@@ -68,6 +68,11 @@ namespace Project.Scripts.Utils
             }
         }
 
+        public static bool CalibrationDone
+        {
+            get => calibrationDone;
+        }
+
 
 
         // ===== PRIVATE ===== //

@@ -66,7 +66,7 @@ namespace Packages.PositionDatabase.Components
             TryInit();
         }
 
-        private bool TryInit()
+        public bool TryInit()
         {
             string sourceLog = $"{classLogSource}:TryInit";
             StaticLogger.Info(sourceLog, "init ... ", logLayer: 2);
@@ -106,11 +106,22 @@ namespace Packages.PositionDatabase.Components
 
             StaticLogger.Info(sourceLog, $"receiving new position ... ", logLayer: 2);
             PositionDatabaseWaypoint wp = PositionsDB.DataZoneCreated;
-            if(wp.AreaIndex == 0)
+            if(wp.AreaIndex == 0 && wp.PositionStableID != 0)
             {
                 newPositions.Add(PositionsDB.DataZoneCreated);
                 foreach (PositionDatabasePath pt in wp.Paths)
                     newPaths.Add(pt);
+            }
+            else if (wp.PositionStableID == 0)
+            {
+                StaticLogger.Info(sourceLog, $"receiving new position ... SKIP (the point is the origin of the reference frame)", logLayer: 2);
+                return;
+            }
+            else if (wp.AreaIndex == 0)
+            {
+                // TODO: when the area index becomes zero from another number, it's time to upload data to the server (this scenario is currently not managed)
+                StaticLogger.Info(sourceLog, $"receiving new position ... SKIP (area index is not zero)", logLayer: 2);
+                return;
             }
             StaticLogger.Info(sourceLog, $"receiving new position ... OK with new Count:{newPositions.Count}", logLayer: 2);
         }
@@ -143,10 +154,10 @@ namespace Packages.PositionDatabase.Components
             // waiting for calibration
             StaticLogger.Info(sourceLog, $"Waiting for calibration ...", logLayer: 0);
             int waitCount = 0;
-            while(StaticTransform.CalibrationComponent == null || !StaticTransform.CalibrationComponent.CalibrationDone)
+            while(StaticTransform.CalibrationComponent == null || !StaticTransform.CalibrationDone)
             {
                 yield return new WaitForSecondsRealtime(1.0f);
-                StaticLogger.Warn(sourceLog, $"({waitCount++}) waiting ... ", logLayer: 3);
+                StaticLogger.Info(sourceLog, $"({waitCount++}) waiting ... (nullRef:{(StaticTransform.CalibrationComponent == null)})", logLayer: 3);
             }
             StaticLogger.Info(sourceLog, $"Waiting for calibration ... OK: calibration done", logLayer: 0);
 
@@ -162,7 +173,8 @@ namespace Packages.PositionDatabase.Components
             }
             StaticLogger.Info(sourceLog, $"First download from server ... OK: starting inner working cycle", logLayer: 0);
 
-            yield return BSCOR_InnerWorkingCycle();
+            // yield return BSCOR_InnerWorkingCycle();
+            yield return BSCOR_Test();
         }
 
         public IEnumerator BSCOR_ConnectClient()
@@ -188,6 +200,30 @@ namespace Packages.PositionDatabase.Components
                 }
             }
         }
+
+        public IEnumerator BSCOR_Test()
+        {
+            string sourceLog = $"{classLogSource}:BSCOR_Test";
+            yield return null;
+
+            StaticLogger.Info(sourceLog, $"waiting at least 5 positions to send ... ", logLayer: 3);
+            while (newPositions.Count < 5)
+            {
+                yield return new WaitForSecondsRealtime(5.0f);
+                StaticLogger.Info(sourceLog, $"still waiting -- collected positions so far: {newPositions.Count} ", logLayer: 3);
+            }
+            StaticLogger.Info(sourceLog, $"waiting at least 5 positions to send ... OK: time to upload", logLayer: 3);
+
+            StaticLogger.Info(sourceLog, $"UPLOAD TEST ... ", logLayer: 3);
+            yield return BSCOR_Upload();
+            if (!Client.Success)
+            {
+                StaticLogger.Err(sourceLog, $"Unable to upload!", logLayer: 1);
+                yield break;
+            }
+            StaticLogger.Info(sourceLog, $"UPLOAD TEST ... OK", logLayer: 3);
+        }
+
 
         public IEnumerator BSCOR_InnerWorkingCycle()
         {
@@ -321,7 +357,10 @@ namespace Packages.PositionDatabase.Components
 
                 yield return new WaitForEndOfFrame(); // per alleggerire il carico computazionale sul frame
             }
-            PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex;
+            if (PositionsDB.LowLevelDatabase.MaxSharedIndex < Client.ServerPositionIndex)
+                PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex;
+            else
+                StaticLogger.Info(sourceLog, $"PositionsDB.LowLevelDatabase.MaxSharedIndex:{PositionsDB.LowLevelDatabase.MaxSharedIndex} Vs. Client.ServerPositionIndex:{Client.ServerPositionIndex} -- the server has less informations than this device", logLayer: 2);
             StaticLogger.Info(sourceLog, $"Importing waypoints ... OK", logLayer: 1);
 
             StaticLogger.Info(sourceLog, $"Importing paths ... ", logLayer: 2);
@@ -436,7 +475,7 @@ namespace Packages.PositionDatabase.Components
             jwp.pos_id = wp.PositionID;
             jwp.area_id = 0;
             jwp.v = new List<float> { wp.AreaCenter.x, wp.AreaCenter.y, wp.AreaCenter.z };
-            jwp.wp_timestamp = wp.Timestamp.ToString("%yyyy/%MM/%d %HH:%mm:%ss");
+            jwp.wp_timestamp = wp.Timestamp.ToString("yyyy/MM/dd HH:mm:ss");
 
             return jwp;
         }
@@ -446,7 +485,7 @@ namespace Packages.PositionDatabase.Components
             data_hl2_path jpt = new data_hl2_path();
             jpt.wp1 = pt.wp1.PositionID;
             jpt.wp2 = pt.wp2.PositionID;
-            jpt.pt_timestamp = pt.wp1.Timestamp.ToString("%yyyy/%MM/%d %HH:%mm:%ss");
+            jpt.pt_timestamp = pt.wp1.Timestamp.ToString("yyyy/MM/dd HH:mm:ss");
 
             return jpt;
         }
