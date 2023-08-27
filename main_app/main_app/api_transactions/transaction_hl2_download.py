@@ -92,64 +92,6 @@ FROM insert_step
 
 
 
-api_transaction_hl2_download_sql_exec_recall_waypoints = """
-WITH all_points AS (
-SELECT 
-ROW_NUMBER() OVER ( PARTITION BY LOCAL_POSITION_ID ORDER BY PREFERRED_FL DESC, F_HL2_QUALITY_WAYPOINTS_PK DESC ) AS rowno,
-*
-FROM (
-    SELECT
-    CASE
-        WHEN SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s THEN 1
-        ELSE 0
-    END AS PREFERRED_FL,
-    *
-    FROM sar.F_HL2_STAGING_WAYPOINTS
-    ) AS tab
-WHERE 1=1
-AND NOT(ALIGNMENT_TYPE_FL)
-AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
-AND ( 
-	SESSION_TOKEN_INHERITED_ID IS NULL 
-	OR 
-	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
-	)
-)
-INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
-    DEVICE_ID, SESSION_TOKEN_ID, SESSION_TOKEN_INHERITED_ID, U_REFERENCE_POSITION_ID,
-    LOCAL_POSITION_ID, UX_VL, UY_VL, UZ_VL, WAYPOINT_CREATED_TS, ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
-    ALIGNMENT_TYPE_FL, ALIGNMENT_QUALITY_VL, ALIGNMENT_DISTANCE_VL, 
-    ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK, U_SOURCE_FROM_SERVER_FL, REQUEST_POSITION_ID
-)
-SELECT DISTINCT
-    %(DEVICE_ID)s AS DEVICE_ID,
-    %(SESSION_TOKEN_ID)s AS SESSION_TOKEN_ID,
-    %(SESSION_TOKEN_INHERITED_ID)s AS SESSION_TOKEN_INHERITED_ID,
-    %(U_REFERENCE_POSITION_ID)s AS U_REFERENCE_POSITION_ID,
-    LOCAL_POSITION_ID,
-    UX_VL, UY_VL, UZ_VL,
-    COALESCE(
-        WAYPOINT_CREATED_TS,
-        CREATED_TS
-    ) AS WAYPOINT_CREATED_TS,
-    F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
-    TRUE AS ALIGNMENT_TYPE_FL,
-    100 AS ALIGNMENT_QUALITY_VL,
-    0.0 AS ALIGNMENT_DISTANCE_VL,
-    F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK,
-    TRUE AS U_SOURCE_FROM_SERVER_FL,
-    LOCAL_POSITION_ID AS REQUEST_POSITION_ID
-FROM all_points
-WHERE rowno = 1
-AND dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) < %(RADIUS)s
-AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
-AND LOCAL_POSITION_ID <> 0
-;
-"""
-
-
-
-
 api_transaction_hl2_download_sql_exec_get_max_id = """
 SELECT 
     MAX(LOCAL_POSITION_ID) AS MAX_LOCAL_POSITION_ID
@@ -622,43 +564,46 @@ class api_transaction_hl2_download(api_transaction_base):
 
         
         # create staging origin
+        sql_insert = """
+        INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
+            DEVICE_ID,
+            SESSION_TOKEN_ID, 
+            SESSION_TOKEN_INHERITED_ID,
+            U_REFERENCE_POSITION_ID, U_SOURCE_FROM_SERVER_FL,
+            UX_VL, UY_VL, UZ_VL,
+            LOCAL_POSITION_ID,
+            REQUEST_POSITION_ID,
+            ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+            ALIGNMENT_QUALITY_VL,
+            ALIGNMENT_TYPE_FL,
+            LOCAL_AREA_INDEX_ID
+            -- AREA_RADIUS_VL ???
+        ) VALUES (
+            %(DEVICE_ID)s,
+            %(SESSION_TOKEN_ID)s,
+            %(SESSION_TOKEN_INHERITED_ID)s,
+            %(U_REFERENCE_POSITION_ID)s, TRUE,
+            0.00, 0.00, 0.00, 
+            0,
+            0,
+            %(ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK)s,
+            100.0,
+            %(ALIGNMENT_TYPE_FL)s,
+            0
+        );
+        """ 
+        sql_params = {
+            'DEVICE_ID' : self.request.device_id,
+            'SESSION_TOKEN_ID' : self.request.session_token,
+            'SESSION_TOKEN_INHERITED_ID' : self.inherited_session_real, # can be None
+            'U_REFERENCE_POSITION_ID' : self.request.ref_id, 
+            'ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK' : self.inherited_origin_pk, # can be None
+            'ALIGNMENT_TYPE_FL' : ( self.inherited_origin_pk is not None )
+        }
+        # self.log.debug_detail(f"sql params: {sql_params}", src="download:__create_staging_session")
+        # self.log.debug_detail(f"sql code: {sql_insert % sql_params}", src="download:__create_staging_session")
         cur.execute(
-            """
-            INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
-                DEVICE_ID,
-                SESSION_TOKEN_ID, 
-                SESSION_TOKEN_INHERITED_ID,
-                U_REFERENCE_POSITION_ID, U_SOURCE_FROM_SERVER_FL,
-                UX_VL, UY_VL, UZ_VL,
-                LOCAL_POSITION_ID,
-                REQUEST_POSITION_ID,
-                ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
-                ALIGNMENT_QUALITY_VL,
-                ALIGNMENT_TYPE_FL,
-                LOCAL_AREA_INDEX_ID
-                -- AREA_RADIUS_VL ???
-            ) VALUES (
-                %(DEVICE_ID)s,
-                %(SESSION_TOKEN_ID)s,
-                %(SESSION_TOKEN_INHERITED_ID)s,
-                %(U_REFERENCE_POSITION_ID)s, TRUE,
-                0.00, 0.00, 0.00, 
-                0,
-                0,
-                %(ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK)s,
-                100.0,
-                %(ALIGNMENT_TYPE_FL)s,
-                0
-            );
-            """,
-            {
-                'DEVICE_ID' : self.request.device_id,
-                'SESSION_TOKEN_ID' : self.request.session_token,
-                'SESSION_TOKEN_INHERITED_ID' : self.inherited_session_real, # can be None
-                'U_REFERENCE_POSITION_ID' : self.request.ref_id, 
-                'ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK' : self.inherited_origin_pk, # can be None
-                'ALIGNMENT_TYPE_FL' : ( self.inherited_origin_pk is not None )
-            }
+            sql_insert, sql_params
         )
 
 
