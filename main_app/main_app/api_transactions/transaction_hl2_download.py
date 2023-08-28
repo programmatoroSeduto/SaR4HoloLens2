@@ -13,6 +13,10 @@ from api_transactions.api_security_transactions.ud_security_support import ud_se
 
 
 api_transaction_hl2_download_sql_exec_get_waypoints = """
+DROP TYPE IF EXISTS json_schema;
+CREATE TYPE json_schema AS (
+	local_id int
+);
 WITH all_points AS (
 SELECT 
 ROW_NUMBER() OVER ( PARTITION BY LOCAL_POSITION_ID ORDER BY PREFERRED_FL DESC, F_HL2_QUALITY_WAYPOINTS_PK DESC ) AS rowno,
@@ -35,6 +39,13 @@ AND (
 	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
 	)
 ) -- SELECT * FROM all_points;
+, excluded_from_paths_analysis AS (
+SELECT DISTINCT
+	local_id AS LOCAL_POSITION_ID
+FROM JSON_POPULATE_RECORDSET(NULL::json_schema,
+%(JSON_EXCLUDE_WAYPOINTS)s
+)
+)
 , known_wps AS (
 SELECT DISTINCT  
 	LOCAL_POSITION_ID
@@ -51,6 +62,7 @@ WHERE rowno = 1
 AND dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) <= %(RADIUS)s
 AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
 AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM known_wps )
+AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM excluded_from_paths_analysis )
 ) -- SELECT * FROM wps_set_to_return;
 , selected_paths AS ( 
 SELECT DISTINCT
@@ -186,7 +198,7 @@ FROM sar.F_HL2_STAGING_WAYPOINTS
 WHERE 1=1
 AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
 AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s
-AND LOCAL_POSITION_ID <> 0
+-- AND LOCAL_POSITION_ID <> 0
 ) -- SELECT * FROM known_wps;
 , wps_set_to_return AS (
 SELECT DISTINCT
@@ -197,12 +209,26 @@ AND dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) <= %(RADIUS)s
 AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
 AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM known_wps )
 ) -- SELECT * FROM wps_set_to_return;
+, nearest_point AS (
+SELECT
+    LOCAL_POSITION_ID,
+    UX_VL, UY_VL, UZ_VL
+FROM wps_set_to_return
+ORDER BY dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) ASC
+LIMIT 1
+)
 , selected_paths AS ( 
 SELECT DISTINCT
     WAYPOINT_1_STAGING_FK,
     wp1s.LOCAL_POSITION_ID AS LOCAL_POSITION_1_ID,
+    dist( 
+        wp1s.UX_VL, wp1s.UY_VL, wp1s.UZ_VL, 
+        %(POS_X)s, %(POS_Y)s, %(POS_Z)s )::NUMERIC AS WP1_DIST,
     WAYPOINT_2_STAGING_FK,
     wp2s.LOCAL_POSITION_ID AS LOCAL_POSITION_2_ID,
+    dist( 
+        wp2s.UX_VL, wp2s.UY_VL, wp2s.UZ_VL, 
+        %(POS_X)s, %(POS_Y)s, %(POS_Z)s )::NUMERIC AS WP2_DIST,
     COALESCE(pth.PATH_DISTANCE, dist( 
         wp1s.UX_VL, wp1s.UY_VL, wp1s.UZ_VL, 
         wp2s.UX_VL, wp2s.UY_VL, wp2s.UZ_VL )) AS PATH_DISTANCE,
@@ -218,7 +244,22 @@ LEFT JOIN all_points
 WHERE 1=1
 AND wp1s.LOCAL_POSITION_ID IN (SELECT DISTINCT LOCAL_POSITION_ID FROM wps_set_to_return)
 AND wp2s.LOCAL_POSITION_ID IN (SELECT DISTINCT LOCAL_POSITION_ID FROM wps_set_to_return)
-) SELECT * FROM selected_paths;
+) 
+SELECT
+    pth.WAYPOINT_1_STAGING_FK,
+    pth.LOCAL_POSITION_1_ID,
+    pth.WAYPOINT_2_STAGING_FK,
+    pth.LOCAL_POSITION_2_ID,
+    mypos.LOCAL_POSITION_ID AS USER_NEAREST_POSITION,
+    min_of(pth.WP1_DIST, pth.WP2_DIST) AS MIN_DIST,
+    PATH_DISTANCE,
+    pth.CREATED_TS
+FROM selected_paths
+    AS pth
+LEFT JOIN nearest_point 
+    AS mypos
+    ON (1=1)
+ORDER BY MIN_DIST
 ;
 """
 
@@ -406,9 +447,8 @@ class api_transaction_hl2_download(api_transaction_base):
         else:
             self.response.based_on = ""
 
-
-
         # extract paths
+        self.log.debug_detail(f"download paths query:\n{api_transaction_hl2_download_sql_exec_get_paths % req_dict}", src="transaction Download")
         paths_found, self.pth_raw, _, _ = self.__extract_from_db( 
             api_transaction_hl2_download_sql_exec_get_paths,
             req_dict )
@@ -416,8 +456,14 @@ class api_transaction_hl2_download(api_transaction_base):
             self.pth_raw = list()
 
         if paths_found: 
+
+            # find connected sets inside the results
+            excluded_waypoints = self.__paths_analysis(self.pth_raw)
+            self.log.debug_detail(f"fund waypoints to exclude:\n\t{excluded_waypoints}",  src="transaction Download")
+            req_dict['JSON_EXCLUDE_WAYPOINTS'] = json.dumps([ {'local_id':id} for id in excluded_waypoints ])
+
             # extract waypoints
-            # self.log.debug_detail(f"download waypoints query:\n{api_transaction_hl2_download_sql_exec_get_waypoints % req_dict}", src="transaction Download")
+            self.log.debug_detail(f"download waypoints query:\n{api_transaction_hl2_download_sql_exec_get_waypoints % req_dict}", src="transaction Download")
             found, self.wps_raw, _, _ = self.__extract_from_db( 
                 api_transaction_hl2_download_sql_exec_get_waypoints,
                 req_dict )
@@ -486,6 +532,65 @@ class api_transaction_hl2_download(api_transaction_base):
         )
 
         # cur.execute("COMMIT TRANSACTION;")
+    
+
+
+    def __paths_analysis(self, paths:list) -> set:
+        self.log.debug_detail(f"START PATHS ANALYSIS WITH paths:\n\t{paths}", src="__paths_analysis")
+        current_pos = paths[0]['USER_NEAREST_POSITION']
+        self.log.debug_detail(f"current pos is ID:{current_pos}", src="__paths_analysis")
+        wp_set = set()
+        wp_paths = set()
+
+        self.log.debug_detail(f"DISCOVERING PATHS AND WAYPOINTS", src="__paths_analysis")
+        for row in paths:
+            if row['LOCAL_POSITION_1_ID'] not in wp_set:
+                id = row['LOCAL_POSITION_1_ID']
+                self.log.debug_detail(f"(wp1) found ID:{id}", src="__paths_analysis")
+                wp_set.add(id)
+            if row['LOCAL_POSITION_2_ID'] not in wp_set:
+                id = row['LOCAL_POSITION_2_ID']
+                self.log.debug_detail(f"(wp2) found ID:{id}", src="__paths_analysis")
+                wp_set.add(id)
+            if row['LOCAL_POSITION_1_ID'] in wp_set and row['LOCAL_POSITION_2_ID'] in wp_set:
+                tup12 = ( row['LOCAL_POSITION_1_ID'], row['LOCAL_POSITION_2_ID'] )
+                tup21 = ( tup12[1], tup12[0] )
+                self.log.debug_detail(f"(wp2) found PATH:{tup12}/{tup21}", src="__paths_analysis")
+                wp_paths.add( tup12 )
+                wp_paths.add( tup21 )
+        
+        self.log.debug_detail(f"ITERATING OVER PATHS", src="__paths_analysis")
+        wp_set, _ = self.__iterate_over_paths(current_pos, wp_set, wp_paths, iteration=1)
+        self.log.debug_detail(f"END PATHS ANALYSIS", src="__paths_analysis")
+        return wp_set
+        
+    def __iterate_over_paths(self, current_pos:int, wp_set:set, wp_paths:set, iteration) -> (set, set):
+        self.log.debug_detail(f"BEGIN ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\twp_paths:{wp_paths}", src="__iterate_over_paths")
+        found_wp_set = set()
+        for wp in wp_set:
+            tup = ( current_pos, wp )
+            if tup in wp_paths:
+                found_wp_set.add(wp)
+                wp_paths.remove(tup)
+                wp_paths.remove((tup[1], tup[0]))
+        if len(found_wp_set) == 0:
+            self.log.debug_detail(f"END ITERATION {iteration} (no paths found) WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\twp_paths:{wp_paths}", src="__iterate_over_paths")
+            return wp_set, wp_paths
+
+        found_wp_set.add(current_pos)
+        for wp in found_wp_set:
+            try:
+                wp_set.remove(wp)
+            except Exception as e:
+                self.log.debug_detail(f"current pos ID:{wp} is not in set", src="__iterate_over_paths")
+        for wp in found_wp_set:
+            wp_set, wp_paths = self.__iterate_over_paths(wp, wp_set, wp_paths, iteration+1)
+        
+        self.log.debug_detail(f"END ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\twp_paths:{wp_paths}", src="__iterate_over_paths")
+        return wp_set, wp_paths
+
+        
+            
 
 
 
