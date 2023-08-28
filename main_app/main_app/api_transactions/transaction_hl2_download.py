@@ -45,16 +45,68 @@ AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s
 ) -- SELECT * FROM known_wps;
 , wps_set_to_return AS (
 SELECT DISTINCT
+    *
+FROM all_points
+WHERE rowno = 1
+AND dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) <= %(RADIUS)s
+AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
+AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM known_wps )
+) -- SELECT * FROM wps_set_to_return;
+, selected_paths AS ( 
+SELECT DISTINCT
+    WAYPOINT_1_STAGING_FK,
+    wp1s.LOCAL_POSITION_ID AS LOCAL_POSITION_1_ID,
+    wp1s.UX_VL AS UX1_VL, wp1s.UY_VL AS UY1_VL, wp1s.UZ_VL AS UZ1_VL,
+    WAYPOINT_2_STAGING_FK,
+    wp2s.LOCAL_POSITION_ID AS LOCAL_POSITION_2_ID,
+    wp2s.UX_VL AS UX2_VL, wp2s.UY_VL AS UY2_VL, wp2s.UZ_VL AS UZ2_VL,
+    COALESCE(pth.PATH_DISTANCE, dist( 
+        wp1s.UX_VL, wp1s.UY_VL, wp1s.UZ_VL, 
+        wp2s.UX_VL, wp2s.UY_VL, wp2s.UZ_VL )) AS PATH_DISTANCE
+FROM sar.F_HL2_STAGING_PATHS
+	AS pth
+LEFT JOIN all_points
+	AS wp1s
+	ON ( wp1s.F_HL2_QUALITY_WAYPOINTS_PK = pth.WAYPOINT_1_STAGING_FK )
+LEFT JOIN all_points
+	AS wp2s
+	ON ( wp2s.F_HL2_QUALITY_WAYPOINTS_PK = pth.WAYPOINT_2_STAGING_FK )
+WHERE 1=1
+AND wp1s.LOCAL_POSITION_ID IN (SELECT DISTINCT LOCAL_POSITION_ID FROM wps_set_to_return)
+AND wp2s.LOCAL_POSITION_ID IN (SELECT DISTINCT LOCAL_POSITION_ID FROM wps_set_to_return)
+) -- SELECT * FROM selected_paths;
+, waypoints_filtered_by_path AS (
+SELECT DISTINCT 
+	tab.F_HL2_QUALITY_WAYPOINTS_PK,
+	tab.LOCAL_POSITION_ID,
+	tab.UX_VL, tab.UY_VL, tab.UZ_VL,
+	wps_set_to_return.CREATED_TS
+FROM (
+SELECT 
+	WAYPOINT_1_STAGING_FK AS F_HL2_QUALITY_WAYPOINTS_PK,
+	LOCAL_POSITION_1_ID AS LOCAL_POSITION_ID,
+	UX1_VL AS UX_VL, UY1_VL AS UY_VL, UZ1_VL AS UZ_VL
+FROM selected_paths
+UNION 
+SELECT 
+	WAYPOINT_2_STAGING_FK AS F_HL2_QUALITY_WAYPOINTS_PK,
+	LOCAL_POSITION_2_ID AS LOCAL_POSITION_ID,
+	UX2_VL AS UX_VL, UY2_VL AS UY_VL, UZ2_VL AS UZ_VL
+FROM selected_paths
+) AS tab 
+JOIN wps_set_to_return
+	ON ( tab.F_HL2_QUALITY_WAYPOINTS_PK = wps_set_to_return.F_HL2_QUALITY_WAYPOINTS_PK )
+WHERE tab.LOCAL_POSITION_ID <> 0
+) -- SELECT DISTINCT * FROM waypoints_filtered_by_path;
+, wps_final_set_to_return AS (
+SELECT DISTINCT
     %(DEVICE_ID)s AS DEVICE_ID,
     %(SESSION_TOKEN_ID)s AS SESSION_TOKEN_ID,
     %(SESSION_TOKEN_INHERITED_ID)s AS SESSION_TOKEN_INHERITED_ID,
     %(U_REFERENCE_POSITION_ID)s AS U_REFERENCE_POSITION_ID,
     LOCAL_POSITION_ID,
     UX_VL, UY_VL, UZ_VL,
-    COALESCE(
-        WAYPOINT_CREATED_TS,
-        CREATED_TS
-    ) AS WAYPOINT_CREATED_TS,
+    CREATED_TS AS WAYPOINT_CREATED_TS,
     F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
     TRUE AS ALIGNMENT_TYPE_FL,
     100 AS ALIGNMENT_QUALITY_VL,
@@ -62,13 +114,8 @@ SELECT DISTINCT
     F_HL2_QUALITY_WAYPOINTS_PK AS ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK,
     TRUE AS U_SOURCE_FROM_SERVER_FL,
     LOCAL_POSITION_ID AS REQUEST_POSITION_ID
-FROM all_points
-WHERE rowno = 1
-AND dist( UX_VL, UY_VL, UZ_VL, 0, 0, 0 ) < 1.75
-AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
-AND LOCAL_POSITION_ID <> 0
-AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM known_wps )
-) -- SELECT * FROM wps_set_to_return;
+FROM waypoints_filtered_by_path
+) -- SELECT * FROM wps_final_set_to_return;
 , insert_step AS (
 INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
     DEVICE_ID, SESSION_TOKEN_ID, SESSION_TOKEN_INHERITED_ID, U_REFERENCE_POSITION_ID,
@@ -76,7 +123,7 @@ INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
     ALIGNMENT_TYPE_FL, ALIGNMENT_QUALITY_VL, ALIGNMENT_DISTANCE_VL, 
     ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK, U_SOURCE_FROM_SERVER_FL, REQUEST_POSITION_ID
 )
-SELECT * FROM wps_set_to_return 
+SELECT * FROM wps_final_set_to_return 
 RETURNING
     *
 )
@@ -110,8 +157,7 @@ AND (
 
 
 api_transaction_hl2_download_sql_exec_get_paths = """
-WITH 
-source_wps AS (
+WITH all_points AS (
 SELECT 
 ROW_NUMBER() OVER ( PARTITION BY LOCAL_POSITION_ID ORDER BY PREFERRED_FL DESC, F_HL2_QUALITY_WAYPOINTS_PK DESC ) AS rowno,
 *
@@ -132,42 +178,36 @@ AND (
 	OR 
 	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
 	)
-) -- SELECT * FROM source_wps;
-, all_points AS ( -- tutti i punti della sessione, ereditati o generati diretti
+) -- SELECT * FROM all_points;
+, known_wps AS (
+SELECT DISTINCT  
+	LOCAL_POSITION_ID
+FROM sar.F_HL2_STAGING_WAYPOINTS
+WHERE 1=1
+AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
+AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s
+AND LOCAL_POSITION_ID <> 0
+) -- SELECT * FROM known_wps;
+, wps_set_to_return AS (
 SELECT DISTINCT
-*
-FROM source_wps
+    *
+FROM all_points
 WHERE rowno = 1
 AND dist( UX_VL, UY_VL, UZ_VL, %(POS_X)s, %(POS_Y)s, %(POS_Z)s ) <= %(RADIUS)s
-) -- SELECT * FROM all_points;
-, unknown_points AS ( -- di questi punti, vai a selezionare quelli effettivamente nuovi da inviare nella distanza
-SELECT DISTINCT
-*
-FROM all_points
-WHERE SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
-) -- SELECT * FROM all_points;
-, selected_paths AS ( -- tutti gli archi che hanno almeno un punto nuovo tra i due estremi
+AND SESSION_TOKEN_ID <> %(SESSION_TOKEN_ID)s
+AND LOCAL_POSITION_ID NOT IN ( SELECT * FROM known_wps )
+) -- SELECT * FROM wps_set_to_return;
+, selected_paths AS ( 
 SELECT DISTINCT
     WAYPOINT_1_STAGING_FK,
-    WAYPOINT_2_STAGING_FK,
-    PATH_DISTANCE,
-    MIN(CREATED_TS) AS CREATED_TS
-FROM sar.F_HL2_STAGING_PATHS
-WHERE 1=0
-OR WAYPOINT_1_STAGING_FK IN ( SELECT DISTINCT F_HL2_QUALITY_WAYPOINTS_PK FROM unknown_points )
-OR WAYPOINT_2_STAGING_FK IN ( SELECT DISTINCT F_HL2_QUALITY_WAYPOINTS_PK FROM unknown_points )
-GROUP BY 1,2,3
-) 
-SELECT
-    pth.WAYPOINT_1_STAGING_FK,
     wp1s.LOCAL_POSITION_ID AS LOCAL_POSITION_1_ID,
-    pth.WAYPOINT_2_STAGING_FK,
+    WAYPOINT_2_STAGING_FK,
     wp2s.LOCAL_POSITION_ID AS LOCAL_POSITION_2_ID,
     COALESCE(pth.PATH_DISTANCE, dist( 
         wp1s.UX_VL, wp1s.UY_VL, wp1s.UZ_VL, 
         wp2s.UX_VL, wp2s.UY_VL, wp2s.UZ_VL )) AS PATH_DISTANCE,
     pth.CREATED_TS
-FROM selected_paths 
+FROM sar.F_HL2_STAGING_PATHS
 	AS pth
 LEFT JOIN all_points
 	AS wp1s
@@ -175,9 +215,10 @@ LEFT JOIN all_points
 LEFT JOIN all_points
 	AS wp2s
 	ON ( wp2s.F_HL2_QUALITY_WAYPOINTS_PK = pth.WAYPOINT_2_STAGING_FK )
-WHERE 1=1 -- to avoid dangling paths
-AND wp1s.LOCAL_POSITION_ID IS NOT NULL
-AND wp2s.LOCAL_POSITION_ID IS NOT NULL
+WHERE 1=1
+AND wp1s.LOCAL_POSITION_ID IN (SELECT DISTINCT LOCAL_POSITION_ID FROM wps_set_to_return)
+AND wp2s.LOCAL_POSITION_ID IN (SELECT DISTINCT LOCAL_POSITION_ID FROM wps_set_to_return)
+) SELECT * FROM selected_paths;
 ;
 """
 
@@ -365,13 +406,22 @@ class api_transaction_hl2_download(api_transaction_base):
         else:
             self.response.based_on = ""
 
-        # extract waypoints
-        # self.log.debug_detail(f"download waypoints query:\n{api_transaction_hl2_download_sql_exec_get_waypoints % req_dict}", src="transaction Download")
-        found, self.wps_raw, _, _ = self.__extract_from_db( 
-            api_transaction_hl2_download_sql_exec_get_waypoints,
-            req_dict )
 
-        if found: 
+
+        # extract paths
+        paths_found, self.pth_raw, _, _ = self.__extract_from_db( 
+            api_transaction_hl2_download_sql_exec_get_paths,
+            req_dict )
+        if not paths_found:
+            self.pth_raw = list()
+
+        if paths_found: 
+            # extract waypoints
+            # self.log.debug_detail(f"download waypoints query:\n{api_transaction_hl2_download_sql_exec_get_waypoints % req_dict}", src="transaction Download")
+            found, self.wps_raw, _, _ = self.__extract_from_db( 
+                api_transaction_hl2_download_sql_exec_get_waypoints,
+                req_dict )
+            
             # get max of local IDs
             _, data, _, _ = self.__extract_from_db( 
                 api_transaction_hl2_download_sql_exec_get_max_id,
@@ -381,13 +431,6 @@ class api_transaction_hl2_download(api_transaction_base):
                 }
             )
             self.response.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
-
-            # extract paths
-            paths_found, self.pth_raw, _, _ = self.__extract_from_db( 
-                api_transaction_hl2_download_sql_exec_get_paths,
-                req_dict )
-            if not paths_found:
-                self.pth_raw = list()
 
             # build the response
             for wp in self.wps_raw:
