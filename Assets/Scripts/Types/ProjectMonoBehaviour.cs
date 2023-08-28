@@ -1,0 +1,15 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ProjectMonoBehaviour : MonoBehaviour
+{
+    public bool IsReady { get => isReady; }
+    private bool isReady = false;
+
+    public void Ready(bool disableComponent = false)
+    {
+        isReady = true;
+        this.enabled = !disableComponent;
+    }
+}

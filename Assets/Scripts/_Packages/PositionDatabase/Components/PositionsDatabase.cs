@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Packages.PositionDatabase.Components
 {
-    public class PositionsDatabase : MonoBehaviour
+    public class PositionsDatabase : ProjectMonoBehaviour
     {
         // ===== GUI ===== //
 
@@ -40,10 +40,6 @@ namespace Packages.PositionDatabase.Components
         public List<UnityEvent> CallOnZoneCreated = new List<UnityEvent>();
         [Tooltip("Events called when the current zone changes")]
         public List<UnityEvent> CallOnZoneChanged = new List<UnityEvent>();
-
-        [Header("Import Export settings")]
-        [Tooltip("reference to the writer")]
-        public StorageHubOneShot WriterReference = null;
 
 
 
@@ -115,6 +111,7 @@ namespace Packages.PositionDatabase.Components
             if (UseMaxIndices) lowLevel.MaxIndices = MaxIndices;
 
             AreaRenaming.Add(0, 0);
+            Ready();
         }
 
         private void Update()

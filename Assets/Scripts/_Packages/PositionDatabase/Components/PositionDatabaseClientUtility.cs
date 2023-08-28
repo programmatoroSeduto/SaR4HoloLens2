@@ -16,7 +16,7 @@ using Packages.SAR4HL2NetworkingServices.Utils;
 
 namespace Packages.PositionDatabase.Components
 {
-    public class PositionDatabaseClientUtility : MonoBehaviour
+    public class PositionDatabaseClientUtility : ProjectMonoBehaviour
     {
         // ===== GUI ===== //
 
@@ -63,7 +63,8 @@ namespace Packages.PositionDatabase.Components
 
         private void Start()
         {
-            TryInit();
+            if(InitOnStart)
+                TryInit();
         }
 
         public bool TryInit()
@@ -97,6 +98,7 @@ namespace Packages.PositionDatabase.Components
             COR_MainWorkingCycle = StartCoroutine(ORCOR_MainWorkingCycle());
 
             StaticLogger.Info(sourceLog, "init ... OK", logLayer: 2);
+            Ready();
             return true;
         }
 
@@ -160,6 +162,15 @@ namespace Packages.PositionDatabase.Components
                 StaticLogger.Info(sourceLog, $"({waitCount++}) waiting ... (nullRef:{(StaticTransform.CalibrationComponent == null)})", logLayer: 3);
             }
             StaticLogger.Info(sourceLog, $"Waiting for calibration ... OK: calibration done", logLayer: 0);
+    
+            StaticLogger.Info(sourceLog, $"Waiting for first position from position database ...", logLayer: 0);
+            waitCount = 0;
+            while (PositionsDB.CurrentZone == null)
+            {
+                yield return new WaitForSecondsRealtime(1.0f);
+                StaticLogger.Info(sourceLog, $"({waitCount++}) waiting ... )", logLayer: 3);
+            }
+            StaticLogger.Info(sourceLog, $"Waiting for first position from position database ... OK", logLayer: 0);
 
             // first download
             StaticLogger.Info(sourceLog, $"First download from server ...", logLayer: 0);
@@ -482,7 +493,7 @@ namespace Packages.PositionDatabase.Components
             wp.setPositionID(jsonWp.pos_id); // already shared in download
             wp.AreaIndex = jsonWp.area_id;
             DateTime.TryParse(jsonWp.wp_timestamp, out wp.Timestamp);
-            wp.AreaCenter = new Vector3(jsonWp.v[0], jsonWp.v[1], jsonWp.v[2]);
+            wp.AreaCenter = StaticTransform.ToAppPoint(new Vector3(jsonWp.v[0], jsonWp.v[1], jsonWp.v[2]));
             wp.DBReference = PositionsDB;
             wp.AreaRadius = PositionsDB.BaseDistance;
 
@@ -494,7 +505,8 @@ namespace Packages.PositionDatabase.Components
             data_hl2_waypoint jwp = new data_hl2_waypoint();
             jwp.pos_id = wp.PositionID;
             jwp.area_id = 0;
-            jwp.v = new List<float> { wp.AreaCenter.x, wp.AreaCenter.y, wp.AreaCenter.z };
+            Vector3 glbVect = StaticTransform.ToRefPoint(wp.AreaCenter);
+            jwp.v = new List<float> { glbVect.x, glbVect.y, glbVect.z };
             jwp.wp_timestamp = wp.Timestamp.ToString("yyyy/MM/dd HH:mm:ss");
 
             return jwp;

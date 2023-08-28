@@ -19,7 +19,7 @@ namespace Project.Scripts.Utils
         {
             get
             {
-                posID = StaticAppSettings.GetOpt("CalibrationPositionID", "UNKNOWN");
+                posID = StaticAppSettings.GetOpt("ReferencePositionID", "UNKNOWN");
                 if (posID == "")
                     StaticLogger.Warn("GET ReferencePositionName", "WARNING: unknown reference position for calibration");
                 return posID;
@@ -102,11 +102,13 @@ namespace Project.Scripts.Utils
                 return false;
             }
 
-            posID = StaticAppSettings.SetOpt("CalibrationPositionID", refPointName);
+            posID = StaticAppSettings.SetOpt("ReferencePositionID", refPointName);
             refPos = refPointPosition;
             refRot = refPointRotation;
 
             calibrationDone = true;
+            if (CalibrationComponent != null)
+                CalibrationComponent.enabled = true;
             return true;
         }
 

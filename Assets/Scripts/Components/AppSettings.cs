@@ -12,7 +12,7 @@ using Packages.SAR4HL2NetworkingServices.Components;
 
 namespace Project.Scripts.Components
 {
-    public class AppSettings : MonoBehaviour
+    public class AppSettings : ProjectMonoBehaviour
     {
         // ===== GUI ===== //
 
@@ -150,7 +150,7 @@ namespace Project.Scripts.Components
 
         private void Update()
         {
-            
+
         }
 
         private void OnDestroy()
@@ -177,7 +177,7 @@ namespace Project.Scripts.Components
 
             StaticLogger.Info(this, "Setting up environment ... ");
 
-            StaticAppSettings.AppSettings = this;
+            // StaticAppSettings.AppSettings = this;
 
             StaticAppSettings.SetOpt("OperatorUniversalUserID", OperatorUniversalUserID);
             StaticAppSettings.SetOpt("OperatorUniversalDeviceID", OperatorUniversalDeviceID);
@@ -208,7 +208,7 @@ namespace Project.Scripts.Components
 
         // ===== GUI CHANGE ===== //
 
-        [ExecuteInEditMode]
+        // [ExecuteInEditMode]
         public void OnValidate()
         {
             if (running) return;
@@ -261,11 +261,11 @@ namespace Project.Scripts.Components
             }
         }
 
-        public void SetLogObjet(bool lMain=true, bool lInfo = true, bool lWarn=true, bool lError = true, int layer = int.MaxValue)
+        public void SetLogObjet(bool lMain = true, bool lInfo = true, bool lWarn = true, bool lError = true, int layer = int.MaxValue)
         {
             LoggerMain.gameObject.SetActive(lMain);
             LoggerInfo.gameObject.SetActive(lInfo);
-            StaticLogger.PrintInfo = ( lMain || lInfo ); 
+            StaticLogger.PrintInfo = (lMain || lInfo);
 
             LoggerWarning.gameObject.SetActive(lWarn);
             StaticLogger.PrintWarn = lWarn;
@@ -282,10 +282,10 @@ namespace Project.Scripts.Components
 
         public void SetDebugMode(bool opt, bool forceChange = false)
         {
-            if(opt && (!DebugMode || forceChange))
+            if (opt && (!DebugMode || forceChange))
             {
                 DebugMode = true;
-                if(running) 
+                if (running)
                     StaticAppSettings.SetOpt("IsDebugMode", "true");
             }
             else if (!opt && (DebugMode || forceChange))
@@ -311,7 +311,7 @@ namespace Project.Scripts.Components
                 SarServerURL = url;
 
             StaticAppSettings.SetOpt("SarServerURL", SarServerURL);
-            if(SarServerComponent != null)
+            if (SarServerComponent != null)
             {
                 SarServerComponent.ServerURL = this.SarServerURL;
                 SarServerComponent.UserId = this.OperatorUniversalUserID;

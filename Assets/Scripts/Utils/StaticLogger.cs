@@ -10,7 +10,7 @@ namespace Project.Scripts.Utils
         // ===== LOG LAYERS SUPPORT ===== //
 
         // every log with code smaller or equal than this is logged
-        public static int CurrentLogLayer = 0;
+        public static int CurrentLogLayer = int.MaxValue;
         // implicitly suppressed logs
         public static HashSet<string> SuppressedLogs = new HashSet<string>();
 

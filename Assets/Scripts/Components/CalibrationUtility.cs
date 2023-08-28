@@ -8,13 +8,15 @@ using Packages.PositionDatabase.Components;
 
 namespace Project.Scripts.Components
 {
-    public class CalibrationUtility : MonoBehaviour
+    public class CalibrationUtility : ProjectMonoBehaviour
     {
         // ===== GUI ===== //
 
         [Header("General Properties")]
         [Tooltip("A sound can be reproduced while the calibration is in progress")]
         public AudioSource AudioSourceComponent = null;
+        [Tooltip("Reference to the Positions Database")]
+        public PositionsDatabase DatabaseReference = null;
 
 
 
@@ -35,6 +37,8 @@ namespace Project.Scripts.Components
                 StaticLogger.Warn(this, "AudioSource not found", logLayer: 2);
             else if (AudioSourceComponent.isPlaying)
                 AudioSourceComponent.Stop();
+
+            Ready(disableComponent: true);
         }
 
         // update the position of the static object
@@ -67,7 +71,7 @@ namespace Project.Scripts.Components
                 return;
             }
 
-            string refName = StaticAppSettings.GetOpt("CalibrationPositionID", "");
+            string refName = StaticAppSettings.GetOpt("ReferencePositionID", "");
             if(refName == "")
             {
                 StaticLogger.Warn(this, "Configuration Issue! reference name not set in the appSettings!");
@@ -115,14 +119,13 @@ namespace Project.Scripts.Components
                 $"\tRefRot (euler Angles): {refRot.eulerAngles}\n", logLayer: 2);
 
             StaticLogger.Info(this, "Enabling position database ... ", logLayer: 1);
-            PositionsDatabase db = StaticAppSettings.AppSettings.PositionsDatabase;
-            if(db == null)
+            if(DatabaseReference == null)
             {
                 StaticLogger.Warn(this, "Global reference to main position database found unset at runtime! Unexpected");
             }
             else
             {
-                db.enabled = true;
+                DatabaseReference.enabled = true;
                 StaticLogger.Info(this, "Enabling position database ... OK ", logLayer: 1);
             }
 
@@ -131,6 +134,7 @@ namespace Project.Scripts.Components
 
             calibrationInProgress = false;
             calibrationDone = true;
+            this.enabled = true; // start Updating ...
         }
 
 

@@ -3,21 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
-using UnityEngine.Networking;
 
 using Project.Scripts.Utils;
-using Project.Scripts.Components;
 using Packages.SAR4HL2NetworkingServices.Utils;
 
 namespace Packages.SAR4HL2NetworkingServices.Components
 {
-    public class SarHL2Client : MonoBehaviour
+    public class SarHL2Client : ProjectMonoBehaviour
     {
         // ===== GUI ===== //
 
         [Header("Connection Settings")]
         [Tooltip("Web Address of the server")]
-        public string ServerURL = "http://127.0.0.1:80/sar/";
+        public string ServerURL = "";
         [Tooltip("Connect on start?")]
         public bool ConnectOnStart = false;
         [Tooltip("Connection Timeout (-1 if not used)")]
@@ -104,7 +102,6 @@ namespace Packages.SAR4HL2NetworkingServices.Components
 
         private void Start()
         {
-            StaticLogger.CurrentLogLayer = 9999;
             if (ConnectOnStart)
                 InitConnection();
         }
@@ -187,6 +184,7 @@ namespace Packages.SAR4HL2NetworkingServices.Components
             StaticLogger.Info(sourceLog, "connection process... OK: successfully connected", logLayer: 0);
             connected = true;
             runningConnection = false;
+            Ready();
         }
 
 
@@ -195,7 +193,7 @@ namespace Packages.SAR4HL2NetworkingServices.Components
 
         ~SarHL2Client()
         {
-            DisconnectOnDestroyClass();
+            // DisconnectOnDestroyClass();
         }
 
         public bool Disconnect()

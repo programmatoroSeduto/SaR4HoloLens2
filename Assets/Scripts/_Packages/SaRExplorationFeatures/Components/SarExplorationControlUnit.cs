@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace Packages.SarExplorationFeatures.Components
 {
-    public class SarExplorationControlUnit : MonoBehaviour
+    public class SarExplorationControlUnit : ProjectMonoBehaviour
     {
         // ===== GUI ===== //
 
@@ -73,6 +73,8 @@ namespace Packages.SarExplorationFeatures.Components
         private bool isMinimapFollowingUser = false;
         // position visualizer for minimap 
         private FeaturePositionVisualizer positionVisualizer = null;
+        // ...
+        UnityEvent onChangeCallbackEvent = null;
 
 
 
@@ -93,7 +95,7 @@ namespace Packages.SarExplorationFeatures.Components
             
             if (DbReference == null) return false;
             DbReference.CallOnZoneChanged.Clear();
-            DbReference.CallOnZoneCreated.Clear();
+            // DbReference.CallOnZoneCreated.Clear();
 
             if (StructureReference == null)
             {
@@ -227,8 +229,8 @@ namespace Packages.SarExplorationFeatures.Components
 
             if(opt && !spatialOnUpdate.IsRunning)
             {
-                DbReference.CallOnZoneChanged.Clear();
-                UnityEvent onChangeCallbackEvent = new UnityEvent();
+                unregisterCallbacks();
+                onChangeCallbackEvent = new UnityEvent();
                 onChangeCallbackEvent.AddListener(spatialOnUpdate.OnZoneChanged);
                 DbReference.CallOnZoneChanged.Add(onChangeCallbackEvent);
 
@@ -238,7 +240,7 @@ namespace Packages.SarExplorationFeatures.Components
             }
             else if(!opt && spatialOnUpdate.IsRunning)
             {
-                DbReference.CallOnZoneChanged.Clear();
+                unregisterCallbacks();
 
                 spatialOnUpdate.IsRunning = false;
                 status = SarExplorationControlUnitStatus.Ready;
@@ -279,8 +281,8 @@ namespace Packages.SarExplorationFeatures.Components
 
             if (opt && !spatialAround.IsRunning)
             {
-                DbReference.CallOnZoneChanged.Clear();
-                UnityEvent onChangeCallbackEvent = new UnityEvent();
+                unregisterCallbacks();
+                onChangeCallbackEvent = new UnityEvent();
                 onChangeCallbackEvent.AddListener(spatialAround.OnZoneChanged);
                 DbReference.CallOnZoneChanged.Add(onChangeCallbackEvent);
 
@@ -298,8 +300,9 @@ namespace Packages.SarExplorationFeatures.Components
             }
             else if (!opt && spatialAround.IsRunning)
             {
-                DbReference.CallOnZoneChanged.Clear();
-                
+                unregisterCallbacks();
+
+
                 spatialAround.positionVisualizer = null;
                 spatialAround.IsRunning = false;
                 status = SarExplorationControlUnitStatus.Ready;
@@ -377,6 +380,17 @@ namespace Packages.SarExplorationFeatures.Components
                 ONOFF_SpatialAround(false);
                 return;
             }
+        }
+
+
+
+        // ===== UTILITIES ===== //
+
+        private void unregisterCallbacks()
+        {
+            if(onChangeCallbackEvent != null)
+                DbReference.CallOnZoneChanged.Remove(onChangeCallbackEvent);
+            onChangeCallbackEvent = null;
         }
     }
 }

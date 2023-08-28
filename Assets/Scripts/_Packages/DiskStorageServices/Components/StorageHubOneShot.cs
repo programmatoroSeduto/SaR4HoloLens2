@@ -17,8 +17,14 @@ using Windows.Storage.Streams;
 
 namespace Packages.DiskStorageServices.Components
 {
-    public class StorageHubOneShot : MonoBehaviour
+    public class StorageHubOneShot : ProjectMonoBehaviour
     {
+        // ====== GUI ===== //
+
+        public string PcLogfilePath = "C:\\shared\\output";
+
+
+
         // ====== PUBLIC ===== //
 
         public bool FileReadSuccess
@@ -69,6 +75,7 @@ namespace Packages.DiskStorageServices.Components
                 Debug.LogWarning("[StorageWriterHubBase] ERROR: unauthorized!");
                 return;
             }
+            Ready();
         }
 
         // close all the files when the component is destroyed
@@ -106,12 +113,11 @@ namespace Packages.DiskStorageServices.Components
                 Debug.LogWarning($"[StorageWriterHubBase] ERROR: Unauthorized to access folder '{sf.ToString()}'");
                 return false;
             }
-
-            return true;
+            
 #else
             Debug.LogWarning($"[StorageWriterHubBase] WARNING: calling UWP function from non-UWP environment");
-            return true;
 #endif
+            return true;
         }
 
 
@@ -139,8 +145,6 @@ namespace Packages.DiskStorageServices.Components
                 fname = $"{fileName}.{fileFormat}";
             format = fileFormat;
 
-            // Debug.Log($"Writing data on {fname} ... ");
-
 #if WINDOWS_UWP
             Task<StorageFile> newFileTask = sf.CreateFileAsync(fname, CreationCollisionOption.ReplaceExisting).AsTask();
             while (!newFileTask.IsCompleted)
@@ -150,7 +154,7 @@ namespace Packages.DiskStorageServices.Components
             while (!writeOnFileIO.IsCompleted)
                 yield return new WaitForEndOfFrame();
 #else
-            fileRef = new StreamWriter($"C:\\shared\\{fname}", false);
+            fileRef = new StreamWriter($"{PcLogfilePath}\\{fname}", false);
             fileRef.Write(content);
             fileRef.Close();
 #endif
@@ -199,7 +203,7 @@ namespace Packages.DiskStorageServices.Components
             StreamReader sr = null;
             try
             {
-                sr = new StreamReader($"C:\\shared\\{fileName}");
+                sr = new StreamReader($"{PcLogfilePath}\\{fileName}");
             }
             catch(IOException)
             {

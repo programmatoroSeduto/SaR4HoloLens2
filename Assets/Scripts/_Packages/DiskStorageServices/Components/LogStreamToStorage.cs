@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -8,7 +7,7 @@ using Project.Scripts.Components;
 
 namespace Packages.DiskStorageServices.Components
 {
-    public class LogStreamToStorage : MonoBehaviour
+    public class LogStreamToStorage : ProjectMonoBehaviour
     {
         // ====== GUI ===== //
         [Header("Base Settings")]
@@ -53,6 +52,7 @@ namespace Packages.DiskStorageServices.Components
             }
 
             isEnabledStream = true;
+            Ready();
         }
 
         private void Update()
@@ -114,7 +114,7 @@ namespace Packages.DiskStorageServices.Components
                 || (type == LogType.Log && SendInfos)
              )
             {
-                if (SuppressWarningsFromSettings && (type == LogType.Warning && SendWarnings) && ((AppSettings)StaticAppSettings.GetObject("AppSettings")).SuppressedLogs.Contains(message))
+                if (SuppressWarningsFromSettings && (type == LogType.Warning && SendWarnings) && ((ProjectAppSettings)StaticAppSettings.GetObject("AppSettings")).SuppressedLogs.Contains(message))
                     return;
 
                 pendingMsgs.Enqueue(message);

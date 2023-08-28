@@ -16,19 +16,6 @@ namespace Project.Scripts.Utils
         public static bool IsEnvUWP = false;
 #endif
 
-        // get reference to the AppSettings object
-        public static AppSettings AppSettings
-        {
-            get
-            {
-                return StaticAppSettings.GetObject("AppSettings") as AppSettings;
-            }
-            set
-            {
-                StaticAppSettings.SetObject("AppSettings", value);
-            }
-        }
-
 
 
         // ===== PRIVATE ===== //

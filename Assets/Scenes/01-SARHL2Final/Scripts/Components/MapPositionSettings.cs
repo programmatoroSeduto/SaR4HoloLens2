@@ -8,30 +8,28 @@ using Project.Scripts.Utils;
 
 namespace Project.Scenes.SARHL2_DEVELOPMENT.Components
 {
-    public class MapPositionSettings : MonoBehaviour
+    public class MapPositionSettings : ProjectMonoBehaviour
     {
+
         public GameObject MapRoot = null;
-        // public float UserHeight = 1.85f;
 
         // Start is called before the first frame update
         void Start()
         {
-            bool isDebugMode = ( StaticAppSettings.GetOpt("IsDebugMode", "true") != "false" );
+            bool isDebugMode = (bool) StaticAppSettings.GetObject("DebugMode", true);
             if ( !isDebugMode )
             {
+                StaticLogger.Info("MapPositionSettings", "Debug mode is not enabled", logLayer: 3);
                 gameObject.SetActive(false);
                 return;
             }
 
             if(MapRoot == null) MapRoot = gameObject;
-            float UserHeight = float.Parse(StaticAppSettings.GetOpt("UserHeight", "1.85"));
+            float UserHeight = (float)StaticAppSettings.GetObject("UserHeight", 1.85f);
             MapRoot.transform.position -= UserHeight * Vector3.up;
-        }
 
-        // Update is called once per frame
-        void Update()
-        {
-
+            MapRoot.SetActive(true);
+            Ready(disableComponent: true);
         }
     }
 

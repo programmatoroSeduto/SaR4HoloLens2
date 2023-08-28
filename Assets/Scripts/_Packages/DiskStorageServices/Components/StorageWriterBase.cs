@@ -16,7 +16,7 @@ using Windows.Storage.Streams;
 
 namespace Packages.DiskStorageServices.Components
 {
-    public class StorageWriterBase : MonoBehaviour
+    public class StorageWriterBase : ProjectMonoBehaviour
     {
         // ====== GUI ===== //
 
@@ -29,6 +29,7 @@ namespace Packages.DiskStorageServices.Components
         public bool CreateFileOnStart = false;
         [Tooltip("Apply timestamp to each line")]
         public bool UseLineTimestamp = false;
+        public string PcLogfilePath = "C:\\shared\\output";
 
 
 
@@ -193,7 +194,7 @@ namespace Packages.DiskStorageServices.Components
 
             fileCreated = true;
 #else
-            StorageFile = new StreamWriter($"C:\\shared\\{fname}", false);
+            StorageFile = new StreamWriter($"{PcLogfilePath}\\{fname}", false);
             fileCreated = true;
 #endif
         }
@@ -236,6 +237,7 @@ namespace Packages.DiskStorageServices.Components
                 }
             });
 #endif
+            Ready();
         }
 
         private void BSTASK_StorageOutputBackground()
@@ -244,15 +246,6 @@ namespace Packages.DiskStorageServices.Components
             while (qlines.Count > 0)
                 lock (MUTEX_qlines)
                     FileIO.AppendTextAsync(fil, (string)qlines.Dequeue()).AsTask().GetAwaiter().GetResult();
-#else
-            /*
-            while (qlines.Count > 0)
-                lock (MUTEX_qlines)
-                {
-                    StorageFile.Write((string)qlines.Dequeue());
-                    StorageFile.Flush();
-                }
-            */
 #endif
         }
     }
