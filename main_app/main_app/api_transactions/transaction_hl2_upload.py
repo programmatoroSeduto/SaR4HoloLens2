@@ -509,8 +509,10 @@ class api_transaction_hl2_upload(api_transaction_base):
             self.db.get_cursor().execute("ROLLBACK TRANSACTION;")
         '''
         if self.__log_error:
+            self.log.debug("exec fail", src="upload.__execute")
             self.__exec_fail()
         else:
+            self.log.debug("exec success", src="upload.__execute")
             self.__exec_success()
 
 
@@ -528,6 +530,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         cur = self.db.get_cursor()
         # cur.execute("BEGIN TRANSACTION;")
 
+        self.log.debug("uploading waypoints...", src="upload.__exec_success")
         # upload waypoints
         # https://stackoverflow.com/questions/65622045/pydantic-convert-to-jsonable-dict-not-full-json-string
         self.renamings_found, self.renamings, _, _ = self.__extract_from_db(
@@ -545,6 +548,7 @@ class api_transaction_hl2_upload(api_transaction_base):
             }
         )
 
+        self.log.debug("building alignment lookup table ...", src="upload.__exec_success")
         self.response.wp_alignment = list()
         align_dict = dict()
         if self.renamings_found:
@@ -556,6 +560,8 @@ class api_transaction_hl2_upload(api_transaction_base):
                         aligned_position_id=align['ALIGNED_POSITION_ID']
                     )
                 )
+        
+        self.log.debug("filtering paths ...", src="upload.__exec_success")
         true_request = list()
         for path in self.request.paths:
             from_pk = align_dict.get( path.wp1, path.wp1 )
@@ -565,6 +571,7 @@ class api_transaction_hl2_upload(api_transaction_base):
 
         # upload links
         if len(true_request) > 0:
+            self.log.debug("uploading paths ...", src="upload.__exec_success")
             _, _, _, _ = self.__extract_from_db(
                 api_transaction_hl2_upload_sql_exec_paths,
                 {
@@ -577,6 +584,7 @@ class api_transaction_hl2_upload(api_transaction_base):
             )
 
         # get max index in session
+        self.log.debug("creating max idx ...", src="upload.__exec_success")
         _, data, _, _ = self.__extract_from_db(
             api_transaction_hl2_upload_sql_exec_get_max_id,
             {
@@ -587,6 +595,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         self.max_idx = data[0]['MAX_LOCAL_POSITION_ID']
 
         # report on log
+        self.log.debug("updating transaction log ...", src="upload.__exec_success")
         cur.execute(
             api_transaction_hl2_upload_sql_exec_log,
             {
@@ -602,6 +611,7 @@ class api_transaction_hl2_upload(api_transaction_base):
 
         # build response
         self.response.max_id = self.max_idx
+        self.log.debug("DONE.", src="upload.__exec_success")
 
         # cur.execute("COMMIT TRANSACTION;")
 
@@ -618,6 +628,7 @@ class api_transaction_hl2_upload(api_transaction_base):
         cur = self.db.get_cursor()
         # cur.execute("BEGIN TRANSACTION;")
 
+        self.log.debug("updating transaction log ...", src="upload.__exec_fail")
         cur.execute(
             api_transaction_hl2_upload_sql_exec_log,
             {
@@ -630,6 +641,7 @@ class api_transaction_hl2_upload(api_transaction_base):
                 'LOG_DATA' : self.dict_to_field(dict(self.request)),
             }
         )
+        self.log.debug("DONE.", src="upload.__exec_fail")
 
         # cur.execute("COMMIT TRANSACTION;")
 

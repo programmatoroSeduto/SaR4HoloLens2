@@ -42,7 +42,7 @@ services:
       - 5432:5432
     environment:
       APP_LOAD_SAMPLES: true
-      APP_USE_EXPERIMENTAL_SCRIPT: false
+      APP_USE_EXPERIMENTAL_SCRIPT: true
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres

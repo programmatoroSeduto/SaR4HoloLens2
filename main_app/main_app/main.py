@@ -266,6 +266,7 @@ async def api_hl2_download(
     global config, env
     log.info_api( "/api/hl2/download", src=metadata.api_tags.api_hl2_download )
 
+    log.debug_detail( "security transaction BEGINS ... ", src=metadata.api_tags.api_hl2_download )
     tr_security = api_transaction_hl2_security(env, api_models.api_hl2_base_request(
         user_id=request_body.user_id,
         device_id=request_body.device_id,
@@ -275,14 +276,19 @@ async def api_hl2_download(
     tr_security.execute()
     
     if not tr_security.success:
+        log.debug_detail( "security transaction FAILED ", src=metadata.api_tags.api_hl2_download )
         return utils.set_response(
             response,
             request_body,
             tr_security.response
         )
+    log.debug_detail( "security transaction END with success ", src=metadata.api_tags.api_hl2_download )
 
+    log.info_api( "building ransaction download...", src=metadata.api_tags.api_hl2_download )
     tr_download = api_transaction_hl2_download(env, request_body)
+    log.info_api( "performing checks download...", src=metadata.api_tags.api_hl2_download )
     tr_download.check()
+    log.info_api( "executing transaction download...", src=metadata.api_tags.api_hl2_download )
     tr_download.execute()
 
     return utils.set_response(
@@ -311,7 +317,8 @@ async def api_hl2_upload(
     '''
     global config, env
     log.info_api( "/api/hl2/upload", src=metadata.api_tags.api_hl2_upload )
-
+    
+    log.debug_detail( "security transaction BEGINS ... ", src=metadata.api_tags.api_hl2_upload )
     tr_security = api_transaction_hl2_security(env, api_models.api_hl2_base_request(
         user_id=request_body.user_id,
         device_id=request_body.device_id,
@@ -321,16 +328,22 @@ async def api_hl2_upload(
     tr_security.execute()
     
     if not tr_security.success:
+        log.debug_detail( "security transaction FAILED ", src=metadata.api_tags.api_hl2_upload )
         return utils.set_response(
             response,
             request_body,
             tr_security.response
         )
+    log.debug_detail( "security transaction END with success ", src=metadata.api_tags.api_hl2_upload )
 
+    log.debug_detail( "BUILDING transaction upload...", src=metadata.api_tags.api_hl2_upload )
     tr_upload = api_transaction_hl2_upload(env, request_body)
+    log.debug_detail( "check phase...", src=metadata.api_tags.api_hl2_upload )
     tr_upload.check()
+    log.debug_detail( "execution phase ...", src=metadata.api_tags.api_hl2_upload )
     tr_upload.execute()
 
+    log.debug_detail( "returning response - upload ends ...", src=metadata.api_tags.api_hl2_upload )
     return utils.set_response(
         response,
         request_body,
