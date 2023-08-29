@@ -323,6 +323,8 @@ namespace Packages.PositionDatabase.Components
             yield return null;
             
             StaticLogger.Info(sourceLog, $"Calling API download from server ...", logLayer: 1);
+            if(PositionsDB.CurrentZone.AreaCenter == null)
+                StaticLogger.Warn(sourceLog, $"PositionsDB.CurrentZone.AreaCenter == null : {PositionsDB.CurrentZone.AreaCenter == null}", logLayer: 1);
             yield return Client.ORCOR_DownloadFromServer(PositionsDB.CurrentZone.AreaCenter, UpdateRadius);
             if (!Client.Success)
             {

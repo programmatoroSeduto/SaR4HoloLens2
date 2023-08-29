@@ -587,6 +587,7 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             payload.based_on = fakeToken;
             payload.ref_id = referencePositionId;
             payload.center = Vector3ToList(calibrating ? Vector3.zero : currentPosition);
+            StaticLogger.Info(sourceLog, $"download request with center:  {payload.center}", logLayer: 4);
             payload.radius = radius;
 
             yield return BSCOR_PerformRequestPost(

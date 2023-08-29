@@ -264,7 +264,7 @@ namespace Packages.SAR4HL2NetworkingServices.Components
             if (isFirstDownload)
                 yield return SarAPI.ApiCall_Hl2Download(ReferencePositionId, Vector3.zero, radius ?? 250.0f, calibrating:true, timeout:ConnectionTimeout);
             else
-                yield return SarAPI.ApiCall_Hl2Download(ReferencePositionId, pos ?? Vector3.zero, radius ?? 250.0f, calibrating: true, timeout: ConnectionTimeout);
+                yield return SarAPI.ApiCall_Hl2Download(ReferencePositionId, pos ?? Vector3.zero, radius ?? 250.0f, calibrating: false, timeout: ConnectionTimeout);
             // StaticLogger.Info(sourceLog, "Performing download request ... OK", logLayer: 2);
             if(!SarAPI.DownloadSuccess)
             {
