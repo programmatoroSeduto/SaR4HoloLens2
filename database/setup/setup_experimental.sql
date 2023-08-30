@@ -212,3 +212,228 @@ BEGIN
 	
 	RETURN NEW_KEY_FK;
 END $$ ;
+
+-- register_staging_session_child(arg_device_id, arg_session_token_id, arg_session_token_inherited_id, arg_refpos_id)
+DROP FUNCTION IF EXISTS register_staging_session_child;
+CREATE FUNCTION register_staging_session_child( 
+	arg_device_id CHAR(24),
+	arg_session_token_id TEXT,
+	arg_session_token_inherited_id TEXT,
+	arg_refpos_id CHAR(24)
+	)
+	RETURNS BIGINT
+	LANGUAGE plpgsql
+AS $$ 
+DECLARE 
+	NEW_KEY_FK BIGINT DEFAULT NULL;
+BEGIN
+	WITH insert_step AS ( 
+		INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
+			-- F_HL2_QUALITY_WAYPOINTS_PK,
+			 DEVICE_ID,
+			 SESSION_TOKEN_ID,
+			 SESSION_TOKEN_INHERITED_ID,
+			 LOCAL_POSITION_ID,
+			 REQUEST_POSITION_ID,
+			 U_REFERENCE_POSITION_ID,
+			 -- U_LEFT_HANDED_REFERENCE_FL,
+			 UX_VL,
+			 UY_VL, 
+			 UZ_VL, 
+			 U_SOURCE_FROM_SERVER_FL, 
+			 LOCAL_AREA_INDEX_ID,
+			 -- WAYPOINT_CREATED_TS,
+			 ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+			 ALIGNMENT_TYPE_FL,
+			 ALIGNMENT_QUALITY_VL,
+			 ALIGNMENT_DISTANCE_VL,
+			 ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK
+		)
+		SELECT 
+			-- F_HL2_QUALITY_WAYPOINTS_PK,
+			 arg_device_id, -- DEVICE_ID,
+			 arg_session_token_id, -- SESSION_TOKEN_ID,
+			 arg_session_token_inherited_id, -- SESSION_TOKEN_INHERITED_ID,
+			 0, -- LOCAL_POSITION_ID,
+			 0, -- REQUEST_POSITION_ID,
+			 arg_refpos_id, -- U_REFERENCE_POSITION_ID,
+			 -- U_LEFT_HANDED_REFERENCE_FL,
+			 0.0, -- UX_VL,
+			 0.0, -- UY_VL, 
+			 0.0, -- UZ_VL, 
+			 TRUE, -- U_SOURCE_FROM_SERVER_FL, 
+			 0, -- LOCAL_AREA_INDEX_ID,
+			 -- WAYPOINT_CREATED_TS,
+			 tab.ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK, -- ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+			 TRUE, -- ALIGNMENT_TYPE_FL,
+			 100.0, -- ALIGNMENT_QUALITY_VL,
+			 0.00, -- ALIGNMENT_DISTANCE_VL,
+			 tab.ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK -- ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK
+		FROM (
+			SELECT
+				ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK
+			FROM sar.F_HL2_STAGING_WAYPOINTS
+			WHERE 1=1
+			AND LOCAL_POSITION_ID = 0
+			AND U_REFERENCE_POSITION_ID = arg_refpos_id
+			AND SESSION_TOKEN_ID = arg_session_token_inherited_id
+			AND SESSION_TOKEN_INHERITED_ID IS NULL
+			ORDER BY 1 ASC
+			LIMIT 1
+		) AS tab
+		RETURNING * )
+	SELECT
+		F_HL2_QUALITY_WAYPOINTS_PK
+	INTO NEW_KEY_FK
+	FROM insert_step;
+	
+	RETURN NEW_KEY_FK;
+END $$ ;
+
+DROP FUNCTION IF EXISTS get_near_waypoints;
+CREATE FUNCTION get_near_waypoints(
+	arg_x FLOAT, 
+	arg_y FLOAT, 
+	arg_z FLOAT, 
+	arg_radius FLOAT,
+	arg_refp_id CHAR(24),
+	arg_session_id CHAR(24))
+	RETURNS TABLE (
+		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
+		LOCAL_POSITION_ID INT,
+		SESSION_TOKEN_ID TEXT,
+		SESSION_TOKEN_INHERITED_ID TEXT
+	)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN QUERY (
+	SELECT DISTINCT
+		wp.F_HL2_QUALITY_WAYPOINTS_PK,
+		wp.LOCAL_POSITION_ID,
+		wp.SESSION_TOKEN_ID,
+		wp.SESSION_TOKEN_INHERITED_ID
+	FROM sar.F_HL2_STAGING_WAYPOINTS 
+		AS wp
+	WHERE 1=1
+	AND NOT(wp.ALIGNMENT_TYPE_FL)
+	AND wp.U_REFERENCE_POSITION_ID = arg_refp_id
+	AND dist(wp.UX_VL, wp.UY_VL, wp.UZ_VL, arg_x, arg_y, arg_z) < arg_radius
+	AND (
+		( wp.SESSION_TOKEN_INHERITED_ID IS NULL AND wp.SESSION_TOKEN_ID = arg_session_id )
+		OR 
+		wp.SESSION_TOKEN_INHERITED_ID = arg_session_id
+		)
+	);
+END $$;
+
+DROP FUNCTION IF EXISTS get_session_generic_waypoints;
+CREATE FUNCTION get_session_generic_waypoints(
+	arg_refp_id CHAR(24),
+	arg_session_id CHAR(24))
+	RETURNS TABLE (
+		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
+		LOCAL_POSITION_ID INT,
+		SESSION_TOKEN_ID TEXT,
+		SESSION_TOKEN_INHERITED_ID TEXT
+	)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN QUERY (
+	SELECT DISTINCT
+		wp.F_HL2_QUALITY_WAYPOINTS_PK,
+		wp.LOCAL_POSITION_ID,
+		wp.SESSION_TOKEN_ID,
+		wp.SESSION_TOKEN_INHERITED_ID
+	FROM sar.F_HL2_STAGING_WAYPOINTS 
+		AS wp
+	WHERE 1=1
+	AND NOT(wp.ALIGNMENT_TYPE_FL)
+	AND wp.U_REFERENCE_POSITION_ID = arg_refp_id
+	AND (
+		( wp.SESSION_TOKEN_INHERITED_ID IS NULL AND wp.SESSION_TOKEN_ID = arg_session_id )
+		OR 
+		wp.SESSION_TOKEN_INHERITED_ID = arg_session_id
+		)
+	);
+END $$;
+
+DROP FUNCTION IF EXISTS get_known_points_by_session;
+CREATE FUNCTION get_known_points_by_session(arg_session_id CHAR(24))
+	RETURNS TABLE (
+		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
+		LOCAL_POSITION_ID INT
+	)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN QUERY (
+	SELECT DISTINCT
+		wp.F_HL2_QUALITY_WAYPOINTS_PK,
+		wp.LOCAL_POSITION_ID
+	FROM sar.F_HL2_STAGING_WAYPOINTS 
+		AS wp
+	WHERE 1=1
+	AND wp.SESSION_TOKEN_ID = arg_session_id
+	);
+END $$;
+
+DROP FUNCTION IF EXISTS get_unknown_points_by_session;
+CREATE FUNCTION get_unknown_points_by_session(arg_session_id CHAR(24), arg_refpos_id CHAR(24))
+	RETURNS TABLE (
+		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
+		LOCAL_POSITION_ID INT
+	)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN QUERY (
+	SELECT DISTINCT
+		wp.F_HL2_QUALITY_WAYPOINTS_PK,
+		wp.LOCAL_POSITION_ID
+	FROM get_session_generic_waypoints(
+		arg_refpos_id,
+		arg_session_id ) 
+		AS wp
+	LEFT JOIN get_known_points_by_session(arg_session_id)
+		AS known_wp
+		ON ( wp.LOCAL_POSITION_ID = known_wp.LOCAL_POSITION_ID )
+	WHERE 1=1
+	AND known_wp.LOCAL_POSITION_ID IS NULL
+	AND wp.SESSION_TOKEN_ID = arg_session_id
+	);
+END $$;
+
+DROP FUNCTION IF EXISTS current_position_id;
+CREATE FUNCTION current_position_id(
+	arg_refpos_id CHAR(24),
+	arg_session_inherited_id CHAR(24),
+	arg_x FLOAT,
+	arg_y FLOAT,
+	arg_z FLOAT
+	)
+	RETURNS TEXT
+	LANGUAGE plpgsql
+AS $$ 
+DECLARE 
+	LOCAL_POSITION_ID INT;
+BEGIN
+	WITH tab AS ( 
+		SELECT
+			ROW_NUMBER() OVER ( 
+				ORDER BY dist( UX_VL, UY_VL, UZ_VL, arg_x, arg_y, arg_z ) ASC
+				) AS TAB_ORDER,
+			wps.LOCAL_POSITION_ID
+		FROM get_session_generic_waypoints(
+			arg_refpos_id,
+			arg_session_inherited_id )
+			AS wps
+		LEFT JOIN sar.F_HL2_STAGING_WAYPOINTS
+			AS wps_data
+			ON ( wps.F_HL2_QUALITY_WAYPOINTS_PK = wps_data.F_HL2_QUALITY_WAYPOINTS_PK )
+	)
+	SELECT 
+		tab.LOCAL_POSITION_ID
+	INTO LOCAL_POSITION_ID
+	FROM tab
+	WHERE TAB_ORDER = 1;
+	
+	RETURN LOCAL_POSITION_ID;
+END $$ ;

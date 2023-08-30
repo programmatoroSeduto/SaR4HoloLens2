@@ -59,6 +59,7 @@ class api_transaction_hl2_download(api_transaction_base):
 
         # transaction custom data
         self.security_handle:ud_security_support = ud_security_support(env)
+        self.inherited_token:str = ""
         # ...
     
 
@@ -131,7 +132,20 @@ class api_transaction_hl2_download(api_transaction_base):
             )
             if data[0]['RES'] is not None:
                 self.log.debug("found a session the user can inherit", src="download:__exec_success")
-                self.log.debug("TODO", src="download:__exec_success")
+                self.inherited_token = data[0]['RES']
+                self.log.debug(f"got fake token: {self.fake_token}", src="download:__exec_success")
+                _, _, _, _ = self.__extract_from_db(
+                    '''
+                    SELECT register_staging_session_child(%(device_id)s, %(session_token)s, %(based_on)s, %(ref_id)s) AS RES;
+                    ''',
+                    {
+                        'device_id' : self.request.device_id,
+                        'session_token' : self.request.session_token,
+                        'based_on' : self.inherited_token,
+                        'ref_id' : self.request.ref_id
+                    }
+                )
+                self.log.debug("OK created father user", src="download:__exec_success")
             else:
                 self.log.debug("the user is completely new", src="download:__exec_success")
                 _, _, _, _ = self.__extract_from_db(
@@ -148,17 +162,22 @@ class api_transaction_hl2_download(api_transaction_base):
                 
         if need_fake_token:
             self.log.debug("creating fake token for user...", src="download:__exec_success")
+            if self.fake_token is not None:
+                self.log.debug("with fake token", src="download:__exec_success")
+            else:
+                self.log.debug("with NO fake token (father session)", src="download:__exec_success")
             faket = self.security_handle.create_fake_session_token(
                 self.request.user_id,
                 self.request.device_id,
                 self.request.session_token,
-                None # father session
+                self.inherited_token # can be None
             )
             self.log.debug(f"creating fake token for user... OK; returned {faket}", src="download:__exec_success")
             self.log.debug(f"response so far: {self.response.based_on}", src="download:__exec_success")
             self.response.based_on = faket
             self.response.ref_id = self.request.ref_id
             self.response.max_idx = 0
+            self.response.based_on = ( self.inherited_token or "" )
 
         # logging
         cur.execute(
