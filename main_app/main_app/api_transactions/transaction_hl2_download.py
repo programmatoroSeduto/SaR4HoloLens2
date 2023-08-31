@@ -60,6 +60,7 @@ class api_transaction_hl2_download(api_transaction_base):
         # transaction custom data
         self.security_handle:ud_security_support = ud_security_support(env)
         self.inherited_token:str = ""
+        self.fake_token = None
         # ...
     
 
@@ -177,7 +178,9 @@ class api_transaction_hl2_download(api_transaction_base):
             self.response.based_on = faket
             self.response.ref_id = self.request.ref_id
             self.response.max_idx = 0
-            self.response.based_on = ( self.inherited_token or "" )
+        else:
+            self.response.based_on = ""
+            self.response.ref_id = self.request.ref_id
 
         # logging
         cur.execute(

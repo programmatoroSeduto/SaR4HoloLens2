@@ -377,7 +377,10 @@ AS $$ BEGIN
 END $$;
 
 DROP FUNCTION IF EXISTS get_unknown_points_by_session;
-CREATE FUNCTION get_unknown_points_by_session(arg_session_id CHAR(24), arg_refpos_id CHAR(24))
+CREATE FUNCTION get_unknown_points_by_session(
+	arg_refpos_id CHAR(24), 
+	arg_session_inherited_id TEXT,
+	arg_session_id TEXT)
 	RETURNS TABLE (
 		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
 		LOCAL_POSITION_ID INT
@@ -390,14 +393,14 @@ AS $$ BEGIN
 		wp.LOCAL_POSITION_ID
 	FROM get_session_generic_waypoints(
 		arg_refpos_id,
-		arg_session_id ) 
-		AS wp
-	LEFT JOIN get_known_points_by_session(arg_session_id)
-		AS known_wp
+		arg_session_inherited_id 
+		) AS wp
+	LEFT JOIN get_known_points_by_session(
+		arg_session_id
+		) AS known_wp
 		ON ( wp.LOCAL_POSITION_ID = known_wp.LOCAL_POSITION_ID )
 	WHERE 1=1
 	AND known_wp.LOCAL_POSITION_ID IS NULL
-	AND wp.SESSION_TOKEN_ID = arg_session_id
 	);
 END $$;
 
@@ -436,4 +439,39 @@ BEGIN
 	WHERE TAB_ORDER = 1;
 	
 	RETURN LOCAL_POSITION_ID;
+END $$ ;
+
+DROP FUNCTION IF EXISTS get_unknown_waypoints_in_radius;
+CREATE FUNCTION get_unknown_waypoints_in_radius(
+	arg_refpos_id CHAR(24),
+	arg_session_inherited_id CHAR(24),
+	arg_session_id CHAR(24),
+	arg_x FLOAT,
+	arg_y FLOAT,
+	arg_z FLOAT,
+	arg_radius FLOAT 
+	)
+	RETURNS TABLE (
+		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
+		LOCAL_POSITION_ID INT,
+		DISTANCE_FROM_SOURCE_VL FLOAT
+	)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN QUERY(
+	SELECT 
+		wp.F_HL2_QUALITY_WAYPOINTS_PK,
+		wp.LOCAL_POSITION_ID,
+		dist( UX_VL, UY_VL, UZ_VL, arg_x, arg_y, arg_z )::FLOAT AS DISTANCE_FROM_SOURCE_VL
+	FROM get_unknown_points_by_session(
+		arg_refpos_id,
+		arg_session_inherited_id,
+		arg_session_id
+	) AS wp_base
+	JOIN sar.F_HL2_STAGING_WAYPOINTS
+		AS wp
+		ON ( wp_base.F_HL2_QUALITY_WAYPOINTS_PK = wp.F_HL2_QUALITY_WAYPOINTS_PK )
+	WHERE 1=1
+	AND dist( UX_VL, UY_VL, UZ_VL, arg_x, arg_y, arg_z ) < arg_radius
+	);
 END $$ ;
