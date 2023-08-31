@@ -404,8 +404,8 @@ AS $$ BEGIN
 	);
 END $$;
 
-DROP FUNCTION IF EXISTS current_position_id;
-CREATE FUNCTION current_position_id(
+DROP FUNCTION IF EXISTS get_current_position_local_id;
+CREATE FUNCTION get_current_position_local_id(
 	arg_refpos_id CHAR(24),
 	arg_session_inherited_id CHAR(24),
 	arg_x FLOAT,
@@ -473,5 +473,76 @@ AS $$ BEGIN
 		ON ( wp_base.F_HL2_QUALITY_WAYPOINTS_PK = wp.F_HL2_QUALITY_WAYPOINTS_PK )
 	WHERE 1=1
 	AND dist( UX_VL, UY_VL, UZ_VL, arg_x, arg_y, arg_z ) < arg_radius
+	);
+END $$ ;
+
+DROP FUNCTION IF EXISTS get_unknown_paths_in_radius;
+CREATE FUNCTION get_unknown_paths_in_radius(
+	arg_refpos_id CHAR(24),
+	arg_session_inherited_id CHAR(24),
+	arg_session_id CHAR(24),
+	arg_x FLOAT,
+	arg_y FLOAT,
+	arg_z FLOAT,
+	arg_radius FLOAT 
+	)
+	RETURNS TABLE (
+		WAYPOINT_1_STAGING_FK BIGINT,
+		WP1_LOCAL_POS_ID INT,
+		WAYPOINT_2_STAGING_FK BIGINT,
+		WP2_LOCAL_POS_ID INT,
+		DISTANCE_VL FLOAT,
+		CREATED_TS TIMESTAMP
+	)
+	LANGUAGE plpgsql
+AS $$ BEGIN
+	RETURN QUERY (
+	
+	WITH 
+	unknown_wps AS (
+		SELECT DISTINCT
+			LOCAL_POSITION_ID
+		FROM get_unknown_waypoints_in_radius(
+			arg_refpos_id,
+			arg_session_inherited_id,
+			arg_session_id,
+			arg_x, arg_y, arg_z, arg_radius
+		)
+	)
+	, paths AS (
+		SELECT DISTINCT
+			wp1.F_HL2_QUALITY_WAYPOINTS_PK AS WAYPOINT_1_STAGING_FK,
+			wp1.LOCAL_POSITION_ID AS WP1_LOCAL_POS_ID,
+			wp2.F_HL2_QUALITY_WAYPOINTS_PK AS WAYPOINT_2_STAGING_FK,
+			wp2.LOCAL_POSITION_ID AS WP2_LOCAL_POS_ID,
+			dist( wp1.UX_VL, wp1.UY_VL, wp1.UZ_VL, wp2.UX_VL, wp2.UY_VL, wp2.UZ_VL )::FLOAT AS DISTANCE_VL,
+			COALESCE(wp1.WAYPOINT_CREATED_TS, wp1.CREATED_TS) AS CREATED_TS
+		FROM sar.F_HL2_STAGING_PATHS
+			AS pt
+		JOIN sar.F_HL2_STAGING_WAYPOINTS
+			AS wp1
+			ON ( pt.WAYPOINT_1_STAGING_FK = wp1.F_HL2_QUALITY_WAYPOINTS_PK )
+		LEFT JOIN unknown_wps AS unknown_wp1
+			ON ( wp1.LOCAL_POSITION_ID = unknown_wp1.LOCAL_POSITION_ID )
+		JOIN sar.F_HL2_STAGING_WAYPOINTS
+			AS wp2
+			ON ( pt.WAYPOINT_2_STAGING_FK = wp2.F_HL2_QUALITY_WAYPOINTS_PK )
+		LEFT JOIN unknown_wps AS unknown_wp2
+			ON ( wp2.LOCAL_POSITION_ID = unknown_wp2.LOCAL_POSITION_ID )
+		WHERE 1=1
+		AND pt.U_REFERENCE_POSITION_ID = arg_refpos_id
+		AND (
+			( pt.SESSION_TOKEN_INHERITED_ID IS NULL AND pt.SESSION_TOKEN_ID = arg_session_inherited_id )
+			OR
+			( pt.SESSION_TOKEN_INHERITED_ID = arg_session_inherited_id )
+		)
+		AND ( unknown_wp1.LOCAL_POSITION_ID IS NOT NULL OR unknown_wp2.LOCAL_POSITION_ID IS NOT NULL )
+	)
+	SELECT PATHS.WAYPOINT_1_STAGING_FK, paths.WP1_LOCAL_POS_ID, PATHS.WAYPOINT_2_STAGING_FK, paths.WP2_LOCAL_POS_ID, paths.DISTANCE_VL, paths.CREATED_TS
+	FROM paths
+	UNION 
+	SELECT PATHS.WAYPOINT_1_STAGING_FK, paths.WP1_LOCAL_POS_ID, PATHS.WAYPOINT_2_STAGING_FK, paths.WP2_LOCAL_POS_ID, paths.DISTANCE_VL, paths.CREATED_TS
+	FROM paths
+	
 	);
 END $$ ;
