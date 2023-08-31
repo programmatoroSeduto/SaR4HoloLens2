@@ -59,7 +59,7 @@ class api_transaction_hl2_download(api_transaction_base):
 
         # transaction custom data
         self.security_handle:ud_security_support = ud_security_support(env)
-        self.inherited_token:str = ""
+        self.inherited_token:str = None
         self.fake_token = None
         self.wp_found = False
         self.wp_data = []
@@ -126,8 +126,29 @@ class api_transaction_hl2_download(api_transaction_base):
         )
         self.log.debug(f"from db: {data[0]}", src="download:__exec_success")
         if data[0]['RES']:
-            self.log.debug("already registered!", src="download:__exec_success")
-            self.log.debug("TODO", src="download:__exec_success")
+            self.log.debug("already registered! Trying to get real token from fake...", src="download:__exec_success")
+            fake_exists, fake_is_original, real_token = self.security_handle.try_get_real_token_from_fake(
+                self.request.user_id,
+                self.request.device_id,
+                self.request.session_token,
+                self.request.based_on
+            )
+
+            if fake_exists:
+                self.log.debug(f"fake token found", src="download:__exec_success")
+            else:
+                self.log.debug(f"fake token does not exist!", src="download:__exec_success")
+                self.response.status = status.HTTP_404_NOT_FOUND
+                self.response.status_detail = 'invalid credentials'
+                return
+
+            if fake_is_original:
+                self.log.debug(f"this session is a original session", src="download:__exec_success")
+                self.inherited_token = None
+            else:
+                self.log.debug(f"this session is a inherited session", src="download:__exec_success")
+                self.inherited_token = real_token
+
         else:
             need_fake_token = True
             self.log.debug("a new user .. what kind of new user?", src="download:__exec_success")
@@ -189,6 +210,25 @@ class api_transaction_hl2_download(api_transaction_base):
         else:
             self.response.based_on = ""
             self.response.ref_id = self.request.ref_id
+        
+        self.log.debug(f"getting max of session ...", src="download:__exec_success")
+        max_id_found, data, _, _ = self.__extract_from_db(
+            """
+            SELECT MAX(LOCAL_POSITION_ID) AS MAX_ID FROM get_session_generic_waypoints(
+                %(REF_POS_ID)s,
+                %(SESSION_ID)s
+            ) AS tab;
+            """,
+            {
+                'REF_POS_ID' : self.request.ref_id,
+                'SESSION_ID' : ( self.inherited_token or self.request.session_token )
+            }
+        )
+        if max_id_found:
+            self.response.max_idx = data[0]['MAX_ID']
+            self.log.debug(f"getting max of session ... OK max id {self.response.max_idx}", src="download:__exec_success")
+        else:
+            self.log.debug(f"getting max of session ... WARNING max id not found", src="download:__exec_success")
 
         # CALLS ARGUMENTS
         self.extraction_args = {
@@ -212,9 +252,9 @@ class api_transaction_hl2_download(api_transaction_base):
                 wp.UX_VL, wp.UY_VL, wp.UZ_VL, 
                 COALESCE(wp.WAYPOINT_CREATED_TS, wp.CREATED_TS) AS CREATED_TS
             FROM get_unknown_waypoints_in_radius(
-                %(REF_POS_ID)s,
-                %(SESSION_INHERITED_ID)s, -- inherited
-                %(SESSION_ID)s, -- user
+                %(REF_POS_ID)s::CHAR(24),
+                %(SESSION_INHERITED_ID)s::TEXT, -- inherited
+                %(SESSION_ID)s::TEXT, -- user
                 %(UX)s::FLOAT, %(UY)s::FLOAT, %(UZ)s::FLOAT, %(RADIUS)s::FLOAT
             ) AS wp_base
             LEFT JOIN sar.F_HL2_STAGING_WAYPOINTS
@@ -254,9 +294,9 @@ class api_transaction_hl2_download(api_transaction_base):
                 DISTANCE_VL,
                 CREATED_TS
             FROM get_unknown_paths_in_radius(
-                %(REF_POS_ID)s,
-                %(SESSION_INHERITED_ID)s, -- inherited
-                %(SESSION_ID)s, -- user
+                %(REF_POS_ID)s::CHAR(24),
+                %(SESSION_INHERITED_ID)s::TEXT, -- inherited
+                %(SESSION_ID)s::TEXT, -- user
                 %(UX)s::FLOAT, %(UY)s::FLOAT, %(UZ)s::FLOAT, %(RADIUS)s::FLOAT
             );
             ''',
@@ -270,16 +310,14 @@ class api_transaction_hl2_download(api_transaction_base):
             '''
             SELECT 
                 get_current_position_local_id(
-                    %(REF_POS_ID)s,
-                    %(SESSION_INHERITED_ID)s, -- inherited
-                    %(SESSION_ID)s, -- user
+                    %(REF_POS_ID)s::CHAR(24),
+                    %(SESSION_INHERITED_ID)s::TEXT, 
                     %(UX)s::FLOAT, %(UY)s::FLOAT, %(UZ)s::FLOAT
                 ) AS POS_ID
             ''',
             {
                 'REF_POS_ID' : self.extraction_args['REF_POS_ID'],
                 'SESSION_INHERITED_ID' : self.extraction_args['SESSION_INHERITED_ID'],
-                'SESSION_ID' : self.extraction_args['SESSION_ID'],
                 'UX' : self.extraction_args['UX'],
                 'UY' : self.extraction_args['UY'],
                 'UZ' : self.extraction_args['UZ']
@@ -290,7 +328,7 @@ class api_transaction_hl2_download(api_transaction_base):
         self.log.debug(f"CURRENT pos ID is: {self.current_position_id}", src="download:__exec_success")
 
         self.log.debug(f"performing path analysis ... ", src="download:__exec_success")
-        wp_set, pt_set = self.__paths_analysis(self.current_position_id, self.pt_data)
+        wp_set, pt_set = self.__paths_analysis(self.current_position_id, self.wp_data, self.pt_data)
         self.log.debug(f"performing path analysis ... ", src="download:__exec_success")
 
         self.log.debug(f"collecting waypoints to return ... ", src="download:__exec_success")
@@ -325,7 +363,7 @@ class api_transaction_hl2_download(api_transaction_base):
         self.log.debug(f"collecting paths to return ... OK", src="download:__exec_success")
 
         self.log.debug(f"writing results in tables ... ", src="download:__exec_success")
-        _, _, _, _ = self.__extract_from_db(
+        _, _, _, _ = self.__extract_from_db( 
             '''
             DROP TYPE IF EXISTS json_schema_wp;
             CREATE TYPE json_schema_wp AS (
@@ -369,7 +407,7 @@ class api_transaction_hl2_download(api_transaction_base):
             LEFT JOIN sar.F_HL2_STAGING_WAYPOINTS
                 AS wp
                 ON (wp_base.F_HL2_QUALITY_WAYPOINTS_PK = wp.F_HL2_QUALITY_WAYPOINTS_PK)
-            WHERE wp.LOCAL_POSITION_ID NOT IN (SELECT wp FROM exclusion_list)
+            WHERE wp.LOCAL_POSITION_ID NOT IN (SELECT wp FROM exclusion_list_wp)
             )
             , insert_wp AS (
             INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
@@ -408,7 +446,7 @@ class api_transaction_hl2_download(api_transaction_base):
                 %(UX)s::FLOAT, %(UY)s::FLOAT, %(UZ)s::FLOAT, %(RADIUS)s::FLOAT
             )
             WHERE 1=1 
-            AND (WP1_LOCAL_POS_ID, WP2_LOCAL_POS_ID) NOT IN (SELECT wp1, wp2 FROM exclusion_list_pt);
+            AND (WP1_LOCAL_POS_ID, WP2_LOCAL_POS_ID) NOT IN (SELECT wp1, wp2 FROM exclusion_list_pt)
             )
             , insert_pt AS (
             INSERT INTO sar.F_HL2_STAGING_PATHS (
@@ -424,7 +462,7 @@ class api_transaction_hl2_download(api_transaction_base):
             ''',
             {
                 'JSON_WP' : json.dumps([ {"wp" : str(x)} for x in wp_set ]),
-                'JSON_PT' : json.dumps([ {"wp1" : str(x[0]), "wp1" : str(x[1])} for x in pt_set ]),
+                'JSON_PT' : json.dumps([ {"wp1" : str(x[0]), "wp2" : str(x[1])} for x in pt_set ]),
                 'DEVICE_ID' : self.request.device_id,
                 'SESSION_TOKEN_ID' : self.request.session_token,
                 'SESSION_TOKEN_INHERITED_ID' : self.inherited_token,
@@ -433,7 +471,7 @@ class api_transaction_hl2_download(api_transaction_base):
                 'UY' : self.extraction_args['UY'],
                 'UZ' : self.extraction_args['UZ'],
                 'RADIUS' : self.request.radius
-            }
+            }, fetch_res=False
         )
         self.log.debug(f"writing results in tables ... OK", src="download:__exec_success")
 
@@ -453,7 +491,7 @@ class api_transaction_hl2_download(api_transaction_base):
 
         # cur.execute("COMMIT TRANSACTION;")
 
-    def __paths_analysis(self, current_pos:int, paths:list) -> (list, list):
+    def __paths_analysis(self, current_pos:int, waypoints:list, paths:list) -> (list, list):
         '''
         RETURNS:
             (list, list)
@@ -466,35 +504,48 @@ class api_transaction_hl2_download(api_transaction_base):
         wp_set = set() # waypoints exclusion list
         pt_set = set() # found paths (list of tuples2) to be explored
 
+        wp_set.add(int(current_pos))
+        for wp in waypoints:
+            wp_set.add(int(wp['LOCAL_POSITION_ID']))
+
         self.log.debug(f"creating the structure of the problem... ", src="download:__paths_analysis")
         for row in paths:
             pt = ( row['WP1_LOCAL_POS_ID'], row['WP2_LOCAL_POS_ID'] )
+            """
             if pt[0] not in wp_set:
                 self.log.debug(f"found WP:{pt[0]}", src="download:__paths_analysis")
+                wp_set.add(pt[0])
             if pt[1] not in wp_set:
                 self.log.debug(f"found WP:{pt[1]}", src="download:__paths_analysis")
+                wp_set.add(pt[1])
+            """
             self.log.debug(f"adding PATH:{pt[0]} <-> {pt[1]}", src="download:__paths_analysis")
             pt_set.add(pt)
+            pt_set.add(( pt[1], pt[0] ))
         self.log.debug(f"creating the structure of the problem... OK", src="download:__paths_analysis")
 
         self.log.debug(f"performing analysis", src="download:__paths_analysis")
         return self.__iterate_over_paths(current_pos, wp_set, pt_set)
 
 
-        
+    
     
     def __iterate_over_paths(self, current_pos:int, wp_set:set, pt_set:set, iteration:int = 1) -> (set, set):
         self.log.debug_detail(f"BEGIN ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\tpt_set:{pt_set}", src="__iterate_over_paths")
 
         found_wp_set = set() # set of found waypoints reachable from this waypoint
         for wp in wp_set:
-            tup = ( current_pos, wp )
+            tup = ( int(current_pos), int(wp) )
+            # self.log.debug_detail(f"evalaing path {tup} IN {pt_set}... ", src="__iterate_over_paths")
             if tup in pt_set:
+                # self.log.debug_detail(f"{tup} ... added to set", src="__iterate_over_paths")
                 found_wp_set.add(wp)
                 pt_set.remove(tup)
                 pt_set.remove((tup[1], tup[0]))
+            else:
+                self.log.debug_detail(f"{tup} ... ignored", src="__iterate_over_paths")
         if len(found_wp_set) == 0:
-            self.log.debug_detail(f"BEGIN ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\tpt_set:{pt_set}", src="__iterate_over_paths")
+            self.log.debug_detail(f"END ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\tpt_set:{pt_set}", src="__iterate_over_paths")
             return wp_set, pt_set
         found_wp_set.add(current_pos)
         
@@ -505,7 +556,7 @@ class api_transaction_hl2_download(api_transaction_base):
                 self.log.debug_detail(f"current pos ID:{wp} is not in set", src="__iterate_over_paths")
             wp_set, pt_set = self.__iterate_over_paths(wp, wp_set, pt_set, iteration+1)
 
-        self.log.debug_detail(f"BEGIN ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\tpt_set:{pt_set}", src="__iterate_over_paths")
+        self.log.debug_detail(f"END ITERATION {iteration} WITH\n\tcurrent_pos:{current_pos}\n\twp_set:{wp_set}\n\tpt_set:{pt_set}", src="__iterate_over_paths")
         return wp_set, pt_set
 
 
@@ -568,7 +619,7 @@ class api_transaction_hl2_download(api_transaction_base):
 
 
 
-    def __extract_from_db(self, query, query_data:dict, print_query=True):
+    def __extract_from_db(self, query, query_data:dict, print_query=True, fetch_res=True):
         ''' results as a dictionary
         
         RETURNS
@@ -581,9 +632,12 @@ class api_transaction_hl2_download(api_transaction_base):
                 qdata[q] = f"'{str(query_data[q])}'"
             self.log.debug_detail( query % qdata, src="download:__extract_from_db" )
         cur.execute(query, query_data)
-        res_data_raw = cur.fetchall()
-        res_schema = [ str(col.name).upper() for col in cur.description ]
-        res_count = cur.rowcount
+        res_schema = []
+        res_count = 0
+        if fetch_res:
+            res_data_raw = cur.fetchall()
+            res_schema = [ str(col.name).upper() for col in cur.description ]
+            res_count = cur.rowcount
 
         if res_count == 0:
             return ( False, None, list(), 0 )

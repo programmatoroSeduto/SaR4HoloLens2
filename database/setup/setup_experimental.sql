@@ -329,7 +329,7 @@ END $$;
 DROP FUNCTION IF EXISTS get_session_generic_waypoints;
 CREATE FUNCTION get_session_generic_waypoints(
 	arg_refp_id CHAR(24),
-	arg_session_id CHAR(24))
+	arg_session_id TEXT)
 	RETURNS TABLE (
 		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
 		LOCAL_POSITION_ID INT,
@@ -358,7 +358,7 @@ AS $$ BEGIN
 END $$;
 
 DROP FUNCTION IF EXISTS get_known_points_by_session;
-CREATE FUNCTION get_known_points_by_session(arg_session_id CHAR(24))
+CREATE FUNCTION get_known_points_by_session(arg_session_id text)
 	RETURNS TABLE (
 		F_HL2_QUALITY_WAYPOINTS_PK BIGINT,
 		LOCAL_POSITION_ID INT
@@ -407,7 +407,7 @@ END $$;
 DROP FUNCTION IF EXISTS get_current_position_local_id;
 CREATE FUNCTION get_current_position_local_id(
 	arg_refpos_id CHAR(24),
-	arg_session_inherited_id CHAR(24),
+	arg_session_inherited_id TEXT,
 	arg_x FLOAT,
 	arg_y FLOAT,
 	arg_z FLOAT
