@@ -11,7 +11,15 @@ base_url = "http://127.0.0.1:5000/api"
 
 
 
-def api_post_request(url:str, payload:dict = dict()) -> (bool, int, str, str):
+def dict2json(data:dict) -> str:
+    data_serializable = dict()
+    for k in data.keys():
+        data_serializable[k] = str(data[k])
+    return json.dumps(data_serializable, indent=4)
+
+
+
+def api_post_request(url:str, payload:dict = dict(), print_request:bool = True, print_response:bool = True) -> (bool, int, str, str):
     '''
     RETURNS:
     -    success?
@@ -28,6 +36,9 @@ def api_post_request(url:str, payload:dict = dict()) -> (bool, int, str, str):
         print(f"api_post_request ERROR: empty URL")
         return (success, status_code, text_response, json_response)
     
+    if print_request:
+        print(f"POST REQUEST to: {url}\nWITH PAYLOAD:\n" + dict2json(payload))
+    
     res = requests.post(
         url,
         json=payload
@@ -41,14 +52,17 @@ def api_post_request(url:str, payload:dict = dict()) -> (bool, int, str, str):
     try:
         json_response = res.json()
     except Exception as e:
-        try:
-            print(f"api_post_request INFO: with payload \n{json.dumps(payload, indent=4)}")
-        except:
-            print(f"api_post_request INFO: with payload \n{payload}")
         print(f"api_post_request WARNING: {e}")
         json_response = None
+    
+    if print_response and json_response is not None:
+        print(f"POST RESPONSE (json) from: {url}\nWITH CONTENT:\n" + dict2json(json_response))
+    elif print_response:
+        print(f"POST RESPONSE (text) from: {url}\nWITH CONTENT:\n" + text_response)
 
     return (success, status_code, text_response, json_response)
+
+
 
 def api_release(user_id:str, session_token:str) -> bool:
     '''
@@ -137,7 +151,7 @@ def vector3(x, y, z):
 
 
 
-def api_download(user_id:str, device_id:str, ref_id:str, session_token:str, based_on:str, center:list, radius:float):
+def api_download(user_id:str, device_id:str, ref_id:str, session_token:str, arg_based_on:str, center:list, radius:float):
     '''
     RETURNS
     -   success?
@@ -158,12 +172,12 @@ def api_download(user_id:str, device_id:str, ref_id:str, session_token:str, base
         return (success, based_on, max_idx, waypoints, paths)
     
     success, status_code, text_response, json_response = api_post_request(
-        f"{base_url}/hl2/dowload",
+        f"{base_url}/hl2/download",
         {
             'user_id' : user_id,
             'device_id' : device_id,
             'session_token' : session_token,
-            'based_on' : based_on,
+            'based_on' : arg_based_on or "",
             'ref_id' : ref_id,
             'center' : center,
             'radius' : radius
@@ -205,7 +219,7 @@ def api_upload(user_id:str, device_id:str, ref_id:str, session_token:str, based_
         return (success, max_id, wp_alignment)
     
     success, status_code, text_response, json_response = api_post_request(
-        f"{base_url}/hl2/dowload",
+        f"{base_url}/hl2/upload",
         {
             'user_id' : user_id,
             'device_id' : device_id,
