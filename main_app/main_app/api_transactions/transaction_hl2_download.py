@@ -69,6 +69,7 @@ class api_transaction_hl2_download(api_transaction_base):
         self.pt_data = []
         self.pt_count = 0
         self.current_position_id = -1
+        self.known_waypoints = set()
         # ...
     
 
@@ -79,6 +80,7 @@ class api_transaction_hl2_download(api_transaction_base):
         '''
 
         self.log.debug("TODO: implement checks", src="download:check")
+        self.log.debug("TODO: check minimum distance from inferred current position must be less than, otherwise return a particular statu code requiring a upload", src="download:check")
         
         self.__build_response(
             res_status=status.HTTP_202_ACCEPTED,
@@ -284,6 +286,25 @@ class api_transaction_hl2_download(api_transaction_base):
             )
             return 
 
+        # extract known waypoints
+        self.log.debug(f"getting known waypoints ... ", src="download:__exec_success")
+        _, data, _, _ = self.__extract_from_db(
+            '''
+            SELECT DISTINCT
+                LOCAL_POSITION_ID 
+            FROM sar.F_HL2_STAGING_WAYPOINTS
+            WHERE 1=1
+            AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s ;
+            ''',
+            {
+                'SESSION_TOKEN_ID' : self.extraction_args['SESSION_ID']
+            }
+        )
+        self.log.debug(f"getting known waypoints ... OK", src="download:__exec_success")
+        for wp in data:
+            self.known_waypoints.add(wp['LOCAL_POSITION_ID'])
+        self.log.debug_detail(f"known IDs are: {self.known_waypoints}", src="download:__exec_success")
+
         # extract paths
         self.log.debug(f"getting paths from server...", src="download:__exec_success")
         self.pt_found, self.pt_data, _, self.pt_count = self.__extract_from_db(
@@ -328,7 +349,11 @@ class api_transaction_hl2_download(api_transaction_base):
         self.log.debug(f"CURRENT pos ID is: {self.current_position_id}", src="download:__exec_success")
 
         self.log.debug(f"performing path analysis ... ", src="download:__exec_success")
-        wp_set, pt_set = self.__paths_analysis(self.current_position_id, self.wp_data, self.pt_data)
+        wp_set, pt_set = self.__paths_analysis(
+            self.known_waypoints, 
+            self.wp_data, 
+            self.pt_data
+            )
         self.log.debug(f"performing path analysis ... ", src="download:__exec_success")
 
         self.log.debug(f"collecting waypoints to return ... ", src="download:__exec_success")
@@ -491,7 +516,7 @@ class api_transaction_hl2_download(api_transaction_base):
 
         # cur.execute("COMMIT TRANSACTION;")
 
-    def __paths_analysis(self, current_pos:int, waypoints:list, paths:list) -> (list, list):
+    def __paths_analysis(self, known_waypoints:set, waypoints:list, paths:list) -> (list, list):
         '''
         RETURNS:
             (list, list)
@@ -504,28 +529,26 @@ class api_transaction_hl2_download(api_transaction_base):
         wp_set = set() # waypoints exclusion list
         pt_set = set() # found paths (list of tuples2) to be explored
 
-        wp_set.add(int(current_pos))
         for wp in waypoints:
             wp_set.add(int(wp['LOCAL_POSITION_ID']))
 
         self.log.debug(f"creating the structure of the problem... ", src="download:__paths_analysis")
         for row in paths:
             pt = ( row['WP1_LOCAL_POS_ID'], row['WP2_LOCAL_POS_ID'] )
-            """
-            if pt[0] not in wp_set:
-                self.log.debug(f"found WP:{pt[0]}", src="download:__paths_analysis")
-                wp_set.add(pt[0])
-            if pt[1] not in wp_set:
-                self.log.debug(f"found WP:{pt[1]}", src="download:__paths_analysis")
-                wp_set.add(pt[1])
-            """
             self.log.debug(f"adding PATH:{pt[0]} <-> {pt[1]}", src="download:__paths_analysis")
             pt_set.add(pt)
             pt_set.add(( pt[1], pt[0] ))
         self.log.debug(f"creating the structure of the problem... OK", src="download:__paths_analysis")
 
         self.log.debug(f"performing analysis", src="download:__paths_analysis")
-        return self.__iterate_over_paths(current_pos, wp_set, pt_set)
+        for wp in known_waypoints:
+            current_pos = int(wp)
+            # wp_set.add(current_pos)
+            wp_set, pt_set = self.__iterate_over_paths(current_pos, wp_set, pt_set)
+            if len(pt_set) == 0:
+                break
+        
+        return wp_set, pt_set
 
 
     
