@@ -717,6 +717,7 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             );
 
             hl2UploadResponsePack = JsonUtility.FromJson<api_hl2_upload_response>(result);
+            StaticLogger.Info(sourceLog, $"From server: {JsonUtility.ToJson(hl2UploadResponsePack, true)}", logLayer: 3);
 
             if (resultCode == 200)
             {

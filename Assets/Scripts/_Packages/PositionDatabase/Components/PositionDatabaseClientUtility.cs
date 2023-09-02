@@ -443,31 +443,38 @@ namespace Packages.PositionDatabase.Components
             StaticLogger.Info(sourceLog, $"Calling API upload to server ... OK", logLayer: 1);
 
             StaticLogger.Info(sourceLog, $"Aligning positions database ...", logLayer: 1);
-            PositionsDB.SetStatusImporting(this, true);
+            if(!PositionsDB.SetStatusImporting(this, true))
+                StaticLogger.Warn(sourceLog, $"SetStatusImporting (enabling import) returned false!", logLayer: 1);
             int wpCacheIndex = Client.ServerPositionIndex;
-            foreach(Tuple<int, int, data_hl2_waypoint> item in Client.UpdatedEntriesWps)
+            StaticLogger.Info(sourceLog, $"starting with wpCacheIndex:{wpCacheIndex}", logLayer: 3);
+            foreach (Tuple<int, int, data_hl2_waypoint> item in Client.UpdatedEntriesWps)
             {
                 // questo ciclo azzecca solo renamings (non ci sono aggiunte, ovviamente, dato che i dati li stai fornendo tu)
                 int oldIdx = item.Item1;
                 int newIdx = item.Item2;
+                StaticLogger.Info(sourceLog, $"oldIdx:{oldIdx} to newIdx:{newIdx}", logLayer: 3);
 
-                if(PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(newIdx))
+                if (PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(newIdx))
                 {
-                    if(PositionsDB.LowLevelDatabase.WpIndex[newIdx] != null)
+                    StaticLogger.Info(sourceLog, $"ID:{oldIdx} already registered", logLayer: 3);
+                    if (PositionsDB.LowLevelDatabase.WpIndex[newIdx] != null)
                     {
                         // c'è stato un inserimento mentre si faceva l'upload
                         // l'inserimento è già stato catturato dalla CALLBACK 
                         // però l'elemento va spostato, altrimenti verrà sovrascritto
                         int idx = wpCacheIndex;
+                        StaticLogger.Info(sourceLog, $"ID:{oldIdx} is not null! Need to move it: {newIdx} -> {idx}", logLayer: 3);
                         PositionsDB.LowLevelDatabase.WpIndex[newIdx].setPositionID(wpCacheIndex++);
                         PositionsDB.LowLevelDatabase.WpIndex[idx] = PositionsDB.LowLevelDatabase.WpIndex[newIdx];
                         PositionsDB.LowLevelDatabase.WpIndex[newIdx] = null;
                     }
                     PositionsDB.LowLevelDatabase.WpIndex[newIdx] = PositionsDB.LowLevelDatabase.WpIndex[oldIdx];
+                    PositionsDB.LowLevelDatabase.WpIndex[oldIdx] = null;
                 }
                 else
                 {
                     // altrimenti puoi inserire liberamente l'elemento al suo posto
+                    StaticLogger.Info(sourceLog, $"ID:{oldIdx} seen for the first time", logLayer: 3);
                     PositionsDB.LowLevelDatabase.WpIndex.Add(newIdx, PositionsDB.LowLevelDatabase.WpIndex[oldIdx]);
                 }
                 PositionsDB.LowLevelDatabase.WpIndex[oldIdx] = null;
@@ -476,12 +483,14 @@ namespace Packages.PositionDatabase.Components
             if (PositionsDB.LowLevelDatabase.MaxSharedIndex < wpCacheIndex)
             {
                 StaticLogger.Info(sourceLog, $"max IDX moved: {PositionsDB.LowLevelDatabase.MaxSharedIndex} -> wpCacheIndex:{wpCacheIndex}", logLayer: 3);
-                PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex;
+                // PositionsDB.LowLevelDatabase.MaxSharedIndex = Client.ServerPositionIndex; // WRONG WRONG WRONG SUPER WRONG!
+                PositionsDB.LowLevelDatabase.MaxSharedIndex = wpCacheIndex;
             }
             else
                 StaticLogger.Info(sourceLog, $"keep max IDX: {PositionsDB.LowLevelDatabase.MaxSharedIndex}", logLayer: 3);
             // il renaming degli archi avviene in maniera implicita poichè per ottenere la chiave di un path si usano dei get dai wps
-            PositionsDB.SetStatusImporting(this, false);
+            if (!PositionsDB.SetStatusImporting(this, false))
+                StaticLogger.Warn(sourceLog, $"SetStatusImporting (disabling import) returned false!", logLayer: 1);
             StaticLogger.Info(sourceLog, $"Aligning positions database ... OK aligned", logLayer: 1);
         }
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using Packages.PositionDatabase.Types;
+using Project.Scripts.Utils;
 
 namespace Packages.PositionDatabase.Utils
 {
@@ -228,6 +229,16 @@ namespace Packages.PositionDatabase.Utils
         public void Insert(PositionDatabaseWaypoint wp)
         {
             db.Insert(0, wp);
+            StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"new waypoint with assigned ID:{wp.PositionID} with low level MAX_ID:{MaxSharedIndex}", logLayer: 2);
+            if(WpIndex.ContainsKey(wp.PositionID))
+            {
+                if(WpIndex[wp.PositionID] == null)
+                    StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID}: entry exists and it is null (OK)", logLayer: 2);
+                else
+                    StaticLogger.Warn("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID}: entry exists, but IT IS NOT NULL!", logLayer: 2);
+            }
+            else
+                StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID} is new", logLayer: 2);
             WpIndex.Add(wp.PositionID, wp);
         }
 
