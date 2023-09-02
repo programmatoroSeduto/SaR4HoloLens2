@@ -309,19 +309,28 @@ class api_transaction_hl2_download(api_transaction_base):
         self.log.debug(f"getting paths from server...", src="download:__exec_success")
         self.pt_found, self.pt_data, _, self.pt_count = self.__extract_from_db(
             '''
-            SELECT 
+            SELECT DISTINCT
                 WP1_LOCAL_POS_ID,
                 WP2_LOCAL_POS_ID,
                 DISTANCE_VL,
-                CREATED_TS
+                MIN(CREATED_TS) AS CREATED_TS
             FROM get_unknown_paths_in_radius(
                 %(REF_POS_ID)s::CHAR(24),
                 %(SESSION_INHERITED_ID)s::TEXT, -- inherited
                 %(SESSION_ID)s::TEXT, -- user
                 %(UX)s::FLOAT, %(UY)s::FLOAT, %(UZ)s::FLOAT, %(RADIUS)s::FLOAT
-            );
+            )
+            GROUP BY 1,2,3 ;
             ''',
-            self.extraction_args
+            {
+                'REF_POS_ID' : self.request.ref_id,
+                'SESSION_INHERITED_ID' : (self.inherited_token or self.request.session_token),
+                'SESSION_ID' : self.request.session_token,
+                'UX' : self.request.center[0],
+                'UY' : self.request.center[1],
+                'UZ' : self.request.center[2],
+                'RADIUS' : self.request.radius
+            }
         )
         self.log.debug(f"getting paths from server... OK: found {self.pt_count} paths", src="download:__exec_success")
 
@@ -338,7 +347,7 @@ class api_transaction_hl2_download(api_transaction_base):
             ''',
             {
                 'REF_POS_ID' : self.extraction_args['REF_POS_ID'],
-                'SESSION_INHERITED_ID' : self.extraction_args['SESSION_INHERITED_ID'],
+                'SESSION_INHERITED_ID' : self.extraction_args['SESSION_INHERITED_ID'] or self.extraction_args['SESSION_ID'],
                 'UX' : self.extraction_args['UX'],
                 'UY' : self.extraction_args['UY'],
                 'UZ' : self.extraction_args['UZ']
@@ -535,9 +544,12 @@ class api_transaction_hl2_download(api_transaction_base):
         self.log.debug(f"creating the structure of the problem... ", src="download:__paths_analysis")
         for row in paths:
             pt = ( row['WP1_LOCAL_POS_ID'], row['WP2_LOCAL_POS_ID'] )
-            self.log.debug(f"adding PATH:{pt[0]} <-> {pt[1]}", src="download:__paths_analysis")
-            pt_set.add(pt)
-            pt_set.add(( pt[1], pt[0] ))
+            if pt not in pt_set:
+                self.log.debug(f"adding PATH:{pt[0]} <-> {pt[1]}", src="download:__paths_analysis")
+                pt_set.add(pt)
+                pt_set.add(( pt[1], pt[0] ))
+            else:
+                self.log.debug(f"skipping PATH:{pt[0]} <-> {pt[1]}", src="download:__paths_analysis")
         self.log.debug(f"creating the structure of the problem... OK", src="download:__paths_analysis")
 
         self.log.debug(f"performing analysis", src="download:__paths_analysis")

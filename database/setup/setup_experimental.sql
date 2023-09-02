@@ -393,7 +393,7 @@ AS $$ BEGIN
 		wp.LOCAL_POSITION_ID
 	FROM get_session_generic_waypoints(
 		arg_refpos_id,
-		arg_session_inherited_id 
+		COALESCE(arg_session_inherited_id, arg_session_id)
 		) AS wp
 	LEFT JOIN get_known_points_by_session(
 		arg_session_id

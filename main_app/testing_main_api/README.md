@@ -99,6 +99,7 @@ success = True
 # ...content of the test...
 
 # test_step_add_data(f"aaa: {bbb}")
+# test_step_add_data(f"aaa: {len(bbb)}")
 if not success:
     test_end(False, "cannot acquire resource for USER1")
 else:
@@ -212,6 +213,36 @@ if not success:
     test_end(False, "cannot upload data from USER1")
 else:
     wait("OK! Next ...")
+```
+
+### USER 1
+
+```py
+user1_data = {
+    "user_id" : "SARHL2_ID8849249249_USER",
+    "approver_id" : "SARHL2_ID8849249249_USER",
+    "access_key" : "anoth3rBr3akabl3P0sswArd",
+    "device_id" : "SARHL2_ID8651165355_DEVC",
+    "ref_id" : "SARHL2_ID1234567890_REFP",
+    "session_token" : None,
+    "base_on" : ""
+}
+print(f"user1 DATA:\n{dict2json(user1_data)}")
+```
+
+### USER 2
+
+```py
+user2_data = {
+    "user_id" : "SARHL2_ID2894646521_USER",
+    "approver_id" : "SARHL2_ID2894646521_USER",
+    "access_key" : "s3vHngLh_F3s",
+    "device_id" : "SARHL2_ID7864861468_DEVC",
+    "ref_id" : "SARHL2_ID1234567890_REFP",
+    "session_token" : None,
+    "base_on" : ""
+}
+print(f"user2 DATA:\n{dict2json(user2_data)}")
 ```
 
 ---

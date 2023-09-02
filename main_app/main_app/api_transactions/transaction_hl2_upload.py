@@ -61,7 +61,7 @@ WHERE 1=1
 AND NOT(ALIGNMENT_TYPE_FL)
 AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
 AND (
-	SESSION_TOKEN_INHERITED_ID IS NULL
+	( SESSION_TOKEN_INHERITED_ID IS NULL AND SESSION_TOKEN_ID = %(SESSION_TOKEN_INHERITED_ID)s )
 	OR
 	SESSION_TOKEN_INHERITED_ID = %(SESSION_TOKEN_INHERITED_ID)s
 )
@@ -162,7 +162,7 @@ FROM classification_data
 SELECT 
 	%(DEVICE_ID)s AS DEVICE_ID,
 	%(SESSION_TOKEN_ID)s AS SESSION_TOKEN_ID,
-	%(SESSION_TOKEN_INHERITED_ID)s SESSION_TOKEN_INHERITED_ID,
+	%(INHERITED_SESSION_INSERT)s SESSION_TOKEN_INHERITED_ID,
 	(max_session_id.max_id + ROW_NUMBER() OVER ()) AS LOCAL_POSITION_ID,
 	req_pos_id AS REQUEST_POSITION_ID,
 	%(U_REFERENCE_POSITION_ID)s AS U_REFERENCE_POSITION_ID,
@@ -189,7 +189,7 @@ WHERE NOT(WP_IS_REDUNDANT_FL)
 SELECT 
 	%(DEVICE_ID)s AS DEVICE_ID,
 	%(SESSION_TOKEN_ID)s AS SESSION_TOKEN_ID,
-	%(SESSION_TOKEN_INHERITED_ID)s SESSION_TOKEN_INHERITED_ID,
+	%(INHERITED_SESSION_INSERT)s SESSION_TOKEN_INHERITED_ID,
 	align_with_loc_pos_id AS LOCAL_POSITION_ID,
 	req_pos_id AS REQUEST_POSITION_ID,
 	%(U_REFERENCE_POSITION_ID)s AS U_REFERENCE_POSITION_ID,
@@ -216,13 +216,83 @@ AND align_with_loc_pos_id NOT IN (
 )
 ) -- SELECT * FROM set_wps_new UNION ALL SELECT * FROM set_wps_aligned;
 , insert_new AS (
-INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (DEVICE_ID, SESSION_TOKEN_ID, SESSION_TOKEN_INHERITED_ID, LOCAL_POSITION_ID, REQUEST_POSITION_ID, U_REFERENCE_POSITION_ID,UX_VL, UY_VL, UZ_VL, U_SOURCE_FROM_SERVER_FL, LOCAL_AREA_INDEX_ID,WAYPOINT_CREATED_TS, ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,ALIGNMENT_TYPE_FL, ALIGNMENT_QUALITY_VL, ALIGNMENT_DISTANCE_VL,ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK)
-SELECT * FROM set_wps_new
+INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
+    DEVICE_ID, 
+    SESSION_TOKEN_ID, 
+    SESSION_TOKEN_INHERITED_ID, 
+    LOCAL_POSITION_ID, 
+    REQUEST_POSITION_ID, 
+    U_REFERENCE_POSITION_ID,
+    UX_VL, 
+    UY_VL, 
+    UZ_VL, 
+    U_SOURCE_FROM_SERVER_FL, 
+    LOCAL_AREA_INDEX_ID,
+    WAYPOINT_CREATED_TS, 
+    ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+    ALIGNMENT_TYPE_FL, 
+    ALIGNMENT_QUALITY_VL, 
+    ALIGNMENT_DISTANCE_VL,
+    ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK)
+SELECT
+    DEVICE_ID, 
+    SESSION_TOKEN_ID, 
+    SESSION_TOKEN_INHERITED_ID, 
+    LOCAL_POSITION_ID, 
+    REQUEST_POSITION_ID, 
+    U_REFERENCE_POSITION_ID,
+    UX_VL, 
+    UY_VL, 
+    UZ_VL, 
+    U_SOURCE_FROM_SERVER_FL, 
+    LOCAL_AREA_INDEX_ID,
+    WAYPOINT_CREATED_TS, 
+    ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+    ALIGNMENT_TYPE_FL, 
+    ALIGNMENT_QUALITY_VL, 
+    ALIGNMENT_DISTANCE_VL,
+    ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK
+FROM set_wps_new
 RETURNING *
 )
 , insert_history AS (
-INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (DEVICE_ID, SESSION_TOKEN_ID, SESSION_TOKEN_INHERITED_ID, LOCAL_POSITION_ID, REQUEST_POSITION_ID, U_REFERENCE_POSITION_ID,UX_VL, UY_VL, UZ_VL, U_SOURCE_FROM_SERVER_FL, LOCAL_AREA_INDEX_ID,WAYPOINT_CREATED_TS, ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,ALIGNMENT_TYPE_FL, ALIGNMENT_QUALITY_VL, ALIGNMENT_DISTANCE_VL,ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK)
-SELECT * FROM set_wps_aligned
+INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
+    DEVICE_ID, 
+    SESSION_TOKEN_ID, 
+    SESSION_TOKEN_INHERITED_ID, 
+    LOCAL_POSITION_ID, 
+    REQUEST_POSITION_ID, 
+    U_REFERENCE_POSITION_ID,
+    UX_VL, 
+    UY_VL, 
+    UZ_VL, 
+    U_SOURCE_FROM_SERVER_FL, 
+    LOCAL_AREA_INDEX_ID,
+    WAYPOINT_CREATED_TS, 
+    ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+    ALIGNMENT_TYPE_FL, 
+    ALIGNMENT_QUALITY_VL, 
+    ALIGNMENT_DISTANCE_VL,
+    ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK)
+SELECT
+    DEVICE_ID, 
+    SESSION_TOKEN_ID, 
+    SESSION_TOKEN_INHERITED_ID, 
+    LOCAL_POSITION_ID, 
+    REQUEST_POSITION_ID, 
+    U_REFERENCE_POSITION_ID,
+    UX_VL, 
+    UY_VL, 
+    UZ_VL, 
+    U_SOURCE_FROM_SERVER_FL, 
+    LOCAL_AREA_INDEX_ID,
+    WAYPOINT_CREATED_TS, 
+    ALIGNMENT_ALIGNED_WITH_WAYPOINT_FK,
+    ALIGNMENT_TYPE_FL, 
+    ALIGNMENT_QUALITY_VL, 
+    ALIGNMENT_DISTANCE_VL,
+    ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK
+FROM set_wps_aligned
 RETURNING *
 )
 SELECT DISTINCT
@@ -540,13 +610,15 @@ class api_transaction_hl2_upload(api_transaction_base):
                 'DEVICE_ID' : self.request.device_id,
                 'U_REFERENCE_POSITION_ID' : self.request.ref_id,
                 'SESSION_TOKEN_ID' : self.request.session_token,
-                'SESSION_TOKEN_INHERITED_ID' : self.inherits_session,
+                'SESSION_TOKEN_INHERITED_ID' : ( self.inherits_session or self.request.session_token ),
                 'ALIGNMENT_TUNING_THRESHOLD_VL' : self.tuning_threshold,
                 'ALIGNMENT_TUNING_TOLERANCE_VL' : self.tuning_tollerance,
                 'ALIGNMENT_QUALITY_NEW_POINTS_A' : self.quality_a,
-                'ALIGNMENT_QUALITY_NEW_POINTS_B' : self.quality_b
+                'ALIGNMENT_QUALITY_NEW_POINTS_B' : self.quality_b,
+                'INHERITED_SESSION_INSERT' : self.inherits_session
             }
         )
+        self.log.debug(f"uploading waypoints ... OK: query returned: {self.renamings}", src="upload.__exec_success")
 
         self.log.debug("building alignment lookup table ...", src="upload.__exec_success")
         self.response.wp_alignment = list()
@@ -714,17 +786,25 @@ class api_transaction_hl2_upload(api_transaction_base):
 
 
 
-    def __extract_from_db(self, query, query_data):
+    def __extract_from_db(self, query, query_data:dict, print_query=True, fetch_res=True):
         ''' results as a dictionary
         
         RETURNS
             ( is res not empty?, res_data, res_schema, res_count )
         '''
         cur = self.db.get_cursor()
+        if print_query:
+            qdata = dict()
+            for q in query_data.keys():
+                qdata[q] = f"'{str(query_data[q])}'"
+            self.log.debug_detail( query % qdata, src="download:__extract_from_db" )
         cur.execute(query, query_data)
-        res_data_raw = cur.fetchall()
-        res_schema = [ str(col.name).upper() for col in cur.description ]
-        res_count = cur.rowcount
+        res_schema = []
+        res_count = 0
+        if fetch_res:
+            res_data_raw = cur.fetchall()
+            res_schema = [ str(col.name).upper() for col in cur.description ]
+            res_count = cur.rowcount
 
         if res_count == 0:
             return ( False, None, list(), 0 )
