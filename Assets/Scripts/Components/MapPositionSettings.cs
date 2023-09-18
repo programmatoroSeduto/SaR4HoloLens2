@@ -12,11 +12,17 @@ namespace Project.Scenes.SARHL2_DEVELOPMENT.Components
     {
 
         public GameObject MapRoot = null;
+        public bool ForceActive = false;
+        public bool UserHeightFromParams = true;
+        public bool CheckDebugMode = true;
+        public float UserHeightGui = 1.85f;
 
         // Start is called before the first frame update
         void Start()
         {
-            bool isDebugMode = (bool) StaticAppSettings.GetObject("DebugMode", true);
+            bool isDebugMode = ForceActive;
+            if (CheckDebugMode)
+                isDebugMode = isDebugMode || (bool)StaticAppSettings.GetObject("DebugMode", true);
             if ( !isDebugMode )
             {
                 StaticLogger.Info("MapPositionSettings", "Debug mode is not enabled", logLayer: 3);
@@ -25,7 +31,12 @@ namespace Project.Scenes.SARHL2_DEVELOPMENT.Components
             }
 
             if(MapRoot == null) MapRoot = gameObject;
-            float UserHeight = (float)StaticAppSettings.GetObject("UserHeight", 1.85f);
+            float UserHeight = UserHeightGui;
+            if (UserHeightFromParams)
+            {
+                UserHeight = (float)StaticAppSettings.GetObject("UserHeight", 1.85f);
+                UserHeightGui = UserHeight;
+            }
             MapRoot.transform.position -= UserHeight * Vector3.up;
 
             MapRoot.SetActive(true);
