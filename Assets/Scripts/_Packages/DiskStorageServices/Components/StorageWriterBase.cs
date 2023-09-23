@@ -105,6 +105,8 @@ namespace Packages.DiskStorageServices.Components
 
         protected virtual void Update()
         {
+            if (StorageFile == null) return;
+
 #if UNITY_EDITOR
             if (qlines.Count > 0)
             {
