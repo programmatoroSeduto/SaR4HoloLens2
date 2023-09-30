@@ -176,7 +176,9 @@ namespace Packages.PositionDatabase.Utils
 
                 idx[i] = (j + 1) % (N - 1);
                 if (idx.Count > 1 && idx[i] < j)
+                {
                     redistributeIdx();
+                }
             }
         }
 
@@ -229,7 +231,8 @@ namespace Packages.PositionDatabase.Utils
         public void Insert(PositionDatabaseWaypoint wp)
         {
             db.Insert(0, wp);
-            StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"new waypoint with assigned ID:{wp.PositionID} with low level MAX_ID:{MaxSharedIndex}", logLayer: 2);
+            // StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"new waypoint with assigned ID:{wp.PositionID} with low level MAX_ID:{MaxSharedIndex}", logLayer: 2);
+            /*
             if(WpIndex.ContainsKey(wp.PositionID))
             {
                 if(WpIndex[wp.PositionID] == null)
@@ -239,6 +242,7 @@ namespace Packages.PositionDatabase.Utils
             }
             else
                 StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID} is new", logLayer: 2);
+            */
             WpIndex.Add(wp.PositionID, wp);
         }
 

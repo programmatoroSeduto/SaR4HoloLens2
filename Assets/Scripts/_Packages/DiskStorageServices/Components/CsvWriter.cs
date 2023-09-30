@@ -52,7 +52,9 @@ namespace Packages.DiskStorageServices.Components
                 sep = Separator;
 
             format = "csv";
-            qlines.Enqueue(GetHeader(CSVFields, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn));
+            string csv_header = GetHeader(CSVFields, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn);
+            // Debug.Log(csv_header);
+            qlines.Enqueue(csv_header);
 
             if (CSVFields.Count == 0)
             {
@@ -76,13 +78,14 @@ namespace Packages.DiskStorageServices.Components
 
         public bool EVENT_WriteCsv(List<string> ls, bool print = false)
         {
-            if (ls.Count != CSVFields.Count)
-            {
-                Debug.LogWarning($"[CSVFileWriter] ERROR: line must have the same number of arguments of the header! Header len: {CSVFields.Count} , line len: {ls.Count}");
-                return false;
-            }
             string csvln = ToCSV(ls, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn);
             if (print) Debug.Log(csvln);
+
+            if (ls.Count != CSVFields.Count)
+            {
+                Debug.LogError($"[CSVFileWriter] ERROR: line must have the same number of arguments of the header! Header len: {CSVFields.Count} , line len: {ls.Count}");
+                return false;
+            }
 
             if (!fileCreated)
             {
