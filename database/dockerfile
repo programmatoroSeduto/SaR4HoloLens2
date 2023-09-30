@@ -1,6 +1,6 @@
 
 # FROM postgres:15-alpine
-# this image is itnegrated with PGvector -- https://github.com/pgvector/pgvector#additional-installation-methods
+# this image is integrated with PGvector -- https://github.com/pgvector/pgvector#additional-installation-methods
 FROM ankane/pgvector
 
 EXPOSE 5432

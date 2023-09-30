@@ -267,7 +267,7 @@ Here's a general approach you can use to implement the code of a transaction:
 7. implement the function `__exec_fail()`
 8. everythin's almost done: write the API callback
 
-### Transaction LOg Management
+### Transaction Log Management
 
 Currently there's no standard approach to manage the transaction log. You can get inspired by this example:
 
