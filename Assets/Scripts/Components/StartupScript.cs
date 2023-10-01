@@ -107,7 +107,7 @@ public class StartupScript : ProjectMonoBehaviour
 
             if (!curPmb.IsReady)
             {
-                StaticLogger.Info(sourceLog, $"not ready", logLayer: 3);
+                // StaticLogger.Info(sourceLog, $"not ready", logLayer: 3);
                 continue;
             }
             StaticLogger.Info(sourceLog, $"component is ready; getting next", logLayer: 3);

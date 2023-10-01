@@ -325,7 +325,7 @@ namespace Packages.PositionDatabase.Components
             StaticLogger.Info(sourceLog, $"Calling API download from server ...", logLayer: 1);
             if(PositionsDB.CurrentZone.AreaCenter == null)
                 StaticLogger.Warn(sourceLog, $"PositionsDB.CurrentZone.AreaCenter == null : {PositionsDB.CurrentZone.AreaCenter == null}", logLayer: 1);
-            yield return Client.ORCOR_DownloadFromServer(PositionsDB.CurrentZone.AreaCenter, UpdateRadius);
+            yield return Client.ORCOR_DownloadFromServer(StaticTransform.ToRefPoint(PositionsDB.CurrentZone.AreaCenter), UpdateRadius);
             if (!Client.Success)
             {
                 StaticLogger.Warn(sourceLog, $"Calling download from server... ERROR: cannot download from server", logLayer: 0);

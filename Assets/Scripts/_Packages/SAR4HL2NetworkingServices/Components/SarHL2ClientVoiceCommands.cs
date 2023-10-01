@@ -11,7 +11,7 @@ using Packages.SAR4HL2NetworkingServices.Utils;
 
 namespace Packages.SAR4HL2NetworkingServices.Components
 {
-    public class SaHL2ClientVoiceCommands : MonoBehaviour
+    public class SarHL2ClientVoiceCommands : MonoBehaviour
     {
         // ===== PRIVATE ===== //
 
