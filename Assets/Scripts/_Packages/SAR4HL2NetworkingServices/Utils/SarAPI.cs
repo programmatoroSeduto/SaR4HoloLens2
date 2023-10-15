@@ -112,6 +112,18 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             get => maxIdx;
         }
 
+        /// <summary>
+        /// Service Statistics
+        /// </summary>
+        public static List<ClientStatistics> Statistics
+        {
+            get
+            {
+                processLastStats();
+                return stats;
+            }
+        }
+
 
 
         // ===== PUBLIC : API ADDRESSES ===== //
@@ -193,6 +205,10 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
         private static bool downloadSuccess = true;
         // ...
         private static bool uploadSuccess = true;
+        // statistics item
+        private static ClientStatistics lastStats = null;
+        // statistics staging list
+        private static List<ClientStatistics> stats = new List<ClientStatistics>();
 
 
 
@@ -250,6 +266,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             string requestURL = GetAPIUrl(
                 ApiAddress_ServerStatus
             );
+
+            processLastStats();
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.ServerStatus;
+            lastStats.ApiURL = requestURL;
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.GET;
+
             yield return BSCOR_PerformRequestGet(
                 requestURL, 
                 timeout
@@ -257,6 +279,7 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
 
             serviceStatusResponsePack = JsonUtility.FromJson<api_base_response>(result);
             serviceStatusCheck = (resultCode == 418);
+
             if (resultCode == 418)
                 resultCode = 200;
 
@@ -343,6 +366,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             string requestURL = GetAPIUrl(
                 ApiAddress_UserLogin
             );
+
+            processLastStats();
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.ServerStatus;
+            lastStats.ApiURL = requestURL;
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+
             api_user_login_request payload = new api_user_login_request();
             payload.user_id = userID;
             payload.approver_id = userApproverID;
@@ -394,6 +423,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             success = false;
 
             string logoutUrl = GetAPIUrl(SarAPI.ApiAddress_UserLogout);
+
+            processLastStats();
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.UserLogout;
+            lastStats.ApiURL = logoutUrl;
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+
             api_user_logout_request classPayload = new api_user_logout_request();
             classPayload.user_id = SarAPI.userID;
             classPayload.session_token = SarAPI.userSessionToken;
@@ -402,14 +437,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             string textResponse = "";
             int responseCode = 200;
 
-            // ===== UNITY ONLY??? ===== //
             HttpClient cl = new HttpClient();
             StringContent httpPayload = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
             HttpResponseMessage res = cl.PostAsync(logoutUrl, httpPayload).GetAwaiter().GetResult();
             textResponse = res.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             responseCode = (int) res.StatusCode;
-            // ===== UNITY ONLY??? ===== //
 
             result = textResponse;
             if (!handleRequestResult(responseCode, "POST", url, sourceLog))
@@ -480,6 +513,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             string requestURL = GetAPIUrl(
                 ApiAddress_DeviceLogin
             );
+
+            processLastStats();
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.DeviceLogin;
+            lastStats.ApiURL = requestURL;
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+
             api_device_login_request payload = new api_device_login_request();
             payload.user_id = userID;
             payload.device_id = deviceID;
@@ -580,6 +619,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             string requestURL = GetAPIUrl(
                 ApiAddress_Hl2Download
             );
+
+            processLastStats();
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.Download;
+            lastStats.ApiURL = requestURL;
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+
             api_hl2_download_request payload = new api_hl2_download_request();
             payload.user_id = userID;
             payload.device_id = deviceID;
@@ -701,6 +746,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             string requestURL = GetAPIUrl(
                 ApiAddress_Hl2Upload
             );
+
+            processLastStats();
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.Upload;
+            lastStats.ApiURL = requestURL;
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+
             api_hl2_upload_request payload = new api_hl2_upload_request();
             payload.user_id = userID;
             payload.device_id = deviceID;
@@ -773,9 +824,15 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
                 www.timeout = timeout;
 
             StaticLogger.Info(sourceLog, $"Sending GET request with: \n\tURL: {requestURL}", logLayer: 4);
+            lastStats.sendTimestamp = DateTime.Now;
             yield return www.SendWebRequest();
+            lastStats.receiveTimestamp = DateTime.Now;
             resultCode = (int) www.responseCode;
             StaticLogger.Info(sourceLog, $"Response from server: \n\tTEXT: {www.downloadHandler.text}\n\tSTATUS CODE: {resultCode}", logLayer: 4);
+
+            lastStats.HTTPStatusCode = (int) www.responseCode;
+            lastStats.RequestJSON = "";
+            lastStats.ResponseJSON = www.downloadHandler.text;
 
             if (!handleRequestResult(www, www.result, sourceLog))
                 yield break;
@@ -805,9 +862,15 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
                 www.timeout = timeout;
 
             StaticLogger.Info(sourceLog, $"Sending to server: \n\tJSON: {payload}", logLayer: 4);
+            lastStats.sendTimestamp = DateTime.Now;
             yield return www.SendWebRequest();
+            lastStats.receiveTimestamp = DateTime.Now;
             resultCode = (int)www.responseCode;
             StaticLogger.Info(sourceLog, $"Response from server: \n\tTEXT: {www.downloadHandler.text}\n\tSTATUS CODE: {resultCode}", logLayer: 4);
+
+            lastStats.HTTPStatusCode = (int)www.responseCode;
+            lastStats.RequestJSON = payload;
+            lastStats.ResponseJSON = www.downloadHandler.text;
 
             result = www.downloadHandler.text;
             if (!handleRequestResult(www, www.result, sourceLog))
@@ -896,6 +959,17 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             {
                 v.x, v.y, v.z
             };
+        }
+
+        private static void processLastStats()
+        {
+            if(lastStats != null)
+            {
+                if(lastStats.ApiOperationType != ClientStatistics.ApiOperationTypeEnum.Undefined)
+                    stats.Add(lastStats);
+            }
+
+            lastStats = new ClientStatistics();
         }
     }
 }

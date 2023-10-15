@@ -28,6 +28,7 @@ namespace Packages.PositionDatabase.ModuleTesting
         public int debug_hit = 0;
         [Tooltip("Miss counter (ZONE CREATED)")]
         public int debug_miss = 0;
+        public float debug_percentHit = 0.0f;
 
 
 
@@ -56,6 +57,8 @@ namespace Packages.PositionDatabase.ModuleTesting
         private void Update()
         {
             debug_currentZoneID = prevID;
+            if (debug_hit + debug_miss > 0)
+                debug_percentHit = ((float)debug_hit) / ((float)(debug_hit + debug_miss)) * 100.0f;
         }
 
 
