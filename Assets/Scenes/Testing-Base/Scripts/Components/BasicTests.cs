@@ -160,7 +160,7 @@ namespace Project.Scenes.TestingBase.Components
 
         private void UPDATE_ChasingSpeedMetric()
         {
-            if (!EnableChasingSpeedMetric) return;
+            if (!EnableChasingSpeedMetric || PosDbReference.CurrentZone == null) return;
 
             if (ChasingSpeedMetric_FrameCount < MetricFrameResolution)
                 ++ChasingSpeedMetric_FrameCount;

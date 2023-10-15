@@ -170,7 +170,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1162992783}
-  m_RootOrder: 2
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &21116241
 GameObject:
@@ -1034,6 +1034,72 @@ MonoBehaviour:
           m_CallState: 2
   persistentKeywords: 0
   speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
+--- !u!1 &178341103
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 178341104}
+  - component: {fileID: 178341105}
+  m_Layer: 0
+  m_Name: CsvPosDBPerformances
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &178341104
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 178341103}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1162992783}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &178341105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 178341103}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FileName: dbperformance
+  UseTimestamp: 1
+  CreateFileOnStart: 1
+  UseLineTimestamp: 0
+  PcLogfilePath: C:\shared\output
+  CSVFields:
+  - FRAME_NO
+  - ODOM_X
+  - ODOM_Y
+  - ODOM_Z
+  - POSDB_ZONE_IDX
+  - POSDB_X
+  - POSDB_Y
+  - POSDB_Z
+  - DIST_ODOM_POSBD
+  - IN_RANGE_VL
+  - SORT_QUALITY
+  - POSDB_LOAD
+  - POSDB_ACTIVE_CLUSTERS
+  ApplyTimestampColumn: 1
+  ApplyDurationColumn: 1
+  ApplyCounter: 1
+  Separator: ','
 --- !u!1 &190722255
 GameObject:
   m_ObjectHideFlags: 0
@@ -2022,7 +2088,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1162992783}
-  m_RootOrder: 3
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &367070101
 GameObject:
@@ -2070,7 +2136,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1162992783}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &374843524
 GameObject:
@@ -2887,7 +2953,7 @@ MonoBehaviour:
   DistanceTolerance: 0.05
   ReferenceObject: {fileID: 0}
   UseClusters: 1
-  ClusterSize: 15
+  ClusterSize: 8
   UseMaxIndices: 1
   MaxIndices: 5
   CallOnZoneCreated: []
@@ -4374,6 +4440,60 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 864046576}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &894814894
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 894814895}
+  - component: {fileID: 894814896}
+  m_Layer: 0
+  m_Name: CsvFrameTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &894814895
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894814894}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1162992783}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &894814896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894814894}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FileName: framerate
+  UseTimestamp: 1
+  CreateFileOnStart: 1
+  UseLineTimestamp: 0
+  PcLogfilePath: C:\shared\output
+  CSVFields:
+  - FRAME_RATE
+  ApplyTimestampColumn: 1
+  ApplyDurationColumn: 1
+  ApplyCounter: 1
+  Separator: ','
 --- !u!1 &898664359
 GameObject:
   m_ObjectHideFlags: 0
@@ -4506,7 +4626,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &928913215
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4514,7 +4634,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 928913214}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d462c9eb4caaef4c9ebd4473cb32e72, type: 3}
   m_Name: 
@@ -5177,7 +5297,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1162992783}
-  m_RootOrder: 4
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1011533138
 MonoBehaviour:
@@ -6063,16 +6183,25 @@ MonoBehaviour:
     SimpleComponents: []
   - StepName: Log File
     StepAnnotation: Ensure that the log files are created before starting the project
-    DontExecute: 0
+    DontExecute: 1
     DontWait: 0
     CheckDelay: 0
     WaitAfter: 0
     DependencyComponents:
     - {fileID: 367070102}
     SimpleComponents: []
+  - StepName: Csv Files
+    StepAnnotation: 
+    DontExecute: 1
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 178341105}
+    SimpleComponents: []
   - StepName: Log Stream
     StepAnnotation: Then enable the log stream
-    DontExecute: 0
+    DontExecute: 1
     DontWait: 0
     CheckDelay: 0
     WaitAfter: 0
@@ -6136,10 +6265,13 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1627775310}
+  - {fileID: 894814895}
+  - {fileID: 178341104}
   - {fileID: 367070103}
   - {fileID: 8538163}
   - {fileID: 320659196}
   - {fileID: 1011533137}
+  - {fileID: 1498522738}
   m_Father: {fileID: 0}
   m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -7687,6 +7819,61 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1477052607}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1498522737
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1498522738}
+  - component: {fileID: 1498522739}
+  m_Layer: 0
+  m_Name: TestingService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1498522738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1498522737}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1162992783}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1498522739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1498522737}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4998e7d108da8d841b3d01cfdcfeb62c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PosDbReference: {fileID: 583022942}
+  EnableUnityTestFrame: 1
+  FrameCount: 60
+  PrintFrameRate: 0
+  EnableFrameRateCSVExport: 1
+  CsvExportFrameRate: {fileID: 894814896}
+  EnableChasingSpeedMetric: 1
+  MetricFrameResolution: 60
+  EvaluateDbSort: 1
+  EnableCsvExportChasingSpeedMetric: 1
+  ChasingSpeedMetricPrintCsvLines: 1
+  CsvExportChasingSpeedMetric: {fileID: 178341105}
 --- !u!1 &1515761456
 GameObject:
   m_ObjectHideFlags: 0
@@ -8874,30 +9061,30 @@ MonoBehaviour:
   DatabaseClientComponent: {fileID: 583022945}
   UseTestConnection: 1
   SarServerURLTest: http://localhost:5000
-  SarServerURL: http://131.175.204.169/sar/
+  SarServerURL: http://131.175.204.169/sar
   UseConnectionTimeout: 1
   ConnectionTimeout: 60
-  UploadTime: 10
-  DownloadTime: 10
+  UploadTime: 30
+  DownloadTime: 30
   MaxRetryCountConnection: 10
   ConnectionRetryDelay: 30
-  UpdateRadius: 2.5
+  UpdateRadius: 7.5
   UseStubCalibration: 0
   CalibrationUtilityComponent: {fileID: 320659194}
   DatabaseReference: {fileID: 583022942}
-  BaseDistance: 0.5
+  BaseDistance: 0.85
   BaseHeight: 0.8
   DistanceTolerance: 0.05
   ReferenceObject: {fileID: 0}
   UseClusters: 1
-  ClusterSize: 15
-  UseMaxIndices: 0
-  MaxIndices: 5
+  ClusterSize: 10
+  UseMaxIndices: 1
+  MaxIndices: 10
   ControlUnitReference: {fileID: 583022944}
   DrawerReference: {fileID: 0}
   StructureReference: {fileID: 0}
   VisualRoot: {fileID: 563885639}
-  DrawableRadius: 10
+  DrawableRadius: 5
   MarkerHeightPercent: 0.15
   Intensities:
   - 1
@@ -8905,7 +9092,7 @@ MonoBehaviour:
   - 5
   - 10
   - 25
-  DefineGlobalDebugMode: 1
+  DefineGlobalDebugMode: 0
 --- !u!4 &1627775310
 Transform:
   m_ObjectHideFlags: 0
@@ -9380,6 +9567,47 @@ MonoBehaviour:
           m_TargetAssemblyTypeName: Project.Scripts.Components.CalibrationUtility,
             Assembly-CSharp
           m_MethodName: EVENT_Calibrate
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - keyword: Logout
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1011533138}
+          m_TargetAssemblyTypeName: Packages.SAR4HL2NetworkingServices.Components.SarHL2ClientVoiceCommands,
+            Assembly-CSharp
+          m_MethodName: VOICE_Disconnect
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 1011533139}
+          m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
+          m_MethodName: set_enabled
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 583022945}
+          m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
+          m_MethodName: set_enabled
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}

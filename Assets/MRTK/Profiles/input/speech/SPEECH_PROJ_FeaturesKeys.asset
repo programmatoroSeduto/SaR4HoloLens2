@@ -108,8 +108,15 @@ MonoBehaviour:
       description: Select
       axisConstraint: 2
   - localizationKey: 
-    keyword: Server Logout
+    keyword: Logout
     keyCode: 107
+    action:
+      id: 0
+      description: Select
+      axisConstraint: 2
+  - localizationKey: 
+    keyword: Log File
+    keyCode: 108
     action:
       id: 0
       description: Select
