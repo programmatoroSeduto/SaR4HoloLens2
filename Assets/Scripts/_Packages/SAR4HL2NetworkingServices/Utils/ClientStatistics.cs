@@ -21,7 +21,12 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             "response_len",
             "response_kb",
             "response_at_ms",
-            "latency_ms"
+            "latency_ms",
+            "upload_count_wp",
+            "upload_count_path",
+            "upload_count_renamings",
+            "download_count_wp",
+            "download_count_path"
         };
 
         public enum ApiOperationTypeEnum
@@ -51,9 +56,14 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
         public DateTime sendTimestamp = DateTime.Now;
         public DateTime receiveTimestamp = DateTime.Now;
 
+        // request specific : UPLOAD
         public int wpSentToServer = 0;
-        public int wpReceivedFromServer = 0;
+        public int ptSentToServer = 0;
         public int renamingFromServer = 0;
+
+        // request specific : DOWNLOAD
+        public int wpReceivedFromServer = 0;
+        public int ptReceivedFromServer = 0;
 
         public List<string> ToCsvList()
         {
@@ -66,22 +76,37 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             // http_type
             res.Add(getHttpType());
             // http_response_status
-            res.Add(HTTPStatusCode.ToString());
+            res.Add(HTTPStatusCode > 0 ? HTTPStatusCode.ToString() : "");
+            
             // request_len
             res.Add(RequestJSON.Length.ToString());
             // request_kb
             res.Add((RequestJSON.Length * CharDimKb).ToString("0.0000"));
             // request_at_ms
             res.Add(sendTimestamp.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds.ToString());
+            
             // response_len
             res.Add(ResponseJSON.Length.ToString());
             // response_kb
             res.Add((ResponseJSON.Length * CharDimKb).ToString());
             // response_at_ms
             res.Add(receiveTimestamp.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds.ToString());
+            
             // latency_ms
-            float latency = (float) receiveTimestamp.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds - (float) sendTimestamp.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+            double latency = (receiveTimestamp - sendTimestamp).TotalMilliseconds;
             res.Add(latency.ToString("0.000000"));
+            
+            // upload_count_wp
+            res.Add(wpSentToServer.ToString());
+            // upload_count_path
+            res.Add(ptSentToServer.ToString());
+            // upload_count_renamings
+            res.Add(renamingFromServer.ToString());
+
+            // download_count_wp
+            res.Add(wpReceivedFromServer.ToString());
+            // download_count_path
+            res.Add(ptReceivedFromServer.ToString());
 
             return res;
         }

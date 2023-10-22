@@ -22,7 +22,9 @@ namespace Packages.PositionDatabase.Utils
         public Dictionary<int, PositionDatabaseWaypoint> WpIndex = new Dictionary<int, PositionDatabaseWaypoint>();
         /// <summary> used for assigning position IDs </summary>
         public int MaxSharedIndex = -1;
-        
+        /// <summary> first level optimization </summary>
+        //public bool UseFirstLevelOptimization = true;
+
 
 
 
@@ -87,6 +89,26 @@ namespace Packages.PositionDatabase.Utils
             get => (db.Count == 0 ? null : db[0]);
         }
 
+        /// <summary> (performnces metric) average busy time </summary>
+        public float AverageBusyTime
+        {
+            get => (busyCalls > 1.0 ? (float)(busyTime / busyCalls) : 0.0f);
+        }
+
+        /// <summary> (performnces metric) maximum of busy time </summary>
+        public float MaxBusyTime
+        {
+            get => (float)(busyMaxTime);
+        }
+
+        /// <summary> (performnces metric) average number of swaps per step </summary>
+        public float AverageSwapPerCall
+        {
+            get => (busyCalls > 1.0 ? (float)(swapCalls / busyCalls) : 0.0f);
+        }
+
+
+
 
 
         // ===== PRIVATE ===== //
@@ -97,12 +119,26 @@ namespace Packages.PositionDatabase.Utils
         private List<PositionDatabaseWaypoint> db = new List<PositionDatabaseWaypoint>();
         // list of currently enabled sorting indices
         private List<int> idx = new List<int>();
-        // it corresponds to the lenght of the array
-        private int N = 0;
         // value used for updating the size of the clusters
         private int np = 0;
         // the max len of the array given MaxIdx and Clusters Len
         private int idxMax = 0;
+
+        // used by first level optimization
+        // private Dictionary<string, int> storageIndexLookup = new Dictionary<string, int>();
+        
+        // performances evaluation
+        // total time in milliseconds spent for ordering the array
+        private double busyTime = 0.0;
+        // total number of iterations
+        private double busyCalls = 0.0;
+        // last step start time
+        private DateTime startTime = DateTime.Now;
+        // max step busy time
+        private double busyMaxTime = 0.0;
+        // total swap calls
+        private double swapCalls = 0.0;
+
 
 
 
@@ -112,14 +148,14 @@ namespace Packages.PositionDatabase.Utils
 
         public void Reset(int cluster = -1, int maxIdx = -1)
         {
-            N = db.Count;
+            // N = db.Count;
             MaxIndices = maxIdx;
             ClusterLength = cluster;
 
             idx.Clear();
             if (cluster > 0)
             {
-                int cap = (int)Math.Floor(Math.Min((float)N / (float)cluster, (maxIdx <= 0 ? int.MaxValue : maxIdx)));
+                int cap = (int)Math.Floor(Math.Min((float)db.Count / (float)cluster, (maxIdx <= 0 ? int.MaxValue : maxIdx)));
                 for (int i = 0; i < cap; ++i) idx.Add(0);
                 redistributeIdx();
             }
@@ -136,12 +172,41 @@ namespace Packages.PositionDatabase.Utils
             return Vector3.Distance(pos1, pos2);
         }
 
+
+
+        // ===== SWAP FUNCTIONS ===== //
+
         private void swap(int i, int j)
         {
+            swapCalls += 1.0;
+
+            /*
+            if(UseFirstLevelOptimization)
+            {
+                setStorageKeys(db[i].KeyStable, j);
+                setStorageKeys(db[j].KeyStable, i);
+            }
+            */
+
             PositionDatabaseWaypoint wpt = db[i];
             db[i] = db[j];
             db[j] = wpt;
         }
+
+        /*
+        private void setStorageKeys(string key, int idx)
+        {
+            if (!storageIndexLookup.ContainsKey(key))
+                storageIndexLookup.Add(key, idx);
+            else
+                storageIndexLookup[key] = idx;
+        }
+
+        private int getStorageKey(string key)
+        {
+            return (storageIndexLookup.ContainsKey(key) ? storageIndexLookup[key] : -1);
+        }
+        */
 
 
 
@@ -149,20 +214,35 @@ namespace Packages.PositionDatabase.Utils
 
         public void SortStep( )
         {
-            if (db.Count < 2) return;
-            if (UseCluster && ClusterLength <= 3) return;
+            startTime = DateTime.Now;
 
-            if (idx.Count == 0) idx.Add(0);
+            if (!((db.Count < 2) || (UseCluster && ClusterLength <= 3)))
+            {
+                if (idx.Count == 0) idx.Add(0);
 
-            N = db.Count;
-            if (MaxIndices > 0)
-                np = ClusterLength * MaxIndices;
+                // N = db.Count;
+                if (MaxIndices > 0)
+                    np = ClusterLength * MaxIndices;
 
-            dynamicSortStep(sortReferencePosition);
-            
-            if (UseCluster) checkNewCluster();
-            
-            if (UseCluster && UseMaxIndices) checkMaxIdx();
+                dynamicSortStep(sortReferencePosition);
+
+                if (UseCluster)
+                {
+                    checkNewCluster();
+                    if (UseMaxIndices)
+                        checkMaxIdx();
+                }
+            }
+
+            updatePerformanceMetrics();
+        }
+
+        private void updatePerformanceMetrics()
+        {
+            double delta = (DateTime.Now - startTime).TotalMilliseconds;
+            if (delta > busyMaxTime) busyMaxTime = delta;
+            busyCalls += 1.0;
+            busyTime += delta;
         }
 
         private void dynamicSortStep(Vector3 Puser)
@@ -172,9 +252,49 @@ namespace Packages.PositionDatabase.Utils
             {
                 j = idx[i];
                 if (dist(Puser, db[j].AreaCenter) > dist(Puser, db[j + 1].AreaCenter))
+                {
                     swap(j, j + 1);
 
-                idx[i] = (j + 1) % (N - 1);
+                    // first level optimization (not working)
+                    /*
+                     * l'ottimizzazione gioca sul fatto che, se ti trovi più vicino ad un certo punto,
+                     * allora sarà più probabile successivamente che tu ti trovi nei pressi di quel punto.
+                     * in questo modo l'inseguimento diventa più veloce perchè la qualità di indicizzazione aumenta.
+                     * 
+                     * non sswappo solo la singola posizione: avvicino anche tutte le posizioni vicine, perchè 
+                     * saranno le più probabili in cui mi troverò più avanti. 
+                     * 
+                     * NOTA BENE (vedi la Insert) : potrebbe esserci un disallineamento temporaneo delle storage keys
+                     * se si andasse ad inserire una stub storage key (a zero) al momento dell'inserimento. 
+                     * Per questo preferisco che la chiave, se mancante, venga assegnata solo al momento dello swap
+                     * in modo da evitare possibili problematiche legate alla occasionale incoerenza delle storage keys.
+                     * 
+                     * (nota: l'aspetto più preoccupante di questa frase è legato alla parola 'occasionale' ... il debug
+                     * diventa subito un incubo per i bug occasionali, quindi meglio evitare cose strane.)
+                     * */
+                    /*
+                    if(UseFirstLevelOptimization)
+                    {
+                        int storageIdx = -1;
+                        int jnext = j + 1;
+                        PositionDatabaseWaypoint wp = db[j];
+                        foreach (PositionDatabasePath pt in db[j].Paths)
+                        {
+                            if (jnext >= db.Count) break;
+
+                            storageIdx = getStorageKey(pt.Next(wp).KeyStable);
+                            if (storageIdx >= 0)
+                            {
+                                swap(jnext, storageIdx);
+                                ++jnext;
+                            }
+                            else break;
+                        }
+                    }
+                    */
+                }
+
+                idx[i] = (j + 1) % (db.Count - 1);
                 if (idx.Count > 1 && idx[i] < j)
                 {
                     redistributeIdx();
@@ -186,7 +306,7 @@ namespace Packages.PositionDatabase.Utils
         {
             if (UseMaxIndices && idx.Count >= MaxIndices) return;
 
-            if (N == (idx.Count + 1) * ClusterLength)
+            if (db.Count >= (idx.Count + 1) * ClusterLength)
             {
                 idx.Add(0);
                 redistributeIdx();
@@ -197,7 +317,7 @@ namespace Packages.PositionDatabase.Utils
         {
             if (UseMaxIndices && idx.Count < MaxIndices) return;
 
-            if (N - np == MaxIndices)
+            if (db.Count - np == MaxIndices)
             {
                 ++ClusterLength;
                 np = ClusterLength * MaxIndices;
@@ -217,13 +337,6 @@ namespace Packages.PositionDatabase.Utils
                 });
         }
 
-        public Task SortAllAsync()
-        {
-            return new Task(() => {
-                SortAll();
-            });
-        }
-
 
 
         // ===== INSERT AND UPDATE ===== //
@@ -231,18 +344,6 @@ namespace Packages.PositionDatabase.Utils
         public void Insert(PositionDatabaseWaypoint wp)
         {
             db.Insert(0, wp);
-            // StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"new waypoint with assigned ID:{wp.PositionID} with low level MAX_ID:{MaxSharedIndex}", logLayer: 2);
-            /*
-            if(WpIndex.ContainsKey(wp.PositionID))
-            {
-                if(WpIndex[wp.PositionID] == null)
-                    StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID}: entry exists and it is null (OK)", logLayer: 2);
-                else
-                    StaticLogger.Warn("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID}: entry exists, but IT IS NOT NULL!", logLayer: 2);
-            }
-            else
-                StaticLogger.Info("PositionDatabaseLowLevel:Insert", $"waypoint {wp.PositionID} is new", logLayer: 2);
-            */
             WpIndex.Add(wp.PositionID, wp);
         }
 

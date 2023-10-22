@@ -34,6 +34,10 @@ namespace Packages.PositionDatabase.Components
         [Tooltip("(Only with UseMaxIndices checked) the maximum number of indices to create; it corresponds to the maximum number of clusters")]
         [Min(2)]
         public int MaxIndices = 2;
+        // (not working so far)
+        //[Tooltip("First Level Optimization: the database tries to move also the linked position to the nearest one when feasible; it decreases a bit the performances, but also allows a better position chasing")]
+        // public bool UseFirstLevelOptimization = true;
+
 
         [Header("DB Events")]
         [Tooltip("Events called when a new position is created")]
@@ -72,6 +76,18 @@ namespace Packages.PositionDatabase.Components
                 AreaRenaming = value;
             }
         }
+        
+        // percentage of hits
+        public float HitPercent
+        {
+            get => hitMissTotalCount > 0 ? (float)(hitCount / hitMissTotalCount) : 0.0f;
+        }
+
+        // percentage of misses
+        public float MissPercent
+        {
+            get => hitMissTotalCount > 0 ? (float)(missCount / hitMissTotalCount) : 0.0f;
+        }
 
 
 
@@ -98,6 +114,12 @@ namespace Packages.PositionDatabase.Components
         private Coroutine COR_SortAfterEnable = null;
         // area efficient renaming
         private Dictionary<int, int> AreaRenaming = new Dictionary<int, int>();
+        // total count
+        private double hitMissTotalCount = 0.0;
+        // hit count
+        private double hitCount = 0.0;
+        // miss count
+        private double missCount = 0.0;
 
 
 
@@ -105,12 +127,26 @@ namespace Packages.PositionDatabase.Components
 
         private void Start()
         {
+            // cluster optimization
             lowLevel.UseCluster = UseClusters;
-            if (UseClusters) lowLevel.ClusterLength = ClusterSize;
-            lowLevel.UseMaxIndices = UseMaxIndices;
-            if (UseMaxIndices) lowLevel.MaxIndices = MaxIndices;
+            if (UseClusters)
+                lowLevel.ClusterLength = ClusterSize;
+            else
+                lowLevel.ClusterLength = -1;
 
+            // max indices optimization
+            lowLevel.UseMaxIndices = UseMaxIndices;
+            if (UseMaxIndices) 
+                lowLevel.MaxIndices = MaxIndices;
+            else
+                lowLevel.MaxIndices = -1;
+
+            // first level optimization (not wrking)
+            // lowLevel.UseFirstLevelOptimization = UseFirstLevelOptimization;
+
+            // area division algorithm first setup
             AreaRenaming.Add(0, 0);
+
             Ready();
         }
 
@@ -181,17 +217,25 @@ namespace Packages.PositionDatabase.Components
         {
             PositionDatabaseWaypoint wp = new PositionDatabaseWaypoint();
             wp.DBReference = this;
-            if (unlinkedInsert)
+            
+            //  TODO: rework this feature (areas currently not working)
+            /*
+            if (unlinkedInsert && !linkedInsert)
             {
                 ++areaIndex;
                 AreaRenaming.Add(areaIndex, areaIndex);
             }
-            wp.AreaIndex = AreaRenaming[areaIndex];
+            */
+            // wp.AreaIndex = AreaRenaming[areaIndex];
+            
+            wp.AreaIndex = 0;
             wp.setPositionID(lowLevel.GetSharedIndex());
             wp.AreaCenter = lowLevel.SortReferencePosition;
             wp.AreaRadius = BaseDistance;
 
-            if (CurrentZone != null && !unlinkedInsert)
+            //  TODO: rework this feature (areas currently not working)
+            //if (CurrentZone != null && !unlinkedInsert)
+            if (CurrentZone != null)
             {
                 wp.AddPath(CurrentZone);
             }
@@ -260,6 +304,12 @@ namespace Packages.PositionDatabase.Components
             dataZoneCreated = CurrentZone;
             foreach (UnityEvent ue in CallOnZoneCreated)
                 ue.Invoke();
+            
+            if (linkedInsert || unlinkedInsert)
+            {
+                ++hitMissTotalCount;
+                ++missCount;
+            }
         }
 
         private void onZoneChanged()
@@ -283,6 +333,12 @@ namespace Packages.PositionDatabase.Components
                     ue.Invoke();
 
                 prevZone = CurrentZone;
+
+                if (!linkedInsert && !unlinkedInsert)
+                {
+                    ++hitMissTotalCount;
+                    ++hitCount;
+                }
             }
         }
 

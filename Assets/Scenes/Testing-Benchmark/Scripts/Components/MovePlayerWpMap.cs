@@ -34,6 +34,8 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
         public bool IgnoreNearPoints = false;
 
         [Header("Test Behaviour Dynamic Settings")]
+        [Tooltip("Stop!")]
+        public bool Stop = false;
         [Tooltip("One-shot check: select to update the text area in the output zone. The check is reset after update")]
         public bool TestOutputOnTextArea = false;
 
@@ -124,18 +126,19 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
         {
             ++frameCount;
 
-            switch (playerStatus)
-            {
-                case PlayerStatus.planning:
-                    Update_Planning();
-                    break;
-                case PlayerStatus.moving:
-                    Update_Moving();
-                    break;
-                case PlayerStatus.staying:
-                    Update_Staying();
-                    break;
-            }
+            if(!Stop)
+                switch (playerStatus)
+                {
+                    case PlayerStatus.planning:
+                        Update_Planning();
+                        break;
+                    case PlayerStatus.moving:
+                        Update_Moving();
+                        break;
+                    case PlayerStatus.staying:
+                        Update_Staying();
+                        break;
+                }
 
             if (TestOutputOnTextArea)
             {

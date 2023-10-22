@@ -113,6 +113,7 @@ namespace Packages.PositionDatabase.Components
                 newPositions.Add(PositionsDB.DataZoneCreated);
                 foreach (PositionDatabasePath pt in wp.Paths)
                     newPaths.Add(pt);
+                StaticLogger.Info(sourceLog, $"receiving new position ... OK with new Count:{newPositions.Count}", logLayer: 2);
             }
             else if (wp.PositionStableID == 0)
             {
@@ -125,7 +126,10 @@ namespace Packages.PositionDatabase.Components
                 StaticLogger.Info(sourceLog, $"receiving new position ... SKIP (area index is not zero)", logLayer: 2);
                 return;
             }
-            StaticLogger.Info(sourceLog, $"receiving new position ... OK with new Count:{newPositions.Count}", logLayer: 2);
+            else
+            {
+                StaticLogger.Info(sourceLog, $"receiving new position ... SKIP (area index is not zero AND stable ID is zero)\n\t wp with keyShared={wp.Key} keyStable={wp.KeyStable} pos={wp.AreaCenter} areaid={wp.AreaIndex} posStableId={wp.PositionStableID}", logLayer: 2);
+            }
         }
 
 
@@ -336,6 +340,7 @@ namespace Packages.PositionDatabase.Components
             if (Client.UpdatedEntriesWps.Count == 0)
             {
                 StaticLogger.Info(sourceLog, $"Nothing to integrate; closing download", logLayer: 1);
+                SarAPI.RegisterEmptyStatDownload();
                 yield break;
             }
             else
@@ -429,6 +434,7 @@ namespace Packages.PositionDatabase.Components
             if(wpList.Count == 0)
             {
                 StaticLogger.Info(sourceLog, $"nohing new to upload", logLayer: 1);
+                SarAPI.RegisterEmptyStatUpload();
                 yield break;
             }
             StaticLogger.Info(sourceLog, $"Collecting informations to upload ... OK ready", logLayer: 1);

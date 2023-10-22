@@ -19,6 +19,7 @@ namespace Project.Scenes.TestingBase.Components
         [Tooltip("PosDB Reference")]
         public PositionsDatabase PosDbReference = null;
 
+
         [Header("Test: Unity Frame Rate")]
 
         [Tooltip("Enable test Unity FrameRate")]
@@ -31,6 +32,7 @@ namespace Project.Scenes.TestingBase.Components
         public bool EnableFrameRateCSVExport = false;
         [Tooltip("CSV export for frame rate")]
         public CsvWriter CsvExportFrameRate = null;
+
 
         [Header("Test: Chasing Speed")]
 
@@ -48,11 +50,23 @@ namespace Project.Scenes.TestingBase.Components
         public CsvWriter CsvExportChasingSpeedMetric = null;
 
 
+        [Header("Test: Interal Odometry Check")]
+
+        [Tooltip("Enable internal odometry check")]
+        public bool EnableOdometryCheck = false;
+        [Tooltip("How much frames to wait after the next metric update")]
+        public int OdometryFrameResolution = 60;
+        [Tooltip("Print lines in output")]
+        public bool EnableOdometryCsvExport = false;
+        [Tooltip("CSV export for chasing speed")]
+        public CsvWriter CsvExportOdometry = null;
+
+
 
         // ===== PRIVATE ===== //
 
         // GENERIC
-
+        // ...
 
         // FRAME RATE METRIC
         // last frame rate measurement
@@ -70,6 +84,19 @@ namespace Project.Scenes.TestingBase.Components
         // either the DB is chasing position or not
         private bool ChasingSpeedMetric_ChasingPhase = false;
 
+        // INTERNAL ODOMETRY CHECK
+        // last frame rate measurement
+        private DateTime Odometry_LastFrameMeasurement = DateTime.Now;
+        // last position detected
+        private Vector3 Odometry_LastPositionDeteced = Vector3.zero;
+        // last orientation (Euler) detected
+        private Vector3 Odometry_LastOrientationDeteced = Vector3.zero;
+        // framerate count
+        private double Odometry_FrameCount = 0;
+        // the frame rate
+        private double Odometry_FrameRate = 0.0;
+
+
 
 
         // ===== UNITY CALLBACKS ===== //
@@ -85,6 +112,10 @@ namespace Project.Scenes.TestingBase.Components
             {
                 INIT_ChasingSpeedMetric();
             }
+            if (EnableOdometryCheck)
+            {
+                INIT_OdometryCheck();
+            }
         }
 
         // Update is called once per frame
@@ -98,6 +129,12 @@ namespace Project.Scenes.TestingBase.Components
             {
                 UPDATE_ChasingSpeedMetric();
             }
+            if (EnableOdometryCheck)
+            {
+                UPDATE_OdometryCheck();
+            }
+
+            Ready();
         }
 
 
@@ -169,7 +206,8 @@ namespace Project.Scenes.TestingBase.Components
                 ChasingSpeedMetric_FrameCountAll += MetricFrameResolution;
                 ChasingSpeedMetric_FrameCount = 0;
 
-                Vector3 odom = Camera.main.transform.position;
+                //Vector3 odom = Camera.main.transform.position;
+                Vector3 odom = PosDbReference.LowLevelDatabase.SortReferencePosition;
                 Vector3 posdb = PosDbReference.CurrentZone.AreaCenter;
                 float dist = Vector3.Distance(odom, posdb);
                 ChasingSpeedMetric_ChasingPhase = dist > PosDbReference.BaseDistance;
@@ -187,6 +225,13 @@ namespace Project.Scenes.TestingBase.Components
                 string sort_quality = (EvaluateDbSort ? computeOrderQuality(odom).ToString(".00") : "");
                 string posdb_load = $"{PosDbReference.LowLevelDatabase.Count}";
                 string posdb_active_clusters = $"{PosDbReference.LowLevelDatabase.WorkingClusters}";
+                string posdb_max_cluster = $"{PosDbReference.ClusterSize}";
+                string posdb_max_idx = $"{PosDbReference.ClusterSize}";
+                string busy_avg = PosDbReference.LowLevelDatabase.AverageBusyTime.ToString(".000");
+                string busy_max = PosDbReference.LowLevelDatabase.MaxBusyTime.ToString(".000");
+                string swap_avg = PosDbReference.LowLevelDatabase.AverageSwapPerCall.ToString(".0");
+                string percent_hit = (PosDbReference.HitPercent * 100.0).ToString(".00");
+                string percent_miss = (PosDbReference.MissPercent * 100.0).ToString(".00");
 
                 CsvExportChasingSpeedMetric.EVENT_WriteCsv(new List<string> {
                     frame_no,
@@ -195,8 +240,89 @@ namespace Project.Scenes.TestingBase.Components
                     posdb_x, posdb_y, posdb_z,
                     dist_odom_posdb, in_range_vl,
                     sort_quality,
-                    posdb_load, posdb_active_clusters
+                    posdb_load, posdb_active_clusters,
+                    posdb_max_cluster, posdb_max_idx,
+                    busy_avg, busy_max, 
+                    swap_avg,
+                    percent_hit, percent_miss
                 }, ChasingSpeedMetricPrintCsvLines);
+            }
+        }
+
+
+
+        // ===== TEST INTERNAL ODOMETRY CHECK ===== //
+
+        public void EVENT_OdometryCheck(bool opt)
+        {
+            EnableOdometryCheck = opt;
+        }
+
+        private void INIT_OdometryCheck()
+        {
+            if (!EnableOdometryCheck) return;
+
+            Odometry_LastPositionDeteced = Camera.main.transform.position;
+            Odometry_LastOrientationDeteced = Camera.main.transform.rotation.eulerAngles;
+        }
+
+        private void UPDATE_OdometryCheck()
+        {
+            if (!EnableOdometryCheck) return;
+
+            if (Odometry_FrameCount < OdometryFrameResolution)
+                ++Odometry_FrameCount;
+            else
+            {
+                double prevFrameRate = Odometry_FrameRate;
+                Odometry_FrameRate = ((double)Odometry_FrameCount) / (DateTime.Now - Odometry_LastFrameMeasurement).TotalSeconds;
+                Vector3 curPos = Camera.main.transform.position;
+                Vector3 curRot = Camera.main.transform.rotation.eulerAngles;
+                bool lockedPos = (curPos == Odometry_LastPositionDeteced);
+                bool lockedRot = (curPos == Odometry_LastOrientationDeteced);
+
+                if (EnableOdometryCsvExport)
+                    CsvExportOdometry.EVENT_WriteCsv(new List<string> { 
+                        // frame_rate_prev
+                        prevFrameRate.ToString(".0000"),
+                        // frame_rate_cur
+                        Odometry_FrameRate.ToString(".0000"),
+                        // delta_frame_rate
+                        (Odometry_FrameRate - prevFrameRate).ToString(".0000"),
+                        // pos_x_cur
+                        $"{curPos.x}",
+                        // pos_y_cur
+                        $"{curPos.y}",
+                        // pos_z_cur
+                        $"{curPos.z}",
+                        // rot_x_cur
+                        $"{curRot.x}",
+                        // rot_y_cur
+                        $"{curRot.y}",
+                        // rot_z_cur
+                        $"{curRot.z}",
+                        // pos_x_prev
+                        $"{Odometry_LastPositionDeteced.x}",
+                        // pos_y_prev
+                        $"{Odometry_LastPositionDeteced.y}",
+                        // pos_z_prev
+                        $"{Odometry_LastPositionDeteced.z}",
+                        // rot_x_prev
+                        $"{Odometry_LastOrientationDeteced.x}",
+                        // rot_y_prev
+                        $"{Odometry_LastOrientationDeteced.y}",
+                        // rot_z_prev
+                        $"{Odometry_LastOrientationDeteced.z}",
+                        // is_locked_position
+                        $"{lockedPos}",
+                        // is_locked_rotation
+                        $"{lockedRot}"
+                    });;
+
+                Odometry_FrameCount = 0;
+                Odometry_LastFrameMeasurement = DateTime.Now;
+                Odometry_LastPositionDeteced = curPos;
+                Odometry_LastOrientationDeteced = curRot;
             }
         }
 

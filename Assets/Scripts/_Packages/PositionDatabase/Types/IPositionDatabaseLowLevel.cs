@@ -34,7 +34,6 @@ namespace Packages.PositionDatabase.Types
         // ===== ONESHOT SORT ===== //
 
         public void SortAll();
-        public Task SortAllAsync();
 
 
 

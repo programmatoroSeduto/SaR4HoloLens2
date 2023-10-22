@@ -657,6 +657,10 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
                 SarAPI.maxIdx = hl2DownloadResponsePack.max_idx;
                 StaticLogger.Info(sourceLog, $"SET maxIdx FROM REQUEST : request:{hl2DownloadResponsePack.max_idx} maxIdx:{SarAPI.maxIdx} ServerPositionIndex:{SarAPI.ServerPositionIndex}", logLayer: 4);
                 StaticLogger.Info(sourceLog, $"OK download done", logLayer: 0);
+
+                lastStats.wpReceivedFromServer = Hl2DownloadResponse.waypoints.Count;
+                lastStats.wpReceivedFromServer = Hl2DownloadResponse.paths.Count;
+
                 downloadSuccess = true;
             }
             else
@@ -751,6 +755,8 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.Upload;
             lastStats.ApiURL = requestURL;
             lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+            lastStats.wpSentToServer = waypoints.Count;
+            lastStats.ptSentToServer = paths.Count;
 
             api_hl2_upload_request payload = new api_hl2_upload_request();
             payload.user_id = userID;
@@ -772,7 +778,8 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
 
             if (resultCode == 200)
             {
-                foreach(data_hl2_align_item item in hl2UploadResponsePack.wp_alignment)
+                lastStats.renamingFromServer = hl2UploadResponsePack.wp_alignment.Count;
+                foreach (data_hl2_align_item item in hl2UploadResponsePack.wp_alignment)
                 {
                     if (!uploadAlignmentLookup.ContainsKey(item.request_position_id))
                         uploadAlignmentLookup.Add(
@@ -970,6 +977,28 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             }
 
             lastStats = new ClientStatistics();
+        }
+
+        public static void RegisterEmptyStatDownload()
+        {
+            processLastStats();
+
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.Download;
+            lastStats.ApiURL = GetAPIUrl(ApiAddress_Hl2Download);
+
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+            lastStats.HTTPStatusCode = 0; // i.e. not executed
+        }
+
+        public static void RegisterEmptyStatUpload()
+        {
+            processLastStats();
+
+            lastStats.ApiOperationType = ClientStatistics.ApiOperationTypeEnum.Upload;
+            lastStats.ApiURL = GetAPIUrl(ApiAddress_Hl2Upload);
+
+            lastStats.HttpType = ClientStatistics.CallTypeEnum.POST;
+            lastStats.HTTPStatusCode = 0; // i.e. not executed
         }
     }
 }
