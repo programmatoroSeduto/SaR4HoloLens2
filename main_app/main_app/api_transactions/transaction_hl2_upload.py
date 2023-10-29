@@ -408,6 +408,11 @@ SELECT
 	%(DEVICE_ID)s AS DEVICE_ID,
 	*
 FROM paths_renamed_filtered
+WHERE 1=1
+AND SESSION_TOKEN_ID IS NOT NULL
+AND U_REFERENCE_POSITION_ID IS NOT NULL
+AND WAYPOINT_1_STAGING_FK IS NOT NULL
+AND WAYPOINT_2_STAGING_FK IS NOT NULL
 RETURNING *
 ) -- SELECT * FROM insert_step;
 SELECT COUNT(*) AS CREATED_PATHS FROM insert_step;
@@ -498,8 +503,8 @@ class api_transaction_hl2_upload(api_transaction_base):
         # transaction custom data
         self.security_handle:ud_security_support = ud_security_support(env)
         self.inherits_session = None
-        self.tuning_threshold = 0.5
-        self.tuning_tollerance = 0.05
+        self.tuning_threshold = 1.0
+        self.tuning_tollerance = 0.15
         self.quality_a = 1.00
         self.quality_b = 4.75
         self.renamings_found = False
