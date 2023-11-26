@@ -149,15 +149,6 @@ SELECT DISTINCT
 		AS loc_timestamp
 FROM analysis_data
 ) -- SELECT * FROM classification_data;
-, wps_renamings AS (
-SELECT
-	req_pos_id AS REQUEST_POSITION_ID,
-	CASE 
-		WHEN WP_IS_REDUNDANT_FL THEN align_with_loc_pos_id
-		ELSE req_pos_id
-	END AS ALIGNED_POSITION_ID
-FROM classification_data
-) -- SELECT * FROM wps_renamings;
 , set_wps_new AS (
 SELECT 
 	%(DEVICE_ID)s AS DEVICE_ID,
@@ -206,14 +197,6 @@ SELECT
 	align_with_fk AS ALIGNMENT_DISTANCE_FROM_WAYPOINT_FK 
 FROM classification_data
 WHERE WP_IS_REDUNDANT_FL
-AND align_with_loc_pos_id NOT IN (
-	SELECT DISTINCT
-		LOCAL_POSITION_ID
-	FROM sar.F_HL2_STAGING_WAYPOINTS
-	WHERE 1=1
-	AND SESSION_TOKEN_ID = %(SESSION_TOKEN_ID)s
-	AND U_REFERENCE_POSITION_ID = %(U_REFERENCE_POSITION_ID)s
-)
 ) -- SELECT * FROM set_wps_new UNION ALL SELECT * FROM set_wps_aligned;
 , insert_new AS (
 INSERT INTO sar.F_HL2_STAGING_WAYPOINTS (
@@ -408,11 +391,6 @@ SELECT
 	%(DEVICE_ID)s AS DEVICE_ID,
 	*
 FROM paths_renamed_filtered
-WHERE 1=1
-AND SESSION_TOKEN_ID IS NOT NULL
-AND U_REFERENCE_POSITION_ID IS NOT NULL
-AND WAYPOINT_1_STAGING_FK IS NOT NULL
-AND WAYPOINT_2_STAGING_FK IS NOT NULL
 RETURNING *
 ) -- SELECT * FROM insert_step;
 SELECT COUNT(*) AS CREATED_PATHS FROM insert_step;
@@ -503,8 +481,8 @@ class api_transaction_hl2_upload(api_transaction_base):
         # transaction custom data
         self.security_handle:ud_security_support = ud_security_support(env)
         self.inherits_session = None
-        self.tuning_threshold = 1.0
-        self.tuning_tollerance = 0.15
+        self.tuning_threshold = 1.5
+        self.tuning_tollerance = 0.01
         self.quality_a = 1.00
         self.quality_b = 4.75
         self.renamings_found = False
