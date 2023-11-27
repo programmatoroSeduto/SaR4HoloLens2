@@ -99,7 +99,8 @@ namespace Packages.DiskStorageServices.Components
         {
 #if UNITY_EDITOR
             Update();
-            StorageFile.Close();
+            if(StorageFile != null)
+                StorageFile.Close();
 #endif
         }
 

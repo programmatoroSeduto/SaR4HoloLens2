@@ -160,7 +160,8 @@ namespace Packages.PositionDatabase.Components
             // waiting for calibration
             StaticLogger.Info(sourceLog, $"Waiting for calibration ...", logLayer: 0);
             int waitCount = 0;
-            while(StaticTransform.CalibrationComponent == null || !StaticTransform.CalibrationDone)
+            // while(StaticTransform.CalibrationComponent == null || !StaticTransform.CalibrationDone)
+            while (!StaticTransform.CalibrationDone)
             {
                 yield return new WaitForSecondsRealtime(1.0f);
                 StaticLogger.Info(sourceLog, $"({waitCount++}) waiting ... (nullRef:{(StaticTransform.CalibrationComponent == null)})", logLayer: 3);
@@ -348,7 +349,8 @@ namespace Packages.PositionDatabase.Components
 
             StaticLogger.Info(sourceLog, $"Importing waypoints ... ", logLayer: 2);
             PositionsDB.SetStatusImporting(this, true);
-            int wpCacheIndex = Client.ServerPositionIndex;
+            // int wpCacheIndex = Client.ServerPositionIndex;
+            int wpCacheIndex = Mathf.Max(Client.ServerPositionIndex, PositionsDB.LowLevelDatabase.Count - 1);
             foreach (Tuple<int, int, data_hl2_waypoint> jwp in Client.UpdatedEntriesWps)
             {
                 /*
@@ -400,12 +402,24 @@ namespace Packages.PositionDatabase.Components
                 int wp2Idx = jpt.Item2.Item2;
                 if(!PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(wp1Idx))
                 {
-                    StaticLogger.Warn(sourceLog, $"Importing paths ... ERROR: waypoint with code wp1Idx:{wp1Idx} does not exist)", logLayer: 0);
+                    StaticLogger.Warn(sourceLog, $"Importing paths ... ERROR: waypoint with code wp1Idx:{wp1Idx} does not exist", logLayer: 0);
+                    continue;
+                }
+                else if (PositionsDB.LowLevelDatabase.WpIndex[wp1Idx] == null)
+                {
+                    StaticLogger.Warn(sourceLog, $"Importing paths ... ERROR: location for waypoint with code wp1Idx:{wp1Idx} is NULL", logLayer: 0);
+                    PositionsDB.LowLevelDatabase.WpIndex.Remove(wp1Idx);
                     continue;
                 }
                 else if (!PositionsDB.LowLevelDatabase.WpIndex.ContainsKey(wp2Idx))
                 {
                     StaticLogger.Warn(sourceLog, $"Importing paths ... ERROR: waypoint with code wp2Idx:{wp2Idx} does not exist)", logLayer: 0);
+                    continue;
+                }
+                else if (PositionsDB.LowLevelDatabase.WpIndex[wp2Idx] == null)
+                {
+                    StaticLogger.Warn(sourceLog, $"Importing paths ... ERROR: location for waypoint with code wp2Idx:{wp2Idx} is NULL", logLayer: 0);
+                    PositionsDB.LowLevelDatabase.WpIndex.Remove(wp2Idx);
                     continue;
                 }
 
@@ -451,7 +465,8 @@ namespace Packages.PositionDatabase.Components
             StaticLogger.Info(sourceLog, $"Aligning positions database ...", logLayer: 1);
             if(!PositionsDB.SetStatusImporting(this, true))
                 StaticLogger.Warn(sourceLog, $"SetStatusImporting (enabling import) returned false!", logLayer: 1);
-            int wpCacheIndex = Client.ServerPositionIndex;
+            // int wpCacheIndex = Client.ServerPositionIndex;
+            int wpCacheIndex = Mathf.Max(Client.ServerPositionIndex, PositionsDB.LowLevelDatabase.Count-1);
             StaticLogger.Info(sourceLog, $"starting with wpCacheIndex:{wpCacheIndex}", logLayer: 3);
             foreach (Tuple<int, int, data_hl2_waypoint> item in Client.UpdatedEntriesWps)
             {

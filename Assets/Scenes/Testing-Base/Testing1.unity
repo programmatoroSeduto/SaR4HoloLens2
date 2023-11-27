@@ -123,55 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &8538161
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8538163}
-  - component: {fileID: 8538162}
-  m_Layer: 0
-  m_Name: Logging
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &8538162
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538161}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5cc2132baf965f489b11a6e306d27c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SendInfos: 1
-  SendWarnings: 1
-  SendErrors: 1
-  StorageChannel: {fileID: 367070102}
-  SuppressWarningsFromSettings: 1
-  PrintStackTraceWarnings: 0
---- !u!4 &8538163
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538161}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1162992783}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &21116241
 GameObject:
   m_ObjectHideFlags: 0
@@ -364,63 +315,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 41675733}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &45981852
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 45981854}
-  - component: {fileID: 45981853}
-  m_Layer: 0
-  m_Name: ScenePerformanceTesting
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &45981853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 45981852}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4998e7d108da8d841b3d01cfdcfeb62c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  PosDbReference: {fileID: 583022942}
-  EnableUnityTestFrame: 1
-  FrameCount: 10
-  PrintFrameRate: 0
-  EnableFrameRateCSVExport: 1
-  CsvExportFrameRate: {fileID: 1474770440}
-  EnableChasingSpeedMetric: 1
-  MetricFrameResolution: 10
-  EvaluateDbSort: 1
-  EnableCsvExportChasingSpeedMetric: 1
-  ChasingSpeedMetricPrintCsvLines: 0
-  CsvExportChasingSpeedMetric: {fileID: 2060204044}
---- !u!4 &45981854
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 45981852}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1474770439}
-  - {fileID: 2060204043}
-  m_Father: {fileID: 0}
-  m_RootOrder: 11
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &62020222
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,7 +619,69 @@ Transform:
   m_Children:
   - {fileID: 279335504}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &98573497
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 98573499}
+  - component: {fileID: 98573498}
+  m_Layer: 0
+  m_Name: CsvChasingSpeedMetricExport
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &98573498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 98573497}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FileName: ChasingSpeedMetric
+  UseTimestamp: 1
+  CreateFileOnStart: 1
+  UseLineTimestamp: 0
+  PcLogfilePath: C:\shared\output
+  CSVFields: []
+  ApplyTimestampColumn: 1
+  ApplyDurationColumn: 1
+  ApplyCounter: 1
+  Separator: ','
+  UseJsonDefinition: 1
+  JsonDefinition: "{\r\n    \"scheme\": [\r\n        \"FRAME_NO\",\r\n        \"ODOM_X\",\r\n       
+    \"ODOM_Y\",\r\n        \"ODOM_Z\",\r\n        \"POSDB_ZONE_IDX\",\r\n       
+    \"POSDB_X\",\r\n        \"POSDB_Y\",\r\n        \"POSDB_Z\",\r\n        \"DIST_ODOM_POSDB\",\r\n       
+    \"IN_RANGE\",\r\n        \"SORT_QUALITY\",\r\n        \"POSDB_LOAD\",\r\n       
+    \"POSDB_ACTIVE_CLUSTERS\",\r\n        \"POSDB_MAX_CLUSTERS\",\r\n        \"POSDB_MAX_IDX\",\r\n       
+    \"BUSY_AVG\",\r\n        \"BUSY_MAX\",\r\n        \"SWAP_AVG\",\r\n        \"HIT_PERCENT\",\r\n       
+    \"MISS_PERCENT\",\r\n        \"EVENT_COUNT\",\r\n        \"EVENT_DESC\",\r\n       
+    \"USER_SPEED\",\r\n        \"FRAME_RATE\"\r\n    ]\r\n}"
+--- !u!4 &98573499
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 98573497}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &135673433
 GameObject:
@@ -919,7 +875,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 137785548}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &140654809
+--- !u!1 &188515739
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -927,113 +883,70 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 140654810}
-  - component: {fileID: 140654811}
+  - component: {fileID: 188515741}
+  - component: {fileID: 188515740}
   m_Layer: 0
-  m_Name: InputAroud
+  m_Name: ExplorationControlUnit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &140654810
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140654809}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 2096642682}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &140654811
+  m_IsActive: 1
+--- !u!114 &188515740
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140654809}
-  m_Enabled: 1
+  m_GameObject: {fileID: 188515739}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
+  m_Script: {fileID: 11500000, guid: 8029b51180a95b949baa7d232492e2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isFocusRequired: 0
-  keywords:
-  - keyword: Show Around
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAround
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Close
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_CommandClose
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: Less
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAroundIntensity
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: More
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAroundIntensity
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  persistentKeywords: 0
-  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
+  DbReference: {fileID: 0}
+  DrawerReference: {fileID: 0}
+  StructureReference: {fileID: 0}
+  MarkersRoot: {fileID: 0}
+  DrawableRadius: 5
+  Intensities:
+  - 1
+  - 2
+  - 5
+  - 10
+  - 25
+  UserHeight: 1.85
+  MarkerHeightPercent: 0.15
+  Signals:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1498239578}
+        m_TargetAssemblyTypeName: Project.Scenes.TestingBase.Components.BasicTests,
+          Assembly-CSharp
+        m_MethodName: CBK_SendEvent
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Change Visual Settings
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!4 &188515741
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188515739}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &190722255
 GameObject:
   m_ObjectHideFlags: 0
@@ -1445,7 +1358,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 239262444}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &246021052
+--- !u!1 &243333337
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1453,113 +1366,51 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 246021053}
-  - component: {fileID: 246021054}
+  - component: {fileID: 243333339}
+  - component: {fileID: 243333338}
   m_Layer: 0
-  m_Name: InputMinimap
+  m_Name: StandalonePosDB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &246021053
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 246021052}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 2096642682}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &246021054
+  m_IsActive: 1
+--- !u!114 &243333338
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 246021052}
-  m_Enabled: 1
+  m_GameObject: {fileID: 243333337}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
+  m_Script: {fileID: 11500000, guid: e06e8a4354e4c6845aa2e4115d703f60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isFocusRequired: 0
-  keywords:
-  - keyword: Show Minimap
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_MinimapFollowingAround
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Close
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_CommandClose
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Less
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAroundIntensity
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: More
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAroundIntensity
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  persistentKeywords: 0
-  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
+  BaseDistance: 0.5
+  BaseHeight: 0.8
+  DistanceTolerance: 0.05
+  ReferenceObject: {fileID: 0}
+  UseClusters: 1
+  ClusterSize: 15
+  UseMaxIndices: 1
+  MaxIndices: 5
+  CallOnZoneCreated: []
+  CallOnZoneChanged: []
+--- !u!4 &243333339
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243333337}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &263975607
 GameObject:
   m_ObjectHideFlags: 0
@@ -1754,6 +1605,55 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 279335503}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &281697602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 281697604}
+  - component: {fileID: 281697603}
+  m_Layer: 0
+  m_Name: LOG Stream to Storage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &281697603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281697602}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5cc2132baf965f489b11a6e306d27c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SendInfos: 1
+  SendWarnings: 1
+  SendErrors: 1
+  StorageChannel: {fileID: 2080020920}
+  SuppressWarningsFromSettings: 1
+  PrintStackTraceWarnings: 0
+--- !u!4 &281697604
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281697602}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &287228667
 GameObject:
   m_ObjectHideFlags: 0
@@ -1882,196 +1782,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 291300040}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &320659193
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 320659196}
-  - component: {fileID: 320659194}
-  - component: {fileID: 320659195}
-  m_Layer: 0
-  m_Name: Calibration
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &320659194
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320659193}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e7bd4f408373b80488e24c872f57bb1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AudioSourceComponent: {fileID: 320659195}
-  DatabaseReference: {fileID: 583022942}
---- !u!82 &320659195
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320659193}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 3dc47effab44cc14cbf5d1eb30f27a54, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
---- !u!4 &320659196
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320659193}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1162992783}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &367070101
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 367070103}
-  - component: {fileID: 367070102}
-  m_Layer: 0
-  m_Name: LogTxtFile
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &367070102
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 367070101}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8cc8532930d5634ca45934711558484, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FileName: log
-  UseTimestamp: 1
-  CreateFileOnStart: 1
-  UseLineTimestamp: 1
-  PcLogfilePath: C:\shared\output
---- !u!4 &367070103
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 367070101}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1162992783}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &374843524
 GameObject:
   m_ObjectHideFlags: 0
@@ -2723,36 +2433,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 550030552}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &563885639
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 563885640}
-  m_Layer: 0
-  m_Name: SceneVisual
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &563885640
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 563885639}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 9
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &568642741
 GameObject:
   m_ObjectHideFlags: 0
@@ -2835,104 +2515,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!1 &583022940
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 583022941}
-  - component: {fileID: 583022943}
-  - component: {fileID: 583022942}
-  - component: {fileID: 583022944}
-  m_Layer: 0
-  m_Name: SceneServices
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &583022941
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 583022940}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &583022942
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 583022940}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e06e8a4354e4c6845aa2e4115d703f60, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BaseDistance: 0.5
-  BaseHeight: 0.8
-  DistanceTolerance: 0.05
-  ReferenceObject: {fileID: 0}
-  UseClusters: 1
-  ClusterSize: 15
-  UseMaxIndices: 1
-  MaxIndices: 5
-  CallOnZoneCreated: []
-  CallOnZoneChanged: []
---- !u!114 &583022943
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 583022940}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b36918ad299a88e4e99fb0afe40f2faa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DatabaseReference: {fileID: 583022942}
-  ManageZoneCreated: 1
-  ManageZoneChanged: 1
-  debug_currentZoneID: -1
-  debug_hit: 0
-  debug_miss: 0
---- !u!114 &583022944
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 583022940}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8029b51180a95b949baa7d232492e2d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DbReference: {fileID: 583022942}
-  DrawerReference: {fileID: 0}
-  StructureReference: {fileID: 0}
-  MarkersRoot: {fileID: 563885639}
-  DrawableRadius: 2
-  Intensities:
-  - 1
-  - 2
-  - 5
-  - 10
-  - 25
-  UserHeight: 1.85
-  MarkerHeightPercent: 0.15
 --- !u!1 &591448917
 GameObject:
   m_ObjectHideFlags: 0
@@ -3265,6 +2847,37 @@ Transform:
   m_Father: {fileID: 928913216}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &702684384
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 702684385}
+  m_Layer: 0
+  m_Name: SceneInputs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &702684385
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702684384}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 705999506}
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -3358,6 +2971,155 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &705999505
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 705999506}
+  - component: {fileID: 705999507}
+  m_Layer: 0
+  m_Name: InputComplete
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &705999506
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705999505}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 702684385}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &705999507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705999505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFocusRequired: 0
+  keywords:
+  - keyword: Show Around
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 188515740}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_SpatialAround
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  - keyword: Close
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 188515740}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_CommandClose
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - keyword: Less
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 188515740}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_SpatialAroundIntensity
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - keyword: More
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 188515740}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_SpatialAroundIntensity
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  - keyword: Show path
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 188515740}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_SpatialOnUpdate
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  - keyword: Show Minimap
+    response:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 188515740}
+          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
+            Assembly-CSharp
+          m_MethodName: VOICE_MinimapFollowingAround
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+  persistentKeywords: 0
+  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
 --- !u!1 &715373801
 GameObject:
   m_ObjectHideFlags: 0
@@ -4484,9 +4246,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MapRoot: {fileID: 673324363}
-  ForceActive: 1
+  ForceActive: 0
   UserHeightFromParams: 0
-  CheckDebugMode: 0
+  CheckDebugMode: 1
   UserHeightGui: 1.85
 --- !u!4 &928913216
 Transform:
@@ -4501,7 +4263,7 @@ Transform:
   m_Children:
   - {fileID: 673324364}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &950077671
 GameObject:
@@ -5693,6 +5455,100 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1097524901}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1105468178
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1105468180}
+  - component: {fileID: 1105468179}
+  m_Layer: 0
+  m_Name: AppSettings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1105468179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105468178}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b68435dd2cb51234ca31ad7b0136d198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DeviceID: SARHL2_ID8651165355_DEVC
+  UserID: SARHL2_ID8849249249_USER
+  ApproverUserID: SARHL2_ID8849249249_USER
+  UserAccessKey: anoth3rBr3akabl3P0sswArd
+  ReferencePositionID: SARHL2_ID1234567890_REFP
+  UserHeight: 1.85
+  PrintInfo: 1
+  PrintWarn: 1
+  PrintErr: 1
+  UseLogLayer: 1
+  LogLayer: 999
+  IgnoreListMessages: 1
+  SuppressedLogs:
+  - Please remove the CanvasRenderer component from the [Label] GameObject as this
+    component is no longer necessary.
+  SarServerComponent: {fileID: 0}
+  DatabaseClientComponent: {fileID: 0}
+  UseTestConnection: 1
+  SarServerURLTest: http://localhost:5000
+  SarServerURL: http://131.175.204.169/sar/
+  UseConnectionTimeout: 1
+  ConnectionTimeout: 60
+  UploadTime: 60
+  DownloadTime: 120
+  MaxRetryCountConnection: 10
+  ConnectionRetryDelay: 30
+  UpdateRadius: 30
+  UseStubCalibration: 1
+  CalibrationUtilityComponent: {fileID: 0}
+  DatabaseReference: {fileID: 243333338}
+  BaseDistance: 0.5
+  BaseHeight: 0.8
+  DistanceTolerance: 0.05
+  ReferenceObject: {fileID: 0}
+  UseClusters: 1
+  ClusterSize: 15
+  UseMaxIndices: 0
+  MaxIndices: 5
+  ControlUnitReference: {fileID: 188515740}
+  DrawerReference: {fileID: 0}
+  StructureReference: {fileID: 0}
+  VisualRoot: {fileID: 0}
+  DrawableRadius: 10
+  MarkerHeightPercent: 0.15
+  Intensities:
+  - 1
+  - 2
+  - 5
+  - 10
+  - 25
+  DefineGlobalDebugMode: 1
+--- !u!4 &1105468180
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105468178}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1112043987
 GameObject:
   m_ObjectHideFlags: 0
@@ -5920,110 +5776,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1143965518}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1162992781
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1162992783}
-  - component: {fileID: 1162992782}
-  m_Layer: 0
-  m_Name: SceneStartup
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1162992782
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1162992781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65df745028513f04fa6acb27f9054ea2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  StartupDelay: 0
-  RunUntilStep: -1
-  Dependencies:
-  - StepName: Log File
-    StepAnnotation: Ensure that the log files are created before starting the project
-    DontExecute: 0
-    DontWait: 0
-    CheckDelay: 0
-    WaitAfter: 0
-    DependencyComponents:
-    - {fileID: 367070102}
-    SimpleComponents: []
-  - StepName: Log Stream
-    StepAnnotation: Then enable the log stream
-    DontExecute: 0
-    DontWait: 0
-    CheckDelay: 0
-    WaitAfter: 0
-    DependencyComponents:
-    - {fileID: 8538162}
-    SimpleComponents: []
-  - StepName: App Settings
-    StepAnnotation: 
-    DontExecute: 0
-    DontWait: 0
-    CheckDelay: 0
-    WaitAfter: 0
-    DependencyComponents:
-    - {fileID: 1627775309}
-    SimpleComponents: []
-  - StepName: Positions Database
-    StepAnnotation: To ensure tat te component is disabled before calibration
-    DontExecute: 1
-    DontWait: 0
-    CheckDelay: 0
-    WaitAfter: 0
-    DependencyComponents:
-    - {fileID: 583022942}
-    SimpleComponents: []
-  - StepName: Calibration Utility
-    StepAnnotation: 
-    DontExecute: 0
-    DontWait: 1
-    CheckDelay: 0
-    WaitAfter: 0
-    DependencyComponents:
-    - {fileID: 320659194}
-    SimpleComponents: []
-  - StepName: Exploration Control Unit
-    StepAnnotation: 
-    DontExecute: 0
-    DontWait: 0
-    CheckDelay: 0
-    WaitAfter: 0
-    DependencyComponents:
-    - {fileID: 583022944}
-    SimpleComponents: []
---- !u!4 &1162992783
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1162992781}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1627775310}
-  - {fileID: 367070103}
-  - {fileID: 8538163}
-  - {fileID: 320659196}
-  m_Father: {fileID: 0}
-  m_RootOrder: 12
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1272968916
 GameObject:
   m_ObjectHideFlags: 0
@@ -6734,87 +6486,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1362478423}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1372200857
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1372200858}
-  - component: {fileID: 1372200859}
-  m_Layer: 0
-  m_Name: InputPath
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1372200858
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1372200857}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 2096642682}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1372200859
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1372200857}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isFocusRequired: 0
-  keywords:
-  - keyword: Show path
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialOnUpdate
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Close
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_CommandClose
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  persistentKeywords: 0
-  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
 --- !u!1 &1401873157
 GameObject:
   m_ObjectHideFlags: 0
@@ -7419,7 +7090,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1427318929}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1474770438
+--- !u!1 &1474098286
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7427,52 +7098,125 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1474770439}
-  - component: {fileID: 1474770440}
+  - component: {fileID: 1474098288}
+  - component: {fileID: 1474098287}
   m_Layer: 0
-  m_Name: CsvFrameRateExport
+  m_Name: SceneStartup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1474770439
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1474770438}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 45981854}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1474770440
+--- !u!114 &1474098287
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1474770438}
+  m_GameObject: {fileID: 1474098286}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Script: {fileID: 11500000, guid: 65df745028513f04fa6acb27f9054ea2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FileName: FrameRate
-  UseTimestamp: 1
-  CreateFileOnStart: 1
-  UseLineTimestamp: 0
-  PcLogfilePath: C:\shared\output
-  CSVFields:
-  - FRAME_RATE
-  ApplyTimestampColumn: 1
-  ApplyDurationColumn: 1
-  ApplyCounter: 1
-  Separator: ','
+  StartupDelay: 0
+  RunUntilStep: -1
+  Dependencies:
+  - StepName: TXT log file
+    StepAnnotation: Ensure that the log files are created before starting the project
+    DontExecute: 0
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 2080020920}
+    SimpleComponents: []
+  - StepName: CSV framerate
+    StepAnnotation: 
+    DontExecute: 0
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 2012464724}
+    SimpleComponents: []
+  - StepName: CSV chasing speed metric
+    StepAnnotation: 
+    DontExecute: 0
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 98573498}
+    SimpleComponents: []
+  - StepName: LOG Stream to Storage
+    StepAnnotation: Then enable the log stream
+    DontExecute: 0
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 281697603}
+    SimpleComponents: []
+  - StepName: App Settings
+    StepAnnotation: 
+    DontExecute: 0
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 1105468179}
+    SimpleComponents: []
+  - StepName: Standalone PosDB
+    StepAnnotation: To ensure tat te component is disabled before calibration
+    DontExecute: 0
+    DontWait: 0
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 243333338}
+    SimpleComponents: []
+  - StepName: Exploration Control Unit
+    StepAnnotation: 
+    DontExecute: 0
+    DontWait: 1
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 188515740}
+    SimpleComponents: []
+  - StepName: Basic Tests
+    StepAnnotation: Esecuzione dei test
+    DontExecute: 0
+    DontWait: 1
+    CheckDelay: 0
+    WaitAfter: 0
+    DependencyComponents:
+    - {fileID: 1498239578}
+    SimpleComponents: []
+--- !u!4 &1474098288
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1474098286}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 702684385}
+  - {fileID: 2080020921}
+  - {fileID: 2012464725}
+  - {fileID: 98573499}
+  - {fileID: 281697604}
+  - {fileID: 1105468180}
+  - {fileID: 243333339}
+  - {fileID: 188515741}
+  - {fileID: 1498239579}
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1477052607
 GameObject:
   m_ObjectHideFlags: 0
@@ -7568,6 +7312,66 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1477052607}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1498239577
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1498239579}
+  - component: {fileID: 1498239578}
+  m_Layer: 0
+  m_Name: BasicTests
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1498239578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1498239577}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4998e7d108da8d841b3d01cfdcfeb62c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PosDbReference: {fileID: 243333338}
+  EnableUnityTestFrame: 1
+  FrameCount: 1000
+  PrintFrameRate: 0
+  CollectEvents: 1
+  EnableFrameRateCSVExport: 1
+  CsvExportFrameRate: {fileID: 2012464724}
+  EnableChasingSpeedMetric: 1
+  MetricFrameResolution: 60
+  EvaluateDbSort: 1
+  EnableCsvExportChasingSpeedMetric: 1
+  ChasingSpeedMetricPrintCsvLines: 0
+  CsvExportChasingSpeedMetric: {fileID: 98573498}
+  EnableOdometryCheck: 0
+  OdometryFrameResolution: 60
+  EnableOdometryCsvExport: 0
+  CsvExportOdometry: {fileID: 0}
+--- !u!4 &1498239579
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1498239577}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1515761456
 GameObject:
   m_ObjectHideFlags: 0
@@ -8707,100 +8511,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1626617094}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1627775308
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1627775310}
-  - component: {fileID: 1627775309}
-  m_Layer: 0
-  m_Name: AppSettings
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1627775309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1627775308}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b68435dd2cb51234ca31ad7b0136d198, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DeviceID: SARHL2_ID8651165355_DEVC
-  UserID: SARHL2_ID8849249249_USER
-  ApproverUserID: SARHL2_ID8849249249_USER
-  UserAccessKey: anoth3rBr3akabl3P0sswArd
-  ReferencePositionID: SARHL2_ID1234567890_REFP
-  UserHeight: 1.85
-  PrintInfo: 1
-  PrintWarn: 1
-  PrintErr: 1
-  UseLogLayer: 1
-  LogLayer: 0
-  IgnoreListMessages: 1
-  SuppressedLogs:
-  - Please remove the CanvasRenderer component from the [Label] GameObject as this
-    component is no longer necessary.
-  SarServerComponent: {fileID: 0}
-  DatabaseClientComponent: {fileID: 0}
-  UseTestConnection: 0
-  SarServerURLTest: http://localhost:5000
-  SarServerURL: http://131.175.204.169/sar/
-  UseConnectionTimeout: 1
-  ConnectionTimeout: 60
-  UploadTime: 60
-  DownloadTime: 120
-  MaxRetryCountConnection: 10
-  ConnectionRetryDelay: 30
-  UpdateRadius: 30
-  UseStubCalibration: 0
-  CalibrationUtilityComponent: {fileID: 320659194}
-  DatabaseReference: {fileID: 583022942}
-  BaseDistance: 0.5
-  BaseHeight: 0.8
-  DistanceTolerance: 0.05
-  ReferenceObject: {fileID: 0}
-  UseClusters: 1
-  ClusterSize: 15
-  UseMaxIndices: 0
-  MaxIndices: 5
-  ControlUnitReference: {fileID: 583022944}
-  DrawerReference: {fileID: 0}
-  StructureReference: {fileID: 0}
-  VisualRoot: {fileID: 563885639}
-  DrawableRadius: 10
-  MarkerHeightPercent: 0.15
-  Intensities:
-  - 1
-  - 2
-  - 5
-  - 10
-  - 25
-  DefineGlobalDebugMode: 0
---- !u!4 &1627775310
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1627775308}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1162992783}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1632038555
 GameObject:
   m_ObjectHideFlags: 0
@@ -9106,172 +8816,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1658113257}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1665437602
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1665437603}
-  - component: {fileID: 1665437604}
-  m_Layer: 0
-  m_Name: InputComplete
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1665437603
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1665437602}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 2096642682}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1665437604
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1665437602}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isFocusRequired: 0
-  keywords:
-  - keyword: Show Around
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAround
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Close
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_CommandClose
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: Less
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAroundIntensity
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - keyword: More
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialAroundIntensity
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Show path
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_SpatialOnUpdate
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Show Minimap
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 583022944}
-          m_TargetAssemblyTypeName: Packages.SarExplorationFeatures.Components.SarExplorationControlUnit,
-            Assembly-CSharp
-          m_MethodName: VOICE_MinimapFollowingAround
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-  - keyword: Calibration
-    response:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 320659194}
-          m_TargetAssemblyTypeName: Project.Scripts.Components.CalibrationUtility,
-            Assembly-CSharp
-          m_MethodName: EVENT_Calibrate
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  persistentKeywords: 0
-  speechConfirmationTooltipPrefab: {fileID: 8046114618238072051, guid: 271778f6c957b524981067a81d238394, type: 3}
 --- !u!1 &1672628227
 GameObject:
   m_ObjectHideFlags: 0
@@ -10503,6 +10047,62 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1934340583}
   m_Mesh: {fileID: 4300010, guid: b566bbce04d66f4428421e81a3af0299, type: 3}
+--- !u!1 &2012464723
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2012464725}
+  - component: {fileID: 2012464724}
+  m_Layer: 0
+  m_Name: CsvFrameRateExport
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2012464724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012464723}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FileName: FrameRate
+  UseTimestamp: 1
+  CreateFileOnStart: 1
+  UseLineTimestamp: 0
+  PcLogfilePath: C:\shared\output
+  CSVFields: []
+  ApplyTimestampColumn: 1
+  ApplyDurationColumn: 1
+  ApplyCounter: 1
+  Separator: ','
+  UseJsonDefinition: 1
+  JsonDefinition: "{\r\n    \"scheme\": [\r\n        \"FRAME_RATE\",\r\n        \"EVENT_COUNT\",\r\n       
+    \"EVENT_DESC\"\r\n    ]\r\n}"
+--- !u!4 &2012464725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012464723}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2014393979
 GameObject:
   m_ObjectHideFlags: 0
@@ -10883,7 +10483,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2055811132}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &2060204042
+--- !u!1 &2080020919
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10891,97 +10491,45 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2060204043}
-  - component: {fileID: 2060204044}
+  - component: {fileID: 2080020921}
+  - component: {fileID: 2080020920}
   m_Layer: 0
-  m_Name: CsvChasingSpeedMetricExport
+  m_Name: TXT log file
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2060204043
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2060204042}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 45981854}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2060204044
+--- !u!114 &2080020920
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2060204042}
-  m_Enabled: 1
+  m_GameObject: {fileID: 2080020919}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ace1cc8134c165d4a9318718e874c97e, type: 3}
+  m_Script: {fileID: 11500000, guid: a8cc8532930d5634ca45934711558484, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FileName: ChasingSpeedMetric
+  FileName: log
   UseTimestamp: 1
   CreateFileOnStart: 1
-  UseLineTimestamp: 0
+  UseLineTimestamp: 1
   PcLogfilePath: C:\shared\output
-  CSVFields:
-  - FRAME_NO
-  - ODOM_X
-  - ODOM_Y
-  - ODOM_Z
-  - POSDB_ZONE_IDX
-  - POSDB_X
-  - POSDB_Y
-  - POSDB_Z
-  - DIST_ODOM_POSBD
-  - IN_RANGE_VL
-  - SORT_QUALITY
-  - POSDB_LOAD
-  - POSDB_ACTIVE_CLUSTERS
-  ApplyTimestampColumn: 1
-  ApplyDurationColumn: 1
-  ApplyCounter: 1
-  Separator: ','
---- !u!1 &2096642681
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2096642682}
-  m_Layer: 0
-  m_Name: SceneInputs
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2096642682
+--- !u!4 &2080020921
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2096642681}
+  m_GameObject: {fileID: 2080020919}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1372200858}
-  - {fileID: 140654810}
-  - {fileID: 246021053}
-  - {fileID: 1665437603}
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_Children: []
+  m_Father: {fileID: 1474098288}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2127784955
 GameObject:
@@ -11250,7 +10798,7 @@ Transform:
   - {fileID: 2135096867}
   - {fileID: 898664360}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2135096866
 GameObject:

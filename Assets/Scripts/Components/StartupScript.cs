@@ -49,9 +49,8 @@ public class StartupScript : ProjectMonoBehaviour
         else if (RunUntilStep < 0)
             RunUntilStep = Dependencies.Count;
 
-        StaticLogger.Info(sourceLog, $"running OnValidate...", logLayer: 0);
+        // StaticLogger.Info(sourceLog, $"running OnValidate...", logLayer: 0);
         OnValidate();
-        StaticLogger.Info(sourceLog, $"beginning startup process... (found {Dependencies.Count} dependencies)", logLayer: 0);
         StartCoroutine(ORCOR_StartupProcedure());
     }
 
@@ -63,18 +62,23 @@ public class StartupScript : ProjectMonoBehaviour
         else
             yield return new WaitForEndOfFrame();
 
+        StaticLogger.Info(sourceLog, $"Startup process START (found {Dependencies.Count} dependencies)", logLayer: 3);
         int stepCount = -1;
         foreach (DependencyStartup dp in Dependencies)
         {
             stepCount++;
-            StaticLogger.Info(sourceLog, $"startup step: {stepCount}", logLayer: 0);
+            StaticLogger.Info(sourceLog, $"startup step: ({stepCount}) {dp.StepName} ... WAITING", logLayer: 0);
             yield return BSCOR_WaiForDependency(dp);
+            StaticLogger.Info(sourceLog, $"startup step: ({stepCount}) {dp.StepName} ... OK", logLayer: 0);
 
             if (stepCount >= RunUntilStep)
+            {
+                StaticLogger.Info(sourceLog, $"startup step: ({stepCount}) {dp.StepName} ... BREAK (stepCount >= RunUntilStep)", logLayer: 0);
                 break;
+            }
         }
 
-        StaticLogger.Info(sourceLog, $"Startup process end ({stepCount+1} steps performed)", logLayer: 3);
+        StaticLogger.Info(sourceLog, $"Startup process END ({stepCount+1} steps performed)", logLayer: 3);
         Ready(disableComponent: true);
     }
 
@@ -89,15 +93,16 @@ public class StartupScript : ProjectMonoBehaviour
 
         foreach (ProjectMonoBehaviour pmb in dp.DependencyComponents)
         {
-            StaticLogger.Info(sourceLog, $"starting (ProjectMonoBehaviour) {pmb.name}", logLayer: 3);
+            StaticLogger.Info(sourceLog, $"starting (ProjectMonoBehaviour) {dp.StepName}.{pmb.name}", logLayer: 3);
             pmb.enabled = true;
         }
         foreach (MonoBehaviour mb in dp.SimpleComponents)
         {
-            StaticLogger.Info(sourceLog, $"starting (MonoBehaviour) {mb.name}", logLayer: 3);
+            StaticLogger.Info(sourceLog, $"starting (MonoBehaviour) {dp.StepName}.{mb.name}", logLayer: 3);
             mb.enabled = true;
         }
-        
+
+        StaticLogger.Info(sourceLog, $"waiting depts {dp.StepName} ... ", logLayer: 3);
         while (!dp.DontWait)
         {
             if (dp.CheckDelay > 0.0f)
@@ -114,13 +119,14 @@ public class StartupScript : ProjectMonoBehaviour
             curPmb = dp.GetNext();
             if(curPmb == null)
             {
-                StaticLogger.Info(sourceLog, $"no more components inside the list", logLayer: 3);
+                // StaticLogger.Info(sourceLog, $"no more components inside the list", logLayer: 3);
                 break;
             }
             else StaticLogger.Info(sourceLog, $"another component", logLayer: 3);
         }
+        StaticLogger.Info(sourceLog, $"waiting depts {dp.StepName} ... OK ", logLayer: 3);
 
-        if(dp.WaitAfter > 0.0f)
+        if (dp.WaitAfter > 0.0f)
             yield return new WaitForSecondsRealtime(dp.WaitAfter);
     }
 

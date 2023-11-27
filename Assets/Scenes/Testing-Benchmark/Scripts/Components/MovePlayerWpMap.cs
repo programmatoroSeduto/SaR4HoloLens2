@@ -5,6 +5,8 @@ using UnityEngine;
 using Project.Scripts.Components;
 using Project.Scripts.Utils;
 using Project.Scenes.TestingBenchmark.Scripts.Utils;
+using UnityEngine.Events;
+using Packages.DiskStorageServices.Components;
 
 namespace Project.Scenes.TestingBenchmark.Scripts.Components
 {
@@ -22,6 +24,8 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
         [Tooltip("The first point is particular: it needs the near points to be specified")]
         public List<string> RootNearWpNames = new List<string>();
         public string RootWpName = "root";
+        public bool UseCsvOutput = false;
+        public CsvWriter CsvOutputStream = null;
 
         [Header("Test Behaviour Static Settings")]
         public bool UseMovementStops = false;
@@ -32,6 +36,10 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
         public float MaxSpeedVariance = 0.0f;
         [Tooltip("Using this setting, the player can move to any of the defined positions")]
         public bool IgnoreNearPoints = false;
+
+        [Header("Test Planning Events")]
+        [Tooltip("Signal: the object has changed its target")]
+        public UnityEvent EventChagingTarget = new UnityEvent();
 
         [Header("Test Behaviour Dynamic Settings")]
         [Tooltip("Stop!")]
@@ -168,6 +176,7 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
             currentSpeed = positiveOrZero(BaseSpeed + (UseRandomSpeedFromBase ? UnityEngine.Random.value * MaxSpeedVariance : 0.0f));
             PlayerSpeed = currentSpeed;
 
+            EventChagingTarget.Invoke();
             playerStatus = PlayerStatus.moving;
             updateTestStep("planning", "moving");
         }
@@ -240,7 +249,15 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
             testStepOutput.Add(curp.z.ToString("0.000"));
             testStepOutput.Add(PlayerDistFromTarget.ToString("0.000"));
             testStepOutput.Add(currentSpeed.ToString("0.000"));
-            testStepOutput.Add(delay.ToString("0.000"));
+            // testStepOutput.Add(delay.ToString("0.000"));
+            
+            if (UseCsvOutput)
+            {
+                if (CsvOutputStream != null)
+                    CsvOutputStream.EVENT_WriteCsv(testStepOutput);
+                else
+                    StaticLogger.Warn((GameObject)this.gameObject, "UseOutputStream==true BUT the output stream has not been set", logLayer: 1, pause: true);
+            }
         }
 
         private void UpdateTestOutput()

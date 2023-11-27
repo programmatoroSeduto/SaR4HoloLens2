@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Project.Scripts.Components;
 using Project.Scripts.Utils;
+using UnityEngine.Events;
+using Packages.DiskStorageServices.Components;
 
 namespace Project.Scenes.TestingBenchmark.Scripts.Components
 {
@@ -30,6 +32,14 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
         public bool UseRandomSpeedFromBase = false;
         [Min(0.0f)]
         public float MaxSpeedVariance = 0.0f;
+        public bool UseCsvOutput = false;
+        public CsvWriter CsvOutputStream = null;
+
+        [Header("Test Planning Events")]
+        [Tooltip("Signal: the object is going forward")]
+        public UnityEvent EventForward = new UnityEvent();
+        [Tooltip("Signal: the object is going backward")]
+        public UnityEvent EventBackward = new UnityEvent();
 
         [Header("Test Behaviour Dynamic Settings")]
         public bool TargetIsEndPoint = false;
@@ -147,6 +157,10 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
         private void Update_Planning()
         {
             TargetIsEndPoint = !TargetIsEndPoint;
+            if (TargetIsEndPoint)
+                EventForward.Invoke();
+            else
+                EventBackward.Invoke();
             PlayerDistFromTarget = Vector3.Distance(goPlayer.transform.position, (TargetIsEndPoint ? endPoint : startPoint));
 
             currentSpeed = positiveOrZero(BaseSpeed + (UseRandomSpeedFromBase ? UnityEngine.Random.value * MaxSpeedVariance : 0.0f));
@@ -225,7 +239,15 @@ namespace Project.Scenes.TestingBenchmark.Scripts.Components
             testStepOutput.Add(curp.z.ToString("0.000"));
             testStepOutput.Add(PlayerDistFromTarget.ToString("0.000"));
             testStepOutput.Add(currentSpeed.ToString("0.000"));
-            testStepOutput.Add(delay.ToString("0.000"));
+            // testStepOutput.Add(delay.ToString("0.000"));
+
+            if (UseCsvOutput)
+            {
+                if (CsvOutputStream != null)
+                    CsvOutputStream.EVENT_WriteCsv(testStepOutput);
+                else
+                    StaticLogger.Warn((GameObject)this.gameObject, "UseOutputStream==true BUT the output stream has not been set", logLayer: 1, pause: true);
+            }
         }
 
         private void UpdateTestOutput()

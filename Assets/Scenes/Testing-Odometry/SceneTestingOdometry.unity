@@ -1488,7 +1488,7 @@ Transform:
   m_GameObject: {fileID: 318432074}
   m_LocalRotation: {x: 0, y: 0.8870109, z: 0, w: 0.46174863}
   m_LocalPosition: {x: 0, y: 0, z: 2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 8
@@ -4115,6 +4115,20 @@ MonoBehaviour:
   ApplyDurationColumn: 1
   ApplyCounter: 1
   Separator: ','
+  UseJsonDefinition: 0
+  JsonDefinition: '{
+
+    "scheme" : [
+
+    "column1",
+
+    "column2",
+
+    "column3"
+
+    ]
+
+    }'
 --- !u!1 &1481344903
 GameObject:
   m_ObjectHideFlags: 0
@@ -5706,6 +5720,7 @@ MonoBehaviour:
   EnableUnityTestFrame: 0
   FrameCount: 60
   PrintFrameRate: 0
+  CollectEvents: 0
   EnableFrameRateCSVExport: 0
   CsvExportFrameRate: {fileID: 0}
   EnableChasingSpeedMetric: 0

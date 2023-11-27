@@ -21,13 +21,14 @@ namespace Project.Scenes.TestingBase.Components
 
 
         [Header("Test: Unity Frame Rate")]
-
         [Tooltip("Enable test Unity FrameRate")]
         public bool EnableUnityTestFrame = false;
         [Tooltip("New record each tot frames")]
         public int FrameCount = 60;
         [Tooltip("print framerate to screen")]
         public bool PrintFrameRate = false;
+        [Tooltip("This script has also a callback to use for sending events to the class, reported along with the frame rate measurement")]
+        public bool CollectEvents = false;
         [Tooltip("Enable or disable CSV export")]
         public bool EnableFrameRateCSVExport = false;
         [Tooltip("CSV export for frame rate")]
@@ -75,6 +76,11 @@ namespace Project.Scenes.TestingBase.Components
         private int UnityFrameRate_Count = 0;
         // the frame rate
         private double UnityFrameRate_FrameRate = 0.0;
+        // event management
+        private bool eventReceived = false;
+        private string eventText = "";
+        private int eventCount = 0;
+        private bool UnityFrameRate_newEvent = false;
 
         // CHASING SPEED COUNT
         // overall frames
@@ -83,6 +89,11 @@ namespace Project.Scenes.TestingBase.Components
         private int ChasingSpeedMetric_FrameCount = 0;
         // either the DB is chasing position or not
         private bool ChasingSpeedMetric_ChasingPhase = false;
+        // previous position
+        private Vector3 ChasingSpeedMetric_PrevPos = Vector3.zero;
+        // previous time
+        private DateTime ChasingSpeedMetric_LastFrameMeasurement = DateTime.Now;
+        private bool ChasingSpeedMetric_newEvent = false;
 
         // INTERNAL ODOMETRY CHECK
         // last frame rate measurement
@@ -116,12 +127,23 @@ namespace Project.Scenes.TestingBase.Components
             {
                 INIT_OdometryCheck();
             }
+
+            Ready();
         }
 
         // Update is called once per frame
         void Update()
         {
-            if(EnableUnityTestFrame)
+            // signals handling
+            if (eventReceived)
+            {
+                eventReceived = false;
+                ++eventCount;
+                UnityFrameRate_newEvent = true;
+                ChasingSpeedMetric_newEvent = true;
+            }
+
+            if (EnableUnityTestFrame)
             {
                 UPDATE_UnityFrameRate();
             }
@@ -134,7 +156,16 @@ namespace Project.Scenes.TestingBase.Components
                 UPDATE_OdometryCheck();
             }
 
-            Ready();
+            // eventText = "";
+        }
+
+        public void CBK_SendEvent(string eventType)
+        {
+            if (!CollectEvents) return;
+
+            eventReceived = true;
+            eventText = eventType;
+            StaticLogger.Info("CBK_SendEvent", $"received: {eventText}", logLayer: 3);
         }
 
 
@@ -166,7 +197,10 @@ namespace Project.Scenes.TestingBase.Components
                 if (PrintFrameRate)
                     StaticLogger.Info(this, $"FrameRate: {UnityFrameRate_FrameRate.ToString(".0000")}");
                 if (EnableFrameRateCSVExport)
-                    CsvExportFrameRate.EVENT_WriteCsv(new List<string> { UnityFrameRate_FrameRate.ToString(".0000") });
+                {
+                    CsvExportFrameRate.EVENT_WriteCsv(new List<string> { UnityFrameRate_FrameRate.ToString(".0000"), eventCount.ToString(), (UnityFrameRate_newEvent ? eventText : "") });
+                }
+                UnityFrameRate_newEvent = false;
 
                 // reset frame rate count
                 UnityFrameRate_LastFrameMeasurement = DateTime.Now;
@@ -211,27 +245,34 @@ namespace Project.Scenes.TestingBase.Components
                 Vector3 posdb = PosDbReference.CurrentZone.AreaCenter;
                 float dist = Vector3.Distance(odom, posdb);
                 ChasingSpeedMetric_ChasingPhase = dist > PosDbReference.BaseDistance;
+                float prevDist = Vector3.Distance(odom, ChasingSpeedMetric_PrevPos);
+                float elapsed = (float)(DateTime.Now - ChasingSpeedMetric_LastFrameMeasurement).TotalSeconds;
+                float velocity = prevDist / elapsed;
+                ChasingSpeedMetric_PrevPos = odom;
+                ChasingSpeedMetric_LastFrameMeasurement = DateTime.Now;
 
                 string frame_no = $"{ChasingSpeedMetric_FrameCountAll}";
-                string odom_x = odom.x.ToString(".00");
-                string odom_y = odom.y.ToString(".00");
-                string odom_z = odom.z.ToString(".00");
+                string odom_x = odom.x.ToString("0.00");
+                string odom_y = odom.y.ToString("0.00");
+                string odom_z = odom.z.ToString("0.00");
                 string posdb_zone_idx = $"{PosDbReference.CurrentZone.PositionStableID}";
-                string posdb_x = posdb.x.ToString(".00");
-                string posdb_y = posdb.y.ToString(".00");
-                string posdb_z = posdb.z.ToString(".00");
-                string dist_odom_posdb = dist.ToString(".00");
+                string posdb_x = posdb.x.ToString("0.00");
+                string posdb_y = posdb.y.ToString("0.00");
+                string posdb_z = posdb.z.ToString("0.00");
+                string dist_odom_posdb = dist.ToString("0.00");
                 string in_range_vl = $"{!ChasingSpeedMetric_ChasingPhase}";
-                string sort_quality = (EvaluateDbSort ? computeOrderQuality(odom).ToString(".00") : "");
+                string sort_quality = (EvaluateDbSort ? computeOrderQuality(odom).ToString("0.00") : "");
                 string posdb_load = $"{PosDbReference.LowLevelDatabase.Count}";
                 string posdb_active_clusters = $"{PosDbReference.LowLevelDatabase.WorkingClusters}";
-                string posdb_max_cluster = $"{PosDbReference.ClusterSize}";
-                string posdb_max_idx = $"{PosDbReference.ClusterSize}";
-                string busy_avg = PosDbReference.LowLevelDatabase.AverageBusyTime.ToString(".000");
-                string busy_max = PosDbReference.LowLevelDatabase.MaxBusyTime.ToString(".000");
-                string swap_avg = PosDbReference.LowLevelDatabase.AverageSwapPerCall.ToString(".0");
-                string percent_hit = (PosDbReference.HitPercent * 100.0).ToString(".00");
-                string percent_miss = (PosDbReference.MissPercent * 100.0).ToString(".00");
+                string posdb_max_cluster = (PosDbReference.UseClusters ? $"{PosDbReference.ClusterSize}" : "-1");
+                string posdb_max_idx = (PosDbReference.UseMaxIndices ? $"{PosDbReference.MaxIndices}" : "-1");
+                string busy_avg = PosDbReference.LowLevelDatabase.AverageBusyTime.ToString("0.000");
+                string busy_max = PosDbReference.LowLevelDatabase.MaxBusyTime.ToString("0.000");
+                string swap_avg = PosDbReference.LowLevelDatabase.AverageSwapPerCall.ToString("0.0");
+                string percent_hit = (PosDbReference.HitPercent * 100.0).ToString("0.00");
+                string percent_miss = (PosDbReference.MissPercent * 100.0).ToString("0.00");
+                string vel_str = velocity.ToString("0.00");
+                string frame_rate = (MetricFrameResolution / elapsed).ToString("0.00");
 
                 CsvExportChasingSpeedMetric.EVENT_WriteCsv(new List<string> {
                     frame_no,
@@ -244,8 +285,10 @@ namespace Project.Scenes.TestingBase.Components
                     posdb_max_cluster, posdb_max_idx,
                     busy_avg, busy_max, 
                     swap_avg,
-                    percent_hit, percent_miss
+                    percent_hit, percent_miss,
+                    eventCount.ToString(), (ChasingSpeedMetric_newEvent ? eventText : ""), vel_str, frame_rate
                 }, ChasingSpeedMetricPrintCsvLines);
+                ChasingSpeedMetric_newEvent = false;
             }
         }
 
@@ -334,7 +377,11 @@ namespace Project.Scenes.TestingBase.Components
         {
             double res = 0.0;
             for (int i = 0; i < PosDbReference.LowLevelDatabase.Count; ++i)
-                res += ((double)i) * ((double)Vector3.Distance(curPos, PosDbReference.LowLevelDatabase.Database[i].AreaCenter));
+            {
+                double dist = (double)Vector3.Distance(curPos, PosDbReference.LowLevelDatabase.Database[i].AreaCenter);
+                double reguarDistance = Math.Ceiling(dist / (double)PosDbReference.BaseDistance) * (double)PosDbReference.BaseDistance;
+                res += ((double)i) * reguarDistance;
+            }
 
             return res;
         }

@@ -4,6 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Packages.DiskStorageServices.Utils;
+using Project.Scripts.Utils;
 
 using UnityEngine;
 
@@ -30,11 +32,16 @@ namespace Packages.DiskStorageServices.Components
         public bool ApplyCounter = false;
         [Tooltip("Separator to use when writing the file out (comma is used anyway if the separator is empty)")]
         public string Separator = ",";
+        [Tooltip("Use JSON-defined schema instead of a C# list")]
+        public bool UseJsonDefinition = false;
+        [Tooltip("JSON definitio of the CSV schema (a list of fields under 'schema' identifier)")]
+        [TextArea(5, 10)]
+        public string JsonDefinition = "{\n\"scheme\" : [\n\"column1\",\n\"column2\",\n\"column3\"\n]\n}";
 
 
 
         // ====== PRIVATE ===== //
-        
+
         // used for generating the index column
         private int csvLineCounter = 0;
         // used for calculating the duration column
@@ -50,6 +57,12 @@ namespace Packages.DiskStorageServices.Components
         {
             if (Separator != "")
                 sep = Separator;
+
+            if (UseJsonDefinition)
+            {
+                CSVFields = JsonUtility.FromJson<CsvScheme>(JsonDefinition).scheme;
+                StaticLogger.Info(this.gameObject, $"CSV lines from JSON: {CSVFields.Count}", logLayer: 1);
+            }
 
             format = "csv";
             string csv_header = GetHeader(CSVFields, ApplyCounter, ApplyTimestampColumn, ApplyDurationColumn);
@@ -83,7 +96,8 @@ namespace Packages.DiskStorageServices.Components
 
             if (ls.Count != CSVFields.Count)
             {
-                Debug.LogError($"[CSVFileWriter] ERROR: line must have the same number of arguments of the header! Header len: {CSVFields.Count} , line len: {ls.Count}");
+                string headerStr = String.Join(",", CSVFields);
+                Debug.LogError($"[CSVFileWriter] ERROR: line must have the same number of arguments of the header! Header len: {CSVFields.Count} , line len: {ls.Count}\nHEADER: {headerStr}\nLINE: {csvln}");
                 return false;
             }
 

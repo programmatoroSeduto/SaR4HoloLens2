@@ -95,7 +95,10 @@ namespace Packages.SAR4HL2NetworkingServices.Utils
             // latency_ms
             double latency = (receiveTimestamp - sendTimestamp).TotalMilliseconds;
             res.Add(latency.ToString("0.000000"));
-            
+            // latency_bandwidth
+            double latency_bandwidth = ((double)(RequestJSON.Length + ResponseJSON.Length)) * ((double)CharDimKb) / latency;
+            res.Add(latency_bandwidth.ToString("0.000000"));
+
             // upload_count_wp
             res.Add(wpSentToServer.ToString());
             // upload_count_path

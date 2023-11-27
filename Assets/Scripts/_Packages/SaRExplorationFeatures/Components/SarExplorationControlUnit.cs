@@ -31,6 +31,8 @@ namespace Packages.SarExplorationFeatures.Components
         public float UserHeight = 1.85f;
         [Tooltip("The percentage of the height for dowing the height of the markers")]
         public float MarkerHeightPercent = 0.15f;
+        [Tooltip("Send a signal to the other components when the status of the visual changes")]
+        public List<UnityEvent> Signals = new List<UnityEvent>();
 
 
 
@@ -94,7 +96,7 @@ namespace Packages.SarExplorationFeatures.Components
             if(init) return true;
             
             if (DbReference == null) return false;
-            DbReference.CallOnZoneChanged.Clear();
+            // DbReference.CallOnZoneChanged.Clear();
             // DbReference.CallOnZoneCreated.Clear();
 
             if (StructureReference == null)
@@ -140,6 +142,7 @@ namespace Packages.SarExplorationFeatures.Components
                 if(clean) DrawerReference.RemoveMarkerAll();
                 ONOFF_SpatialOnUpdate(false);
             }
+            changeStatus();
         }
 
         public void VOICE_SpatialAround(bool clean = false)
@@ -156,11 +159,12 @@ namespace Packages.SarExplorationFeatures.Components
                 if (clean) DrawerReference.RemoveMarkerAll();
                 ONOFF_SpatialAround(false);
             }
+            changeStatus();
         }
 
         public void VOICE_SpatialAroundIntensity(bool more = true)
         {
-            if (!spatialAround.IsRunning) return;
+            if (spatialAround == null || !spatialAround.IsRunning) return;
 
             if (more)
                 spatialAroundIntensity = (spatialAroundIntensity + 1 >= Intensities.Count ? Intensities.Count - 1 : spatialAroundIntensity + 1);
@@ -187,6 +191,7 @@ namespace Packages.SarExplorationFeatures.Components
                 if (clean) DrawerReference.RemoveMarkerAll();
                 ONOFF_MinimapFollowingAround(false);
             }
+            changeStatus();
         }
 
         public void VOICE_CommandClose()
@@ -195,18 +200,21 @@ namespace Packages.SarExplorationFeatures.Components
             {
                 ONOFF_SpatialOnUpdate(false);
                 DrawerReference.RemoveMarkerAll();
+                changeStatus();
                 return;
             }
             if (status == SarExplorationControlUnitStatus.SpatialAround)
             {
                 ONOFF_SpatialAround(false);
                 DrawerReference.RemoveMarkerAll();
+                changeStatus();
                 return;
             }
             if (status == SarExplorationControlUnitStatus.MinimapFollowingAround)
             {
                 ONOFF_MinimapFollowingAround(false);
                 DrawerReference.RemoveMarkerAll();
+                changeStatus();
                 return;
             }
         }
@@ -391,6 +399,12 @@ namespace Packages.SarExplorationFeatures.Components
             if(onChangeCallbackEvent != null)
                 DbReference.CallOnZoneChanged.Remove(onChangeCallbackEvent);
             onChangeCallbackEvent = null;
+        }
+
+        private void changeStatus()
+        {
+            foreach(UnityEvent sig in Signals)
+                sig.Invoke();
         }
     }
 }
