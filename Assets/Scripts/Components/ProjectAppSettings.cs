@@ -87,6 +87,7 @@ namespace Project.Scripts.Components
         private void Start()
         {
             if(StaticAppSettings.IsEnvUWP) CustomDeviceSetup();
+            ComponentInfos = GetConfigStr();
 
             SetupStaticLog();
             SetupNeworking();
@@ -202,6 +203,30 @@ namespace Project.Scripts.Components
             StaticAppSettings.SetObject("AppSettings", this);
             StaticAppSettings.SetObject("DebugMode", DefineGlobalDebugMode);
             StaticAppSettings.SetObject("UserHeight", UserHeight);
+        }
+
+        public string GetConfigStr()
+        {
+            string ss = "";
+            
+            if(SarServerComponent != null && DatabaseClientComponent != null)
+            {
+                ss += "NETWORKING" + "\n";
+                ss += $"\tuse test connection: {UseTestConnection}" + "\n";
+                ss += $"\tUploadTime: {UploadTime}" + "\n";
+                ss += $"\tDownloadTime: {DownloadTime}" + "\n";
+            }
+            ss += "CALIBRATION" + "\n";
+            ss += $"\tuse stub: {UseStubCalibration}" + "\n";
+            ss += "POSITIONS DATABASE" + "\n";
+            ss += $"\tbase distance: {BaseDistance}" + "\n";
+            ss += $"\tdistance tolerance: {DistanceTolerance}" + "\n";
+            ss += $"\tClusterSize: {ClusterSize}" + "\n";
+            ss += $"\t MaxIDX: {MaxIndices}" + "\n";
+            ss += "LOGGING" + "\n";
+            ss += $"\tlog layer: {LogLayer}" + "\n";
+
+            return ss;
         }
     }
 }

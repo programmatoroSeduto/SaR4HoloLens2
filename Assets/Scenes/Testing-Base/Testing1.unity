@@ -5514,7 +5514,7 @@ MonoBehaviour:
   UseStubCalibration: 1
   CalibrationUtilityComponent: {fileID: 0}
   DatabaseReference: {fileID: 243333338}
-  BaseDistance: 0.5
+  BaseDistance: 0.2
   BaseHeight: 0.8
   DistanceTolerance: 0.05
   ReferenceObject: {fileID: 0}
