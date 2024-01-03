@@ -25,7 +25,7 @@ Here you can find some *not-exaustive* documentation written during the projec d
 Here are some useful resources. Before start working with this project, I strongly suggest to read these documents. 
 
 - **Master Thesis Paper** : it explains all the parts of the project at functional level, as well as it introduces some technical details about the implementation of the project. 
-  - [master thesis paper](blablabla)
+  - [master thesis paper](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/thesis_doc/Master_Thesis_Ganci_4143910.pdf)
 - **Introductory tutorials**: they are only a inroduction for the main functionalities of the HoloLens2 application. (Please also refer to the thesis document for more details)
   - [Project setup](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/first_tutorials/tutorial_00_project_setup/tutorial_00_project_setup.md)
   - [tutorial 1](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/first_tutorials/tutorial_01_map_setup/tutorial_01_map_setup.md)
