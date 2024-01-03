@@ -45,12 +45,30 @@ Here are some incredibly useful voice commands:
 - "go to start"
 - "select" for eye interaction (*see-it-say-it*)
 
+About the main features of HoloLens2:
+
+- [How a HoloLens2 application is made](https://learn.microsoft.com/en-us/windows/mixed-reality/design/app-model)
+  - [About coordinates systems in HoloLens2](https://learn.microsoft.com/en-us/windows/mixed-reality/design/coordinate-systems)
+- [Spatial Mapping](https://learn.microsoft.com/en-us/windows/mixed-reality/design/spatial-mapping)
+  - [Scene Understanding](https://learn.microsoft.com/en-us/windows/mixed-reality/design/scene-understanding) is the next step
+  - Along with [spatial anchors](https://learn.microsoft.com/en-us/windows/mixed-reality/design/spatial-anchors)
+
+Importat tool for working with HoloLens2 device: 
+
+- [Windows Device Portal](https://learn.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/using-the-windows-device-portal)
+
+Other interesting posts:
+
+- [About Shared Experience](https://learn.microsoft.com/en-us/windows/mixed-reality/design/shared-experiences-in-mixed-reality)
+
 
 ## What is MRTK2?
 
 - MRTK2 : *Mixed Reality ToolKit v2*
+  - [Unity Development for HoloLens2](https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unity/unity-development-overview?tabs=arr%2CD365%2Chl2)
   - it contains all the *basic* tools for HoloLens2 app implementation, to speed up just the most boring parts of the development such as to interact with some of the low-level runtime aspects. 
   - *So many things are missing in this framework!* It is just a basic low-level framework: you have to build your app on top of the stack. 
+  - MRTK2 will be out of support soon; here is [MRTK3](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk3-overview/) currently in preview
 
 MRTK2 installation:
 
@@ -74,6 +92,11 @@ To deploy a application to HoloLens2:
 
 - [deployment guide in Mixed Reality documentation](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/configuration/mixed-reality-configuration-guide?view=mrtkunity-2022-05)
 - [deployment guide in MRTK2 documentation](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/supported-devices/wmr-mrtk?view=mrtkunity-2022-05)
+
+
+Other available tutorials for training:
+
+- [Objects Manipulation Introduction](https://learn.microsoft.com/en-us/training/modules/learn-mrtk-tutorials/1-7-exercise-hand-interaction-with-objectmanipulator)
 
 
 ## Voice Commands
@@ -125,7 +148,7 @@ Other useful tools for handling UI:
 - [sliders](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/sliders?view=mrtkunity-2022-05)
 - *Anoher very important UI element*, [Tooltip](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/tooltip?view=mrtkunity-2022-05) allows to put a "floating label" on a virtual object
 
-Solvers!
+Solvers! **FUNDAMENTAL.**
 
 - A *Solver* is a script able to move one object in the space depending on the user's activity; they are incredibly useful
   - [Solvers in MRTK2](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/solvers/solver?view=mrtkunity-2022-05)
@@ -139,8 +162,12 @@ Solvers!
   - [Unity Scene System](https://docs.unity3d.com/ScriptReference/SceneManagement.Scene.html)
   - Unity also support natively [Additive Scene Loading](https://docs.unity3d.com/ScriptReference/SceneManagement.LoadSceneMode.Additive.html) meaning that two scenes can be loaded together: Unity is able to understand how to merge the two scenes. 
 
-
 - About Scene Observer:
   - [Spatial Awareness](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/spatial-awareness/spatial-awareness-getting-started?view=mrtkunity-2022-05) is the low level component for space laser scan
   - [Spatial Awareness Scripting](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/spatial-awareness/usage-guide?view=mrtkunity-2022-05) for informations about the scripting. **VERY IMPORTANT:** a root object must be defined, otherwise the error will be quite strange
   - [Scene Understanding](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/spatial-awareness/scene-understanding?view=mrtkunity-2022-05) is the higher level of Spatial Awareness, and allows to distinguish floors, ceilings and surfaces, and more generally to enable the device to "understand" the space from laser scannings.
+
+- More specific about assets management: [if you're interested in creating your assets](https://learn.microsoft.com/en-us/windows/mixed-reality/design/asset-creation-process)
+
+- [figma](https://learn.microsoft.com/en-us/windows/mixed-reality/design/figma-toolkit) is a paid tool enabling to create user interfaces, also in HoloLens2
+  - There's a [bridge](https://learn.microsoft.com/en-us/windows/mixed-reality/design/figma-unity-bridge) available fr Unity
