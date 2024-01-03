@@ -41,7 +41,7 @@ More technical material about how to develop in HoloLens2:
 More technical material about the project:
 
 - **Client Server Walkthrough**: this long document introduces some technical details about both the client side and the server side; it also provides information about how to install the server side on the remote machine. 
-  - [Walkthrough](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/client_server_walkthrough/TUTORIAL_ClientServerWalkthrough.md)
+  - [Client Server Walkthrough](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/client_server_walkthrough/TUTORIAL_ClientServerWalkthrough.md)
 - **Introductory Client Tutorials**: they're only a inroduction for the main functionalities of the HoloLens2 application. (Please also refer to the thesis document for more details)
   - [tutorial 0 - Project setup](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/first_tutorials/tutorial_00_project_setup/tutorial_00_project_setup.md)
   - [tutorial 1](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/first_tutorials/tutorial_01_map_setup/tutorial_01_map_setup.md)
@@ -55,4 +55,10 @@ More technical material about the project:
 
 Other documents, in italian only:
 
-- [(IN ITALIAN) how to deploy applications in HoloLens2](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_device_deploy/hololens2_devlice_deploy.md)
+- [ITA How to deploy applications in HoloLens2](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_device_deploy/hololens2_devlice_deploy.md)
+- [ITA HoloLens2 development basic workflow](bbbb)
+- [ITA UWP Files Storage](bbbb)
+
+Other docs:
+
+- [Unity development video examples](bbbb)
