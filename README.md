@@ -59,7 +59,8 @@ Other documents, in italian only:
 - [ITA HoloLens2 development basic workflow](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_basic_workflow/ITA_hololens2_basic_workflow.md)
 - [ITA UWP Files Storage](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_files_storage/ITA_hololens2_files_storage.md)
 - [ITA Development Guidelines](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_development_guidelines_v1/ITA_development_guidelines_v1.md)
-- [ITA workpath slider minimap]()
+- [ITA workpath slider minimap](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_workpath_slider_minimap/workpath_slider_minimap.md)
+- [ITA making of minimap and passive information collection]()
 
 Other docs:
 
