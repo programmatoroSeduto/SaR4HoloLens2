@@ -7,12 +7,6 @@
 > 
 > Server Branch V1:
 > - [programmatoroSeduto/release_server on GitHub](https://github.com/programmatoroSeduto/SaR4HoloLens2/tree/release_server)
-> 
-> Project Results Branch V1:
-> - [programmatoroSeduto/results on GitHub](https://github.com/programmatoroSeduto/SaR4HoloLens2/tree/results)
-> 
-> Documentation Branch:
-> - [programmatoroSeduto/Documentation on GitHub](https://github.com/programmatoroSeduto/SaR4HoloLens2/tree/documentation)
 
 
 ## What's there
