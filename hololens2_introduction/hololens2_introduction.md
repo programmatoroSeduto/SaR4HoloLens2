@@ -155,7 +155,50 @@ Solvers! **FUNDAMENTAL.**
 - [Official Introduction in Mixed Reality](https://learn.microsoft.com/en-us/windows/mixed-reality/design/app-patterns-landingpage)
 
 
-## Other Interesting Features
+## Unity Fundamentals
+
+General Purpose:
+
+- [Unity Events](https://docs.unity3d.com/ScriptReference/Events.UnityEvent.html)
+  - There are several limitations in Unity Events! They are very good when the method to call is just a signal with no parameters. Please give a look at the thesis report for more details about the limitations of his tool.
+- [Unity Scenes Management](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html)
+- [Unity Web Requests](https://docs.unity3d.com/ScriptReference/Networking.UnityWebRequest.html)
+-  Great if you need to communicate with a REST API
+-  but if you need a real socket, you have to use UWP
+
+Multiprocessing:
+
+- [Unity Coroutines](https://docs.unity3d.com/Manual/Coroutines.html)
+  - coroutines are functions executed "frame by frame"
+  - they are *not* threads, but "distant relaives of" the `Update()` Unity callback
+  - Full compatibility
+  - There are several types of wait command, as you can see [here](https://docs.unity3d.com/ScriptReference/WaitForEndOfFrame.html) in the list of classes. 
+- [C# Theads](https://learn.microsoft.com/en-us/troubleshoot/developer/visualstudio/csharp/language-compilers/create-thread)
+  - Not compaible with HoloLens2
+- [Tasks](https://learn.microsoft.com/it-it/dotnet/api/system.threading.tasks.task?view=net-8.0)
+  - Tasks are processes tha can be run in parallel
+  - Task class does not work in Unity: it works only in HoloLens2
+
+
+## Survive to UWP
+
+Basics:
+
+- [Create a console app in UWP](https://blog.pieeatingninjas.be/2018/04/05/creating-a-uwp-console-app-in-c/)
+
+Interesting features available only in UWP when the application is run on the device:
+
+- Geolocalisation in UWP
+  - WIFI ONLY! HoloLens2 does not support any other type of localisation except of WiFi localisation
+  - also Unity offers a geolocation API call, but it works only on smartphones. 
+- [Windows Dvices Geolocation namespace](https://learn.microsoft.com/en-us/uwp/api/windows.devices.geolocation?view=winrt-22621)
+  - see also [this](https://stackoverflow.com/questions/38704125/unity-isnt-allowed-to-use-location-windows-10)
+- Sockets: Unity does not offer such a feature
+  - [Official UWP documentation about Sockets](https://learn.microsoft.com/it-it/windows/uwp/networking/sockets)
+  - [StreamSocket class](https://learn.microsoft.com/en-us/uwp/api/windows.networking.sockets.streamsocket?view=winrt-22621) is the main class of this part of the API, along with [Stream Socket Listener](https://learn.microsoft.com/en-us/uwp/api/windows.networking.sockets.streamsocketlistener?view=winrt-22621)
+
+
+## Other Interesting (unexplored) Features in HoloLens2
 
 - It is perfectly possible to build a HoloLens2 applicatio using different scenes
   - [MRTK2 Scene System Getting Started](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/scene-system/scene-system-getting-started?view=mrtkunity-2022-05)
@@ -171,3 +214,9 @@ Solvers! **FUNDAMENTAL.**
 
 - [figma](https://learn.microsoft.com/en-us/windows/mixed-reality/design/figma-toolkit) is a paid tool enabling to create user interfaces, also in HoloLens2
   - There's a [bridge](https://learn.microsoft.com/en-us/windows/mixed-reality/design/figma-unity-bridge) available fr Unity
+
+
+## Samples
+
+- [Basic Samples](https://www.notion.so/HoloLens2-appunti-brutti-sui-samples-ufficiali-d95f0fdc217d4019b32ef2b808d1840b)
+- The true [scene understanding](https://github.com/microsoft/MixedReality-SceneUnderstanding-Samples) project
