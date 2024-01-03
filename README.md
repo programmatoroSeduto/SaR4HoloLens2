@@ -66,6 +66,8 @@ Step-by-step Working Notes (in italian only):
   - The first idea was to have a static representation of the environment which can be projected using a "sliding plane" capturing the desired plane of the figure. 
 - [ITA making of minimap and passive information collection](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_workpath_making_of_localisation/ITA_workpat_making_of_localisation.md)
   - The first version of the system implemented for collecting information and for making visuals. 
+- [ITA thingy:91](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_workpath_thingy91/ITA_workpath_thingy91.md)
+  - This should have been part of the thesis work, but it has been abandoned for a matter of tine. I'm sharing notes about the implementation done so far, anyway. 
 
 Other docs:
 
