@@ -59,8 +59,13 @@ Other documents, in italian only:
 - [ITA HoloLens2 development basic workflow](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_basic_workflow/ITA_hololens2_basic_workflow.md)
 - [ITA UWP Files Storage](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_files_storage/ITA_hololens2_files_storage.md)
 - [ITA Development Guidelines](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_development_guidelines_v1/ITA_development_guidelines_v1.md)
+
+Step-by-step Working Notes (in italian only):
+
 - [ITA workpath slider minimap](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_workpath_slider_minimap/workpath_slider_minimap.md)
-- [ITA making of minimap and passive information collection]()
+  - The first idea was to have a static representation of the environment which can be projected using a "sliding plane" capturing the desired plane of the figure. 
+- [ITA making of minimap and passive information collection](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_workpath_making_of_localisation/ITA_workpat_making_of_localisation.md)
+  - The first version of the system implemented for collecting information and for making visuals. 
 
 Other docs:
 
