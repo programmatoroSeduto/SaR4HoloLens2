@@ -432,7 +432,7 @@ Purtroppo il lavoro che ho già fatto con Thinghy fa veramente pena. Vorrei perc
         import os, sys, shutil
         
         api_entry_point = "https://api.nrfcloud.com/v1"
-        api_key = "e14c3da5855436e8a450cdd8464f7dfd9b120aee"
+        api_key = "..."
         
         msg_url = f"{api_entry_point}/messages" + "?pageLimit=10" + "&pageSort=desc"
         msg_header = {
@@ -510,7 +510,7 @@ Purtroppo il lavoro che ho già fatto con Thinghy fa veramente pena. Vorrei perc
         from urllib.parse import urlencode
         
         api_entry_point = "https://api.nrfcloud.com/v1"
-        api_key = "e14c3da5855436e8a450cdd8464f7dfd9b120aee"
+        api_key = "..."
         
         ## ====== REQUEST NO.1 ====== ## 
         print("first request")
