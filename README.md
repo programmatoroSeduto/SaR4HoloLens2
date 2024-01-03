@@ -58,6 +58,8 @@ Other documents, in italian only:
 - [ITA How to deploy applications in HoloLens2](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_device_deploy/hololens2_devlice_deploy.md)
 - [ITA HoloLens2 development basic workflow](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_basic_workflow/ITA_hololens2_basic_workflow.md)
 - [ITA UWP Files Storage](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_files_storage/ITA_hololens2_files_storage.md)
+- [ITA Development Guidelines](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_development_guidelines_v1/ITA_development_guidelines_v1.md)
+- [ITA workpath slider minimap]()
 
 Other docs:
 
