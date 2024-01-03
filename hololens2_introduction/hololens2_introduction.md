@@ -42,4 +42,11 @@ MRTK2 installation:
 How to use that?
 
 - [Official Tutorial](https://learn.microsoft.com/en-us/training/modules/learn-mrtk-tutorials/1-5-exercise-configure-resources#tabpanel_1_openxr)
+- Very important the idea of *profile*: MRTK2 takes track of the settings of the framework as a *profile* that is a file containing all the configuration details. Here is a first explainaion:
+  - [MRTK2 Profiles Guide](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/configuration/mixed-reality-configuration-guide?view=mrtkunity-2022-05)
+
+To deploy a application to HoloLens2:
+
+- [deployment guide in Mixed Reality documentation](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/configuration/mixed-reality-configuration-guide?view=mrtkunity-2022-05)
+- [deployment guide in MRTK2 documentation](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/supported-devices/wmr-mrtk?view=mrtkunity-2022-05)
 
