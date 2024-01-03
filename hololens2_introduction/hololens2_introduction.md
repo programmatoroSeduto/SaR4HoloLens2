@@ -20,6 +20,30 @@
 - Universal Windows Platforms (UWP)
   - [UWP](https://learn.microsoft.com/en-us/windows/uwp/)
   - [Windows UWP Reference](https://learn.microsoft.com/en-us/uwp/api/)
+- HoloLens2 User Manual
+  - [MS Docs HoloLens2](https://learn.microsoft.com/en-us/hololens/)
+  - [Basic edition](https://learn.microsoft.com/en-us/hololens/hololens2-options-device-only)
+  - [Development Edition](https://learn.microsoft.com/en-us/hololens/hololens2-options-dev-edition)
+  - [Industrial edition](https://learn.microsoft.com/en-us/hololens/hololens2-options-industrial-edition)
+  - [HL2 Hardware](https://learn.microsoft.com/en-us/hololens/hololens2-hardware)
+
+
+## I never used HoloLens2 before!
+
+- This page is a short user manual of the device
+  - [look at this](https://learn.microsoft.com/en-us/hololens/hololens2-basic-usage)
+- Other useful guides
+  - [Start menu](https://learn.microsoft.com/en-us/hololens/holographic-home)
+  - [Manage Apps](https://learn.microsoft.com/en-us/hololens/holographic-store-apps)
+  - [Photos, Videos, Screenshots and more](https://learn.microsoft.com/en-us/hololens/holographic-photos-and-videos)
+
+Here are some incredibly useful voice commands:
+
+- "start recording"
+- "stop recording"
+- "take a picture"/"take a photo"
+- "go to start"
+- "select" for eye interaction (*see-it-say-it*)
 
 
 ## What is MRTK2?
@@ -38,10 +62,11 @@ MRTK2 installation:
   - [Mixed Reality Feature Tool](https://www.microsoft.com/en-us/download/details.aspx?id=102778)
 - Are you in a hurry? Well: 
   - [this repository](https://github.com/programmatoroSeduto/HoloLens2ProjectTemplate) contains a template where to start from, with MRTK2 already installed and ready to use. 
+  - [the branch is this](https://github.com/programmatoroSeduto/HoloLens2ProjectTemplate/tree/template_unity_basic)
 
 How to use that?
 
-- [Official Tutorial](https://learn.microsoft.com/en-us/training/modules/learn-mrtk-tutorials/1-5-exercise-configure-resources#tabpanel_1_openxr)
+- [How to install MR Features inside the project](https://learn.microsoft.com/en-us/training/modules/learn-mrtk-tutorials/1-5-exercise-configure-resources#tabpanel_1_openxr)
 - Very important the idea of *profile*: MRTK2 takes track of the settings of the framework as a *profile* that is a file containing all the configuration details. Here is a first explainaion:
   - [MRTK2 Profiles Guide](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/configuration/mixed-reality-configuration-guide?view=mrtkunity-2022-05)
 
@@ -50,3 +75,72 @@ To deploy a application to HoloLens2:
 - [deployment guide in Mixed Reality documentation](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/configuration/mixed-reality-configuration-guide?view=mrtkunity-2022-05)
 - [deployment guide in MRTK2 documentation](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/supported-devices/wmr-mrtk?view=mrtkunity-2022-05)
 
+
+## Voice Commands
+
+Voice Commands are not so efficient in HoloLens2, but in so many cases they are very useful, especially in simulation since they can be bounded to keyboard events!
+
+- [How to register keywords inside MRTK2](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/input/speech?view=mrtkunity-2022-05)
+- The MRTK2 component [Speech Input Handler](https://learn.microsoft.com/en-us/dotnet/api/microsoft.mixedreality.toolkit.input.speechinputhandler?preserve-view=true&view=mixed-reality-toolkit-unity-2020-dotnet-2.8.0) allows to bind a voice command to a particular Unity event or Cs piece of code. 
+
+Using speech commands is simple in general. Please keep in mind these steps:
+
+1. create a profile for the voice commands if needed
+2. declare the keywords inside the MRTK2 menu, Input section
+3. add then a GameObject with a component called `SpeechInputHandle` (component already implemented in MRTK2)
+4. create one or more Cs classes with public methods implementing the voice commands
+5. assign those methods to the `SpeechInputHandle` class
+
+
+## HoloLens2 inputs and UI items
+
+From official Features documentation:
+
+- [hands tracking](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/input/hand-tracking?view=mrtkunity-2022-05)
+- **Near Interactions** are functionalities added to the GameObjects reated to the possibility of *touching virtual objects*.
+  - [Touch and Grab](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/input/how-to-add-near-interactivity?view=mrtkunity-2022-05)
+
+Talking about Unity Scripting, here are the must-have classes to deal with inputs through MRTK2:
+
+- [Toolkit.Input namespace](https://learn.microsoft.com/it-it/dotnet/api/microsoft.mixedreality.toolkit.input?view=mixed-reality-toolkit-unity-2020-dotnet-2.8.0)
+
+Hands Interactions:
+
+- [Bounds Control](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/bounds-control?view=mrtkunity-2022-05)
+  - **VERY IMPORTANT:** Bounding Box is deprecated
+  - [Manipulation Handler](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/manipulation-handler?view=mrtkunity-2022-05) precisely built for direct hands manipulation of virtual objects.
+  - See also [Object Mnaipulator](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/object-manipulator?view=mrtkunity-2022-05)
+  - It can be combined perfectly with [Constrains Manager](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/constraint-manager?view=mrtkunity-2022-05) ... what is this? Well: I want that the object is able to move along X and Y axes only; *the consraint is to deny the motion along Y*, and this is a constraint. There are also other constraints. 
+
+Classical Interactions:
+
+- [Buttons](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/button?view=mrtkunity-2022-05), incredibly powerful as well as a little "trivial" in terms of user experience
+- [Hands Menu](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/hand-menu?view=mrtkunity-2022-05) very cozy
+  - see also [near menus](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/near-menu?view=mrtkunity-2022-05)
+- [Slates (Windows, in simple terms)](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/slate?view=mrtkunity-2022-05) are useful for building LOG windows
+
+Other useful tools for handling UI:
+
+- [object Collections](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/object-collection?view=mrtkunity-2022-05) **VERY USEFUL**
+- [sliders](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/sliders?view=mrtkunity-2022-05)
+- *Anoher very important UI element*, [Tooltip](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/tooltip?view=mrtkunity-2022-05) allows to put a "floating label" on a virtual object
+
+Solvers!
+
+- A *Solver* is a script able to move one object in the space depending on the user's activity; they are incredibly useful
+  - [Solvers in MRTK2](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/ux-building-blocks/solvers/solver?view=mrtkunity-2022-05)
+- [Official Introduction in Mixed Reality](https://learn.microsoft.com/en-us/windows/mixed-reality/design/app-patterns-landingpage)
+
+
+## Other Interesting Features
+
+- It is perfectly possible to build a HoloLens2 applicatio using different scenes
+  - [MRTK2 Scene System Getting Started](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/scene-system/scene-system-getting-started?view=mrtkunity-2022-05)
+  - [Unity Scene System](https://docs.unity3d.com/ScriptReference/SceneManagement.Scene.html)
+  - Unity also support natively [Additive Scene Loading](https://docs.unity3d.com/ScriptReference/SceneManagement.LoadSceneMode.Additive.html) meaning that two scenes can be loaded together: Unity is able to understand how to merge the two scenes. 
+
+
+- About Scene Observer:
+  - [Spatial Awareness](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/spatial-awareness/spatial-awareness-getting-started?view=mrtkunity-2022-05) is the low level component for space laser scan
+  - [Spatial Awareness Scripting](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/spatial-awareness/usage-guide?view=mrtkunity-2022-05) for informations about the scripting. **VERY IMPORTANT:** a root object must be defined, otherwise the error will be quite strange
+  - [Scene Understanding](https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk2/features/spatial-awareness/scene-understanding?view=mrtkunity-2022-05) is the higher level of Spatial Awareness, and allows to distinguish floors, ceilings and surfaces, and more generally to enable the device to "understand" the space from laser scannings.

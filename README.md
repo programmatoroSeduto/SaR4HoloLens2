@@ -52,3 +52,7 @@ More technical material about the project:
   - [Calibration System Setup](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/howto_calibration/HOWTO_calibration.md)
 - **Startup Script Setup**: a specific tutorial about how to start the project up. The project contains some secific scripts, called *startup scripts*, able to coordinate the start-up of the components of the project in the right order. 
   - [Startup Script Setup](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/howto_startup/HOWTO_startup_script.md)
+
+Other documents:
+
+- [(IN ITALIAN) how to deploy applications in HoloLens2](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_device_deploy/hololens2_devlice_deploy.md)
