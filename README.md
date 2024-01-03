@@ -56,9 +56,9 @@ More technical material about the project:
 Other documents, in italian only:
 
 - [ITA How to deploy applications in HoloLens2](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_device_deploy/hololens2_devlice_deploy.md)
-- [ITA HoloLens2 development basic workflow](bbbb)
-- [ITA UWP Files Storage](bbbb)
+- [ITA HoloLens2 development basic workflow](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_basic_workflow/ITA_hololens2_basic_workflow.md)
+- [ITA UWP Files Storage](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/ITA_hololens2_files_storage/ITA_hololens2_files_storage.md)
 
 Other docs:
 
-- [Unity development video examples](bbbb)
+- [Unity development video examples](https://github.com/programmatoroSeduto/SaR4HoloLens2/tree/documentation/unity_development_video_examples), just to have a flavour of how to work with Unity for HoloLens2 graphics. 
