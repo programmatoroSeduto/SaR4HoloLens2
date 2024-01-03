@@ -36,7 +36,7 @@ Master thesis Material:
 More technical material about how to develop in HoloLens2:
 
 - **Hololens2 Introduction by Links** provides a summary of all the main resources to know for developing in HoloLens2 (just to understand that they exist)
-  - [here]()
+  - [here](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/hololens2_introduction/hololens2_introduction.md)
 
 More technical material about the project:
 
