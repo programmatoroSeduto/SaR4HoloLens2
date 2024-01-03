@@ -196,6 +196,10 @@ Interesting features available only in UWP when the application is run on the de
 - Sockets: Unity does not offer such a feature
   - [Official UWP documentation about Sockets](https://learn.microsoft.com/it-it/windows/uwp/networking/sockets)
   - [StreamSocket class](https://learn.microsoft.com/en-us/uwp/api/windows.networking.sockets.streamsocket?view=winrt-22621) is the main class of this part of the API, along with [Stream Socket Listener](https://learn.microsoft.com/en-us/uwp/api/windows.networking.sockets.streamsocketlistener?view=winrt-22621)
+- [working with files](https://learn.microsoft.com/en-us/windows/uwp/files/quickstart-reading-and-writing-files)
+  - UWP changes completely the structure of the storage: in general, there's no longer a file system, but a set of references to folders from API. Interface and access mehods completely change with compared to the (simpler) .NET interface. 
+  - See also [files folders and libraries](https://learn.microsoft.com/en-us/windows/uwp/files/)
+  - There are also [DatagramSocket](https://learn.microsoft.com/en-us/uwp/api/windows.networking.sockets.datagramsocket?view=winrt-22621) for UDP socket instead of the classical TCP. 
 
 
 ## Other Interesting (unexplored) Features in HoloLens2
