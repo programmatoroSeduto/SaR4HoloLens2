@@ -16,7 +16,7 @@ It is very important to point out that each comonent is places in (0, 0, 0), whi
 
 ![03 position origin](image-2.png)
 
-this is what it whould happen in this scenario:
+this is what it would happen in this scenario:
 
 ![04 wrong user height](image-3.png)
 
@@ -51,7 +51,7 @@ And here's how the map appears in play mode:
 
 ![09 play mode](image-8.png)
 
-You can switch in he Scene tab during the play mode:
+You can switch in the Scene tab during the play mode:
 
 ![10 tabs in play mode](image-9.png)
 

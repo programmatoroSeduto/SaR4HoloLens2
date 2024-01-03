@@ -19,7 +19,7 @@ Here you can find some *not-exaustive* documentation written during the projec d
 
 ## Documents Summary
 
-- **Four Beginners Tutorials**: after the installation of the project, please start reading from this. They are only a inroduction for the main functionalities of the HoloLens2 application. Please also refer to the thesis document for more details. 
+- **Four Beginner Client Tutorials**: after the installation of the project, please start reading from this. They are only a inroduction for the main functionalities of the HoloLens2 application. Please also refer to the thesis document for more details. 
 	- [tutorial 1](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/first_tutorials/tutorial_01_map_setup/tutorial_01_map_setup.md)
 	- [tutorial 2](https://github.com/programmatoroSeduto/SaR4HoloLens2/blob/documentation/first_tutorials/tutorial_02_estimate_position/tutorial_02_estimate_position.md)
 	- [tutorial 3](https://github.com/programmatoroSeduto/SaR4HoloLens2/tree/documentation/first_tutorials/tutorial_03_markers_visualization)
